@@ -1,0 +1,156 @@
+{
+  "product": "Apple TV 4K (3rd generation)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-tv-4k-3rd-generation.pdf",
+    "file": "extract/pdf/apple-tv-4k-3rd-generation.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2022-10-26",
+    "sheets": 1
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": null,
+  "notes": {
+    "1": "notes 2-5 prevent performance degradation during normal use | stands or holders not in place during normal use can disregard them",
+    "2": "no material to contact, overlap or obstruct any portion of IR window | recommended min clearance 0.5 mm",
+    "3": "no metallic material to overlap or obstruct any portion of antenna keepout area | recommended min clearance 0.5 mm",
+    "4": "no material to contact, overlap or obstruct any portion of system indicator light area | recommended min clearance 0.5 mm"
+  },
+  "body": {
+    "width": 93.24,
+    "depth": 93.24,
+    "height": 31.0,
+    "base_chamfer": 3.0
+  },
+  "corner_profile": {
+    "detail": "A",
+    "applies": "4x corner",
+    "x": [
+      0.0,
+      2.0,
+      4.0,
+      6.0,
+      8.0,
+      10.0,
+      11.99,
+      13.98,
+      15.93,
+      17.85,
+      19.71,
+      21.47,
+      23.13,
+      24.66,
+      26.05,
+      27.27,
+      28.33,
+      29.21,
+      29.89,
+      30.4,
+      30.75,
+      30.96,
+      31.07,
+      31.12,
+      31.14
+    ],
+    "y": [
+      29.83,
+      27.83,
+      25.83,
+      23.83,
+      21.83,
+      19.83,
+      17.84,
+      15.87,
+      13.94,
+      12.06,
+      10.27,
+      8.57,
+      6.99,
+      5.55,
+      4.27,
+      3.15,
+      2.21,
+      1.46,
+      0.89,
+      0.49,
+      0.23,
+      0.09,
+      0.03,
+      0.01,
+      0.0
+    ],
+    "note": "x along the edge, y inward; pairing by order as printed"
+  },
+  "front": {
+    "ir_window": {
+      "width": 8.0,
+      "height": 3.68,
+      "note": 2
+    },
+    "indicator_light": {
+      "diameter": 3.0,
+      "from_centre": 24.87,
+      "from_bottom": 11.0,
+      "note": 4
+    },
+    "height": 25.14
+  },
+  "rear": {
+    "wifi": {
+      "power": {
+        "from_left": 8.36,
+        "width": 16.65,
+        "from_centre": 23.36
+      },
+      "hdmi": {
+        "width": 14.3,
+        "from_right": 4.85,
+        "from_centre": 22.21
+      },
+      "port_centre_height": 16.43
+    },
+    "wifi_ethernet": {
+      "power": {
+        "from_left": 8.36,
+        "width": 16.65,
+        "from_centre": 23.36
+      },
+      "ethernet": {
+        "width": 12.78,
+        "offset": 10.23
+      },
+      "hdmi": {
+        "width": 14.3,
+        "from_right": 4.85,
+        "from_centre": 22.21
+      },
+      "port_centre_height": 16.43,
+      "height": 17.38
+    }
+  },
+  "antenna_keepout": {
+    "view": "top",
+    "note": 3,
+    "top_right": {
+      "from_left": 74.91,
+      "height_from_bottom": 62.7
+    },
+    "left": {
+      "width": 16.09,
+      "top_from_bottom": 55.6,
+      "bottom_from_bottom": 25.03
+    },
+    "bottom_left": {
+      "width": 35.59,
+      "height": 17.72
+    },
+    "bottom_right": {
+      "from_left": 57.66,
+      "height": 17.72
+    }
+  },
+  "unverified": [
+    "no text layer | values read from renders",
+    "antenna block extents read from the ordinate leaders"
+  ]
+}
