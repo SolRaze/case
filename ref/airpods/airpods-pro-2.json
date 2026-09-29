@@ -1,0 +1,88 @@
+{
+  "product": "AirPods Pro (2nd generation)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/airpods-pro-2nd-generation.pdf",
+    "file": "extract/pdf/airpods-pro-2nd-generation.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2022-09-21",
+    "sheets": 1
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": null,
+  "body": {
+    "width": null,
+    "height": null,
+    "depth": null,
+    "note": "sheet gives no overall envelope"
+  },
+  "notes": {
+    "1": "accessories intruding into shaded region will negatively affect product performance",
+    "2": "accessories may not cover these metal surfaces"
+  },
+  "keepouts": [
+    {
+      "name": "stem shaded region",
+      "note": 1,
+      "from_stem_tip": 3.0,
+      "to_stem_tip": 23.3,
+      "applies": "stem outer surface, full circumference, from 3.0 to 23.3 above the tip"
+    },
+    {
+      "name": "stem width",
+      "note": 1,
+      "width": 5.7,
+      "note_text": "5.7 across the stem in both side views"
+    },
+    {
+      "name": "eartip nozzle",
+      "note": 1,
+      "dimensions": [
+        11.9,
+        7.6
+      ],
+      "note_text": "11.9 along the nozzle axis, 7.6 across it"
+    },
+    {
+      "name": "speaker mesh ring",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "inner sensor oval",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "top mic / vent",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "stem front sensor oval",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "stem tip mic",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "stem back force sensor",
+      "note": 1,
+      "band": 1.0
+    }
+  ],
+  "no_cover": [
+    {
+      "name": "stem tip charging contacts",
+      "note": 2
+    }
+  ],
+  "unverified": [
+    "no text layer | values read from renders",
+    "band 1.0 read as offset around each shaded feature",
+    "feature names inferred from the views"
+  ]
+}
