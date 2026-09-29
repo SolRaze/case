@@ -1,0 +1,47 @@
+{
+  "product": "Apple MagSafe Charger (1 m) and (2 m)",
+  "model": [
+    "A2580",
+    "A3250"
+  ],
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-magsafe-charger-1-m-and-apple-magsafe-charger-2-m.pdf",
+    "file": "extract/pdf/apple-magsafe-charger-1-m-and-apple-magsafe-charger-2-m.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2024-09-19"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 1,
+  "general_tolerance": null,
+  "notes": {
+    "1": "charging holder to fit with accessory guidance keep-in for MagSafe accessories | holders should exist below the top aluminum surface of the charger (datum A)",
+    "2": "holders should minimize the strain on the cable resulting from any internal cable routing"
+  },
+  "puck": {
+    "diameter": 55.5,
+    "thickness": 4.37
+  },
+  "cable": {
+    "diameter": 3.05,
+    "length": null,
+    "length_note": "1 m and 2 m variants, not dimensioned"
+  },
+  "connector": {
+    "type": "USB-C",
+    "body_length": 19.38,
+    "body_width": 12.35,
+    "body_thickness": 6.49
+  },
+  "keep_in": {
+    "detail": "B",
+    "scale": "20:1",
+    "label": "MagSafe accessory enclosure geometry guidance keep-in",
+    "datum_A": "top aluminum surface of the charger",
+    "dimensions": null
+  },
+  "unverified": [
+    "no text layer | values read from renders",
+    "detail B keep-in is drawn, not dimensioned"
+  ]
+}
