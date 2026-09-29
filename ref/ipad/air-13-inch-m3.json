@@ -1,0 +1,827 @@
+{
+  "product": "iPad Air 13-inch (M3)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-air-13-inch-m3.pdf",
+    "file": "~/Reference/apple/ipad-air-13-inch-m3.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 5,
+  "general_tolerance": null,
+  "covers": "sheet title block lists iPad Air 13-inch (M4), (M3), (M2)",
+  "notes": {
+    "1": "do not obstruct acoustic openings: front mic, rear mic, speakers",
+    "2": "do not obstruct imaging features: front camera (FC), rear camera",
+    "3": "do not obstruct ambient light sensor (ALS)",
+    "4": "do not obstruct top button",
+    "5": "accessory shall not damage display coatings in any operating condition | hard plastic, metal or glass edges shall not contact display active area"
+  },
+  "frames": {
+    "front": "portrait, viewed from display | x from left edge | y from top or bottom edge as dimensioned",
+    "back": "viewed from back | rear camera top-left"
+  },
+  "body": {
+    "width": 215.0,
+    "height": 280.66,
+    "thickness": 6.123
+  },
+  "display_active_area": {
+    "width": 197.61,
+    "height": 263.27,
+    "border_x": 8.69,
+    "border_y": 8.7
+  },
+  "corner_profile": {
+    "section": "AT",
+    "applies": "all four corners",
+    "x": [
+      0.0,
+      0.05,
+      1.53,
+      6.76,
+      12.88,
+      18.71
+    ],
+    "y": [
+      18.71,
+      13.13,
+      6.76,
+      1.53,
+      0.07,
+      0.01,
+      0.0
+    ]
+  },
+  "edge_profile": {
+    "detail": "AR",
+    "x": [
+      0.0,
+      0.06,
+      0.43,
+      1.12
+    ],
+    "z": [
+      0.0,
+      -0.06,
+      -0.43,
+      -1.12,
+      1.12,
+      0.43,
+      0.06,
+      0.0
+    ],
+    "extra": [
+      0.95,
+      3.06
+    ]
+  },
+  "speakers": {
+    "hole_diameter": 1.76,
+    "top_edge": {
+      "count": 24,
+      "x": [
+        3.04,
+        35.5,
+        63.71
+      ]
+    },
+    "bottom_edge": {
+      "count": 24,
+      "x": [
+        3.04,
+        35.5,
+        63.71
+      ]
+    },
+    "note": 1,
+    "section_am": 2.21
+  },
+  "top_button": {
+    "x": [
+      1.09,
+      4.0,
+      12.69,
+      17.12
+    ],
+    "keepout_zone_angle": 120.0,
+    "keepout_at_surface": 20.12,
+    "keepout_to_housing": 0.02,
+    "keepout_to_cover_glass": 0.03,
+    "section_ap": [
+      3.09,
+      5.09
+    ],
+    "note": 4
+  },
+  "front_camera": {
+    "from_center_y": 9.5,
+    "edge_offset": 4.22,
+    "keepout_zone_diameter": 3.08,
+    "keepout_zone_angle": 121.01,
+    "keepout_at_surface": 3.84,
+    "note": 2
+  },
+  "front_mic": {
+    "from_center_y": -9.5,
+    "keepout_zone_diameter": 0.9,
+    "note": 1
+  },
+  "als": {
+    "edge_offset": 4.22,
+    "from_center_y": [
+      94.66,
+      -15.56
+    ],
+    "keepout_zone_diameter": 2.5,
+    "count": 2,
+    "keepout_zone_angle": 120.0,
+    "keepout_at_surface": 3.68,
+    "note": 3
+  },
+  "usb_c": {
+    "recommended_keepout": [
+      12.45,
+      6.6
+    ],
+    "mating_connector_keepout": "flush to product surface | 14.0 outward required"
+  },
+  "rear_camera": {
+    "lens_diameter": 9.89,
+    "side_wall_diameter": 11.89,
+    "ring_diameter": 16.92,
+    "x": 12.69,
+    "y": 12.69,
+    "from_center_x": 94.8,
+    "from_center_y": 127.64,
+    "protrusion_to_cg_surface": 8.2,
+    "window_to_housing_back": 2.08,
+    "min_keepout": 3.25,
+    "keepout_zone_angle": 77,
+    "bump_profile": {
+      "detail": "AZ",
+      "x": [
+        -1.93,
+        -1.92,
+        -1.69,
+        -1.2,
+        -0.74,
+        -0.46,
+        -0.15,
+        0.0
+      ],
+      "z": [
+        2.1,
+        1.57,
+        0.74,
+        0.24,
+        0.05,
+        0.01,
+        0.0
+      ],
+      "radius": 0.12
+    },
+    "note": 2
+  },
+  "rear_mic": {
+    "keepout_diameter": 2.3,
+    "x": 12.69,
+    "y": 27.62,
+    "from_center_y": 112.72,
+    "note": 1
+  },
+  "volume_buttons": {
+    "plus": {
+      "from_top": 19.49,
+      "length": 10.06
+    },
+    "minus": {
+      "from_top": 31.55,
+      "length": 10.06
+    },
+    "gap": 2.0,
+    "width": 2.56,
+    "section_au": [
+      3.09,
+      1.81,
+      2.99
+    ]
+  },
+  "smart_connector": {
+    "count": 3,
+    "pitch": 4.97,
+    "contact_diameter": 3.4,
+    "contact_subflush": 0.05,
+    "opening_diameter": 3.96,
+    "to_enclosure": 10.02
+  },
+  "inductive_charging_window": {
+    "section": "AS",
+    "dims": [
+      3.09
+    ]
+  },
+  "magnets": {
+    "polarity": {
+      "BV1-11": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-12": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-21": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-22": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-23": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-24": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-31": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-32": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-33": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-34": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-41": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-42": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-43": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-44": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-45": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-51": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-52": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-53": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-54": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-55": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-01": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-02": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-03": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-04": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-11": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-12": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-13": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-14": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-21": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-22": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-23": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-24": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-34": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-44": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-54": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-64": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-74": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-84": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-94": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-10-1": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-10-2": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-10-3": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-10-4": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-11-1": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-11-2": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-11-3": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-11-4": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-12-1": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-12-2": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-12-3": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-12-4": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-W-13-2": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-W-13-3": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-W-13-4": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-W-14-3": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-W-14-4": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-11": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-12": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-13": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-14": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-21": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-22": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-23": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-24": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-31": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-41": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-51": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-61": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-71": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-81": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-91": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-10-1": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-10-2": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-10-3": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-10-4": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "C3M-1": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "C3M-2": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "C3M-3": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "C3M-4": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-11": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-12": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-21": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-22": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-23": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-24": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-31": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-32": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-33": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-34": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-41": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-42": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-43": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-44": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-51": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-52": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-53": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-54": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "CV1": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "CV2": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "CV3": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "CV4": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "CV5": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "CV6": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "CV7": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "CV8": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "CV9": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "OR1": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "OR2": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "OR3": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "OR4": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "SP-CH-1-S": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "SP-CH-1-B": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "SP-CH-2-S": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "SP-CH-2-B": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "SP-CH-3-S": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "SP-CH-3-B": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "SP-CH-4-S": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "SP-CH-4-B": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "SP-FH-1-S": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "SP-FH-1-B": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "SP-FH-2-S": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "SP-FH-2-B": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "SP-FH-3-S": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "SP-FH-3-B": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "SP-FH-4-S": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "SP-FH-4-B": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "HE1": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "PM-CH-1": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "PM-CH-2": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "PM-CH-3": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "PM-CH-4": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "PM-FH-1": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "PM-FH-2": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "PM-FH-3": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "PM-FH-4": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "CG-C2": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "CG-C3": {
+        "outer": "N",
+        "inner": "S"
+      }
+    },
+    "polarity_columns": "outer = first table column, inner = second | header: toward cosmetic surface, toward inside of enclosure",
+    "positions_from_bottom": {
+      "SP-FH-4": 237.02,
+      "SP-FH-3": 225.57,
+      "SP-FH-2": 214.4,
+      "SP-FH-1": 200.07,
+      "CV3": 185.27,
+      "HE1": 183.51,
+      "CV2": 174.83,
+      "CV1": 166.27,
+      "PM-FH-4": 163.28,
+      "PM-FH-3": 159.92,
+      "PM-FH-2": 156.21,
+      "PM-FH-1": 153.02,
+      "PM-CH-1": 98.15,
+      "PM-CH-2": 94.96,
+      "compass": 93.12,
+      "PM-CH-3": 91.24,
+      "PM-CH-4": 87.88,
+      "SP-CH-4": 58.64,
+      "SP-CH-3": 43.59,
+      "SP-CH-2": 30.37,
+      "SP-CH-1": 19.64
+    },
+    "flux_keepout_to_housing_outside": 3.04,
+    "flux_line_limit": "max 1.3 mT anywhere along line",
+    "cross_hatched_limit": "max 0.25 mT"
+  },
+  "antenna_keepout": {
+    "note": "do not obstruct with metal",
+    "all_around_housing_outside": [
+      7.99,
+      11.98
+    ],
+    "dims": [
+      10.73,
+      24.78,
+      25.34,
+      51.0,
+      117.66,
+      41.88,
+      98.14,
+      117.66
+    ]
+  },
+  "unverified": [
+    "magnet positions paired with labels by text row",
+    "antenna dims listed as printed, not assigned to edges",
+    "polarity column order",
+    "sheet 1 outlines not re-read; pixel diff against the M4 sheet is title-block only"
+  ],
+  "same_as": "air-13-inch-m4.json: every text-layer value on sheets 2-6 matches"
+}
