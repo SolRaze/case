@@ -1,0 +1,38 @@
+{
+  "product": "Apple MagSafe Charger (A2140)",
+  "model": "A2140",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-magsafe-charger.pdf",
+    "file": "extract/pdf/apple-magsafe-charger.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2024-09-19"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 1,
+  "general_tolerance": null,
+  "notes": {
+    "1": "charging holder to fit with accessory guidance keep-in for MagSafe accessories | holders should exist below the top aluminum surface of the charger (datum A)",
+    "2": "holders should minimize the strain on the cable resulting from any internal cable routing"
+  },
+  "puck": {
+    "diameter": 55.9,
+    "thickness": 5.3
+  },
+  "cable": {
+    "diameter": 2.74,
+    "strain_relief_diameter": 3.94,
+    "length": null
+  },
+  "connector": {
+    "type": "USB-C",
+    "body_length": 20.4,
+    "body_width": 12.35,
+    "body_thickness": 6.49
+  },
+  "keep_in": null,
+  "unverified": [
+    "no text layer | values read from renders",
+    "2.74 and 3.94 read as cable and strain relief diameters"
+  ]
+}
