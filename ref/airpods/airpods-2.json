@@ -1,0 +1,78 @@
+{
+  "product": "AirPods (2nd generation)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/airpods-2nd-generation.pdf",
+    "file": "extract/pdf/airpods-2nd-generation.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2022-04-26",
+    "sheets": 1
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": null,
+  "title_block": "AIRPODS, dated 01/10/17",
+  "body": {
+    "width": null,
+    "height": null,
+    "depth": null,
+    "note": "sheet gives no overall envelope"
+  },
+  "notes": {
+    "1": "accessories intruding into shaded regions will negatively affect product performance",
+    "2": "accessories must not cover these metal surfaces"
+  },
+  "keepouts": [
+    {
+      "name": "stem shaded region",
+      "note": 1,
+      "from_stem_tip": 2.4,
+      "length": 23.8,
+      "applies": "stem outer surface, from 2.4 above the tip for 23.8"
+    },
+    {
+      "name": "stem tip",
+      "note": 1,
+      "band": 0.8,
+      "count": 2
+    },
+    {
+      "name": "speaker grille",
+      "note": 1,
+      "dimensions": [
+        4.8,
+        7.9
+      ]
+    },
+    {
+      "name": "top mic",
+      "note": 1,
+      "band": 0.5
+    },
+    {
+      "name": "optical sensor",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "rear vent",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "front vent slot",
+      "note": 1,
+      "band": 0.5
+    }
+  ],
+  "no_cover": [
+    {
+      "name": "stem tip charging contact ring",
+      "note": 2
+    }
+  ],
+  "unverified": [
+    "no text layer | values read from renders",
+    "feature names inferred from the views",
+    "the 0.8 callout on the rear view is tagged note 4, which the sheet does not list"
+  ]
+}
