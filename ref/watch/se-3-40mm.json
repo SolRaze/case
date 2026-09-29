@@ -1,0 +1,287 @@
+{
+  "product": "Apple Watch SE 3, 40 mm",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-watch-se-3-40mm.pdf",
+    "file": "~/Reference/apple/apple-watch-se-3-40mm.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 1,
+  "general_tolerance": null,
+  "tolerance_note": "all dimensions for reference only",
+  "notes": {
+    "1": "case does not interfere with click or rotation of digital crown | no force on crown | does not obstruct crown face",
+    "2": "case does not obstruct acoustic openings and altimeter | must not degrade acoustic or water ejection performance",
+    "3": "no metal cases | antenna function",
+    "4": "case does not obstruct charging interface",
+    "5": "case does not obstruct optical sensors",
+    "6": "case does not extend beyond sensor windows",
+    "7": "case does not contact cover glass",
+    "8": "case does not contain ferromagnetic material"
+  },
+  "frames": {
+    "plan": "origin at case centre | y up toward 12 o'clock",
+    "side": "crown side view | y from case centreline | z from flat of cover glass",
+    "corner_profile": "ordinates from corner datum | x and y lists as printed, not paired",
+    "side_profile": "detail C | x across case thickness from glass datum | z lists per side as printed"
+  },
+  "body": {
+    "width": 34.41,
+    "height": 39.82,
+    "thickness": 10.7,
+    "side_heights": [
+      12.67,
+      11.54
+    ]
+  },
+  "cover_glass": {
+    "width": 31.36,
+    "height": 36.82,
+    "no_contact_clearance": 1.65,
+    "note": 7
+  },
+  "display_active_area": {
+    "width": 25.27,
+    "height": 30.73
+  },
+  "digital_crown": {
+    "dial_diameter": 7.5,
+    "keepout_diameter": 9.5,
+    "center_y": 7.75,
+    "center_z": 4.75,
+    "keepout_width": 9.24,
+    "access_angle": 31.0,
+    "notes": [
+      1
+    ]
+  },
+  "mic": {
+    "port_center_y": 1.56,
+    "keepout_diameter": 3.0,
+    "note": 2
+  },
+  "side_button": {
+    "top_y": -0.7,
+    "center_y": -6.2,
+    "bottom_y": -11.7,
+    "z": [
+      3.0,
+      7.0
+    ]
+  },
+  "speaker_altimeter": {
+    "slot_y": [
+      0.57,
+      -0.57,
+      7.83,
+      -7.83
+    ],
+    "keepout_all_around": 1.0,
+    "note": 2
+  },
+  "band_release_buttons": {
+    "y": [
+      15.24,
+      -15.24
+    ]
+  },
+  "back": {
+    "dome_diameter": 22.6,
+    "optical_sensor_keepout": [
+      0.84,
+      1.0
+    ],
+    "note": 6
+  },
+  "charging": {
+    "max_offset_from_puck_center": 0.86,
+    "note": 4
+  },
+  "sections": {
+    "K": {
+      "name": "speaker and altimeter ports",
+      "angles": [
+        60.0,
+        16.53
+      ],
+      "keepout_all_around": 1.0,
+      "depth": 0.6
+    },
+    "Z": {
+      "name": "mic port",
+      "angles": [
+        0.0,
+        60.0
+      ],
+      "width": 1.0,
+      "keepout_all_around": 1.0
+    }
+  },
+  "corner_profile": {
+    "applies": "all four corners",
+    "x": [
+      0.0,
+      0.0,
+      0.01,
+      0.03,
+      0.05,
+      0.1,
+      0.18,
+      0.3,
+      0.5,
+      0.78,
+      1.15,
+      1.62,
+      2.17,
+      2.8,
+      3.5,
+      4.27,
+      5.08,
+      5.93,
+      6.81,
+      7.7,
+      8.6,
+      9.5,
+      10.4,
+      11.3,
+      12.2
+    ],
+    "y": [
+      13.27,
+      12.36,
+      11.46,
+      10.56,
+      9.66,
+      8.76,
+      7.86,
+      6.97,
+      6.09,
+      5.23,
+      4.41,
+      3.64,
+      2.92,
+      2.28,
+      1.71,
+      1.23,
+      0.84,
+      0.55,
+      0.34,
+      0.19,
+      0.11,
+      0.05,
+      0.02,
+      0.01,
+      0.0
+    ]
+  },
+  "display_corner_profile": {
+    "x": [
+      0.0,
+      0.01,
+      0.03,
+      0.1,
+      0.27,
+      0.56,
+      0.99,
+      1.54,
+      2.2,
+      2.93,
+      3.71,
+      4.51,
+      5.3,
+      6.1,
+      6.91
+    ],
+    "y": [
+      6.25,
+      5.45,
+      4.65,
+      3.85,
+      3.07,
+      2.33,
+      1.65,
+      1.08,
+      0.62,
+      0.31,
+      0.12,
+      0.04,
+      0.01,
+      0.0,
+      0.0
+    ]
+  },
+  "side_profile": {
+    "applies": "all sides",
+    "x": [
+      0.0,
+      0.02,
+      0.09,
+      0.25,
+      0.52,
+      0.93,
+      1.45,
+      1.65,
+      2.14,
+      2.67,
+      3.24,
+      3.84,
+      4.46,
+      5.09,
+      5.72,
+      6.33,
+      6.93,
+      7.49,
+      8.01,
+      8.48,
+      8.89,
+      9.24,
+      9.38,
+      9.8,
+      10.14,
+      10.4,
+      10.58,
+      10.67,
+      10.7,
+      10.7
+    ],
+    "z_left": [
+      6.2,
+      5.36,
+      4.53,
+      3.7,
+      2.91,
+      2.18,
+      1.52,
+      1.32,
+      0.92,
+      0.59,
+      0.32,
+      0.14,
+      0.03,
+      0.0
+    ],
+    "z_right": [
+      8.17,
+      7.36,
+      6.54,
+      5.72,
+      4.93,
+      4.15,
+      3.41,
+      2.7,
+      2.45,
+      1.92,
+      1.45,
+      1.03,
+      0.68,
+      0.39,
+      0.18,
+      0.05
+    ]
+  },
+  "unverified": [
+    "no text layer | values read from renders",
+    "side_heights: two unlabelled heights on side view"
+  ]
+}
