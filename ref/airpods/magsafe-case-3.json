@@ -1,0 +1,71 @@
+{
+  "product": "MagSafe Charging Case for AirPods (3rd generation)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/magsafe-charging-case-for-airpods-3rd-generation.pdf",
+    "file": "extract/pdf/magsafe-charging-case-for-airpods-3rd-generation.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2022-04-26",
+    "sheets": 1
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": null,
+  "notes": {
+    "1": "accessories intruding into shaded regions will negatively affect product performance",
+    "2": "do not obstruct this area with metal or other conductive material",
+    "3": "minimize material thickness for charging performance"
+  },
+  "body": {
+    "width": 54.4,
+    "height": 46.4,
+    "thickness": 21.4,
+    "note": "sheet labels 54.4 as product height in the front view; it is the width"
+  },
+  "lid": {
+    "open_angle_nominal": 115.0,
+    "open_shaded_height": 19.1,
+    "open_shaded_width": 54.4,
+    "hinge_side_width": 54.2,
+    "note": 1
+  },
+  "led": {
+    "outer_diameter": 0.8,
+    "keepout_diameter": 2.8,
+    "from_bottom": 23.2,
+    "note": 1
+  },
+  "lid_seam_keepout": {
+    "width": 42.1,
+    "above_seam": 1.0,
+    "below_top": 7.9,
+    "note": 1,
+    "note_text": "recommended | varies with accessory material thickness"
+  },
+  "button": {
+    "outer_diameter": 5.95,
+    "recommended_keepout_diameter": 7.95,
+    "from_left": 18.45,
+    "note": 1
+  },
+  "bottom": {
+    "lightning_keepout": [
+      13.65,
+      6.85
+    ],
+    "connector": "Lightning",
+    "note": 1
+  },
+  "wireless_charging_keepout": {
+    "width": 46.4,
+    "height": 38.4,
+    "bottom_inset": 4.0,
+    "note": 2
+  },
+  "qi_charger": {
+    "rule": "minimize material between the bottom side of the case and the wireless charger",
+    "note": 3
+  },
+  "unverified": [
+    "no text layer | values read from renders"
+  ]
+}
