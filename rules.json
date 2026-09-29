@@ -286,7 +286,7 @@
           "source": "ADG 23.1 table 23-3 (R13), 26.1 tables 26-3 and 26-5 (R16)"
         }
       ],
-      "case": "MS_FLOOR 0.85, magnet 0.55 thick, 0.55 from the device",
+      "case": "MS_FLOOR 0.80, inside both the current 0.85 and the R13-R16 0.80; magnet 0.55 thick, 0.55 from the device",
       "checked": "assert pocket depth >= MS_T + 0.5"
     },
     {
