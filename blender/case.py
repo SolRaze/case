@@ -62,6 +62,11 @@ GLASS_GAP = 1.0        # exposed glass to any flat surface: 0.85 min, 1.0 ideal 
 MIN_GAP = 0.85
 PROUD = GLASS_GAP      # how far the rim stands above the front glass plane
 RING_W = 1.5           # raised ring round the camera window, holds the lens off a table
+EDGE_BACK = 1.8        # round on the back edge of the case, CLEAR + WALL
+EDGE_FRONT = 0.8       # round on the outer edge of the front rim
+RIM_FLARE = 0.4        # the front opening opens this much wider at the rim top
+WINDOW_FLARE = 0.4     # the camera window opens this much wider at the ring top
+RECEIVER_BLEND = 4.0   # the receiver dip eases back up to the rim over this, each side
 BUTTON_MARGIN = 0.75   # extra window each end of a button
 BUTTON_RAIL = 1.3      # wall left above and below a button window
 FEATURE_MARGIN = 1.2   # around the rear camera cluster
@@ -205,6 +210,26 @@ def slot(w, h, n=SEG // 2):
             for a in (a0 + math.pi * i / n for i in range(n + 1))]
 
 
+def hull(pts):
+    """Convex hull, counterclockwise."""
+    pts = sorted(set(pts))
+
+    def half(seq):
+        out = []
+        for q in seq:
+            while len(out) > 1 and ((out[-1][0] - out[-2][0]) * (q[1] - out[-2][1])
+                                    - (out[-1][1] - out[-2][1]) * (q[0] - out[-2][0])) <= 1e-9:
+                out.pop()
+            out.append(q)
+        return out[:-1]
+    return half(pts) + half(pts[::-1])
+
+
+def quarter(n=8):
+    """(across, up) on a quarter round of radius 1, from its side to its top."""
+    return [(1 - math.sin(math.pi / 2 * i / n), 1 - math.cos(math.pi / 2 * i / n)) for i in range(n + 1)]
+
+
 def cylinder(cx, cy, r, z0, z1):
     return prism(circle(r, cx, cy), z0, z1)
 
@@ -246,8 +271,9 @@ def build(name="17e", style="case", **knobs):
     SCRATCH = bpy.data.collections.new("case-scratch")
     bpy.context.scene.collection.children.link(SCRATCH)
 
+    OUT = CLEAR + WALL
     ring = pb.plan_outline(p["corner"], W, L)
-    outer = offset(ring, -(CLEAR + WALL))
+    outer = offset(ring, -OUT)
     inner = offset(ring, -CLEAR)
     front = offset(ring, LIP)
 
@@ -255,11 +281,18 @@ def build(name="17e", style="case", **knobs):
     Z_CASE_BACK = Z_BACK - BACK
     Z_LENS = Z_BACK - p["lens_z"]
     Z_RING = Z_LENS - GLASS_GAP
-    OUT = CLEAR + WALL
 
-    part = prism(outer, Z_CASE_BACK, PROUD)
+    def body(z0, z1, back=EDGE_BACK, top=EDGE_FRONT):
+        """Outer shape from z0 (back) to z1 (front), both edges rounded."""
+        rings = [(z0 + back * v, back * a) for a, v in quarter()]
+        rings += [(z1 - top * v, top * a) for a, v in quarter()[::-1]]
+        rings = [r for i, r in enumerate(rings) if not i or r != rings[i - 1]]
+        return loft([[(x, y, z) for x, y in offset(ring, -OUT + d)] for z, d in rings])
+
+    part = body(Z_CASE_BACK, PROUD)
     part -= prism(inner, Z_BACK, 0.0)
-    part -= prism(front, 0.0, PROUD)
+    part -= loft([[(x, y, z) for x, y in r] for r, z in
+                  ((front, -0.01), (front, PROUD - RIM_FLARE), (offset(ring, LIP - RIM_FLARE), PROUD + 0.01))])
 
     def edge_port(w, h, cx, cz, top, shape=slot):
         """Opening w along x, h along z through the top or bottom wall, with the
@@ -288,11 +321,16 @@ def build(name="17e", style="case", **knobs):
     for x0, x1 in groups:
         part -= edge_port(x1 - x0 + 2 * PORT_OFFSET, sd + 2 * PORT_OFFSET, (x0 + x1) / 2, sz, top=False)
 
-    # Receiver slot notch up through the rim.
+    # Receiver: a dip in the top rim, flat over the slot and easing back up to the rim top.
     rw, rz = p["receiver"]
     rec_z0 = rz[1] - RECEIVER_CLEAR
-    rec_z1 = PROUD + 1
-    part -= edge_port(rw + 2 * RECEIVER_CLEAR, rec_z1 - rec_z0, W / 2, (rec_z0 + rec_z1) / 2, top=True, shape=rect)
+    half_w, n = rw / 2 + RECEIVER_CLEAR, 12
+    ease = [(half_w + RECEIVER_BLEND * i / n,
+             rec_z0 + (PROUD + 0.02 - rec_z0) * (1 - math.cos(math.pi * i / n)) / 2) for i in range(n + 1)]
+    X = half_w + RECEIVER_BLEND + 1
+    dip = ([(-X, PROUD + 2), (-X, PROUD + 0.02)] + [(-u, z) for u, z in ease[::-1]]
+           + ease + [(X, PROUD + 0.02), (X, PROUD + 2)])
+    part -= loft([[(W / 2 + u, y, z) for u, z in dip] for y in (OUT + 1, -LIP - CLEAR - 2)])
 
     # Buttons: windows, slot, keys, closed.
     bw, zc = p["bx"]
@@ -305,7 +343,9 @@ def build(name="17e", style="case", **knobs):
                     min(b for s_, _, b in windows if s_ == side))
                    for side in sorted({s_ for s_, _, _ in windows})]
     for side, top, bot in windows:
-        part -= side_box(side, -thru, thru, top + BUTTON_MARGIN, bot - BUTTON_MARGIN, zc - half, zc + half)
+        x0, x1 = (W - thru, W + thru) if side == "right" else (thru, -thru)
+        length = top - bot + 2 * BUTTON_MARGIN
+        part -= loft([[(x, (top + bot) / 2 + u, zc + v) for u, v in slot(length, 2 * half)] for x in (x0, x1)])
     for b in p["buttons"]:
         if b["name"] not in KEYS + CLOSED:
             continue
@@ -339,6 +379,11 @@ def build(name="17e", style="case", **knobs):
     cam_w = max(xs) - min(xs) + 2 * FEATURE_MARGIN
     cam_l = max(ys) - min(ys) + 2 * FEATURE_MARGIN
     cam_x, cam_y = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+    pts = [q for cx, cy, d in feats for q in circle(d / 2 + FEATURE_MARGIN, cx, cy)]
+    if isinstance(p["plateau"], tuple):
+        x0, x1, y0, y1 = p["plateau"]
+        pts += rounded(x1 - x0 + 2 * FEATURE_MARGIN, y1 - y0 + 2 * FEATURE_MARGIN, 4.0 + FEATURE_MARGIN,
+                       (x0 + x1) / 2, (y0 + y1) / 2)
 
     Z_FLASH = Z_BACK - p["flash_z"]
     fi_a, fi_d = p["flash_inner"]
@@ -358,6 +403,9 @@ def build(name="17e", style="case", **knobs):
         if p["flash"]:
             out.append((p["flash"][0], p["flash"][1], flash_r(z)))
         return out
+
+    # Window: the cluster and every light cone where it leaves the back face.
+    cam = hull(pts + [q for cx, cy, r in cone_edges(Z_CASE_BACK) for q in circle(r + 0.2, cx, cy)])
 
     slider = None
     if SLIDER:
@@ -389,20 +437,23 @@ def build(name="17e", style="case", **knobs):
             part -= prism(offset(ring, BACK_BAND - PLATE_LEDGE), Z_BACK - PLATE_T, Z_BACK)
         if CAMERA == "fitted":
             spine_bot = (rail_bot if SLIDER else cam_y - cam_l / 2 - RING_W) - SPINE_W
-            part += span(-10, W + 10, 10, spine_bot, Z_CASE_BACK, Z_BACK) & prism(outer, Z_CASE_BACK, Z_BACK)
+            part += span(-10, W + 10, 10, spine_bot, Z_CASE_BACK, Z_BACK) & body(Z_CASE_BACK, PROUD)
 
     def top_band(depth):
         return span(-10, W + 10, 10, -depth, -50, 50)
 
     if CAMERA == "fitted":
-        part += prism(rounded(cam_w + 2 * RING_W, cam_l + 2 * RING_W, 4.0 + RING_W, cam_x, cam_y),
-                      Z_RING, Z_CASE_BACK + 0.5)
+        # Ring round the hull of the cluster, its outer edge a round as high as the ring stands.
+        h = Z_CASE_BACK - Z_RING
+        prof = [(Z_CASE_BACK + 0.5, RING_W + h)] + [(Z_CASE_BACK - h * (1 - a), RING_W + h * (1 - v)) for a, v in quarter()]
+        part += loft([[(x, y, z) for x, y in offset(cam, -d)] for z, d in prof])
         if SLIDER:
             part += rails & prism(outer, z_lip - 1, 0)
-        window = prism(rounded(cam_w, cam_l, 4.0, cam_x, cam_y), Z_BACK - BACK / 2 - BACK - 4, Z_BACK - BACK / 2 + BACK + 4)
+        window = loft([[(x, y, z) for x, y in offset(cam, -d)] for z, d in
+                       ((Z_BACK + 1, 0), (Z_RING + WINDOW_FLARE, 0), (Z_RING - 0.01, WINDOW_FLARE + 0.01))])
     else:
         assert cam_y - cam_l / 2 >= -UNI_L, "camera reaches past the universal window"
-        part += top_band(UNI_L + RING_W) & prism(outer, Z_RING, Z_CASE_BACK + 0.5)
+        part += top_band(UNI_L + RING_W) & body(Z_RING, Z_CASE_BACK + 0.5, min(EDGE_BACK, Z_CASE_BACK - Z_RING), 0)
         window = top_band(UNI_L) & prism(offset(ring, UNI_INSET), Z_RING - 1, Z_BACK)
     part -= window
 
