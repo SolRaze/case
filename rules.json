@@ -238,6 +238,15 @@
       "ideal": 1.0,
       "unit": "mm",
       "source": "ADG 5.1.1",
+      "older": [
+        {
+          "releases": "R1-R11",
+          "min": 1.0,
+          "unit": "mm",
+          "text": "exposed glass must not come within 1 mm of a flat surface; no separate ideal",
+          "source": "ADG 3.1.1 (R1-R7), 5.1.1 (R10-R11)"
+        }
+      ],
       "case": "GLASS_GAP 1.0; rim PROUD 1.0 over the front glass, camera ring 1.0 past the lens cover",
       "checked": "check(): front glass, lens cover and back glass points against the convex hull, every build"
     },
@@ -268,6 +277,15 @@
       "max": 0.85,
       "unit": "mm",
       "source": "ADG 42.1 fig 42-3",
+      "older": [
+        {
+          "releases": "R13-R16",
+          "max": 0.8,
+          "unit": "mm",
+          "text": "case magnet array flux measured on the accessory side at 0.80 mm from the magnet surface, device side at 0.55",
+          "source": "ADG 23.1 table 23-3 (R13), 26.1 tables 26-3 and 26-5 (R16)"
+        }
+      ],
       "case": "MS_FLOOR 0.85, magnet 0.55 thick, 0.55 from the device",
       "checked": "assert pocket depth >= MS_T + 0.5"
     },
