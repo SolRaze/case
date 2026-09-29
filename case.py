@@ -377,7 +377,9 @@ def build(name="17e", style="case", **knobs):
     cam_w = max(xs) - min(xs) + 2 * FEATURE_MARGIN
     cam_l = max(ys) - min(ys) + 2 * FEATURE_MARGIN
     cam_x, cam_y = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
-    pts = [q for cx, cy, d in feats for q in circle(d / 2 + FEATURE_MARGIN, cx, cy)]
+    # The bump: every lens and the plateau they stand on. Flash and mic outside it get
+    # their own flush hole in the back.
+    pts = [q for cx, cy, d in p["lenses"] for q in circle(d / 2 + FEATURE_MARGIN, cx, cy)]
     if isinstance(p["plateau"], tuple):
         x0, x1, y0, y1 = p["plateau"]
         pts += rounded(x1 - x0 + 2 * FEATURE_MARGIN, y1 - y0 + 2 * FEATURE_MARGIN, 4.0 + FEATURE_MARGIN,
@@ -402,8 +404,11 @@ def build(name="17e", style="case", **knobs):
             out.append((p["flash"][0], p["flash"][1], flash_r(z)))
         return out
 
-    # Window: the cluster and every light cone where it leaves the back face.
-    cam = hull(pts + [q for cx, cy, r in cone_edges(Z_CASE_BACK) for q in circle(r + 0.2, cx, cy)])
+    cam = hull(pts)
+
+    def inside(x, y):
+        return all((bx - ax) * (y - ay) - (by - ay) * (x - ax) >= 0 for (ax, ay), (bx, by) in zip(cam, cam[1:] + cam[:1]))
+    loose = [f for f in feats[len(p["lenses"]):] if not inside(f[0], f[1])]
 
     slider = None
     if SLIDER:
@@ -441,7 +446,7 @@ def build(name="17e", style="case", **knobs):
         return span(-10, W + 10, 10, -depth, -50, 50)
 
     if CAMERA == "fitted":
-        # Ring round the hull of the cluster, its outer edge a round as high as the ring stands.
+        # Ring round the bump, its outer edge a round as high as the ring stands.
         h = Z_CASE_BACK - Z_RING
         prof = [(Z_CASE_BACK + 0.5, RING_W + h)] + [(Z_CASE_BACK - h * (1 - a), RING_W + h * (1 - v)) for a, v in quarter()]
         part += loft([[(x, y, z) for x, y in offset(cam, -d)] for z, d in prof])
@@ -449,6 +454,10 @@ def build(name="17e", style="case", **knobs):
             part += rails & prism(outer, z_lip - 1, 0)
         window = loft([[(x, y, z) for x, y in offset(cam, -d)] for z, d in
                        ((Z_BACK + 1, 0), (Z_RING + WINDOW_FLARE, 0), (Z_RING - 0.01, WINDOW_FLARE + 0.01))])
+        if loose:
+            hole = hull([q for cx, cy, d in loose for q in circle(d / 2 + FEATURE_MARGIN, cx, cy)])
+            window += loft([[(x, y, z) for x, y in offset(hole, -d)] for z, d in
+                            ((Z_BACK + 1, 0), (Z_CASE_BACK + WINDOW_FLARE, 0), (Z_CASE_BACK - 0.01, WINDOW_FLARE + 0.01))])
     else:
         assert cam_y - cam_l / 2 >= -UNI_L, "camera reaches past the universal window"
         part += top_band(UNI_L + RING_W) & body(Z_RING, Z_CASE_BACK + 0.5, min(EDGE_BACK, Z_CASE_BACK - Z_RING), 0)
