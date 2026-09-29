@@ -1,0 +1,282 @@
+{
+  "product": "Apple Watch Series 9, 41 mm",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-watch-series-9-41mm.pdf",
+    "file": "extract/pdf/apple-watch-series-9-41mm.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2023-10-10",
+    "sheets": 1
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": null,
+  "tolerance_note": "all dimensions for reference only",
+  "notes": {
+    "1": "case does not interfere with click or rotation of digital crown | no force on crown | does not obstruct crown face",
+    "2": "case does not obstruct acoustic openings and altimeter | must not degrade acoustic or water ejection performance",
+    "3": "no metal cases | antenna function",
+    "4": "case does not obstruct charging interface",
+    "5": "case does not obstruct optical sensors",
+    "6": "case does not extend beyond sensor windows",
+    "7": "case does not contact cover glass",
+    "8": "case does not contact electrical sensors",
+    "9": "case does not interfere with click function of button",
+    "10": "case does not contain ferromagnetic material"
+  },
+  "frames": {
+    "plan": "front view, case centre at 0,0 | y up toward 12 o'clock",
+    "crown_side": "crown side view | y from the case centreline (0.00 at the crown axis row) | z from the display glass",
+    "corner_table": "detail B corner profile, one quadrant mirrored to all four corners | x from the side edge, y from the bottom edge",
+    "profile_table": "detail C edge profile, all sides | x across the thickness, z up from the back datum"
+  },
+  "body": {
+    "width": 34.77,
+    "height": 40.85,
+    "cover_glass_width": 31.15,
+    "cover_glass_height": 37.23,
+    "apex_of_dome_to_display_glass": 12.74,
+    "flat_of_back_to_display_glass": 11.54
+  },
+  "display_active_area": {
+    "width": 27.78,
+    "height": 33.86,
+    "note": "when viewed from top"
+  },
+  "cover_glass": {
+    "no_contact_band": 1.45,
+    "note": 7
+  },
+  "digital_crown": {
+    "dial_diameter": 7.5,
+    "dial_keepout_diameter": 9.5,
+    "center_y": 7.96,
+    "center_z": 5.03,
+    "keepout_width": 9.41,
+    "keepout_rule": "no thickness in shown area",
+    "notes": [
+      1
+    ]
+  },
+  "mic": {
+    "port_keepout_diameter": 3.0,
+    "port_center_y": 0.0,
+    "port_center_z": 1.56,
+    "section_Z": {
+      "angle": 60.0,
+      "offset": 0.99,
+      "all_around": 1.0,
+      "rule": "do not seal or protrude object into hole"
+    },
+    "note": 2
+  },
+  "side_button": {
+    "top_y": -0.87,
+    "center_y": -6.37,
+    "bottom_y": -11.87,
+    "z": [
+      3.15,
+      7.15
+    ],
+    "side_width": 10.7,
+    "note": 9
+  },
+  "speaker_altimeter": {
+    "y": [
+      7.06,
+      0.58,
+      -0.58,
+      -7.05
+    ],
+    "keepout_all_around": 1.0,
+    "rule": "no thickness in shown area",
+    "section_K": {
+      "angles": [
+        15.65,
+        60.0
+      ],
+      "all_around": 1.0,
+      "depth": 0.76
+    },
+    "note": 2
+  },
+  "back": {
+    "dome_diameter": 23.2,
+    "electrical_sensor_keepout": 1.0,
+    "band_release_buttons_y": [
+      15.6,
+      -15.6
+    ],
+    "note": 8
+  },
+  "charging": {
+    "max_offset_from_puck_center": 0.86,
+    "note": 4
+  },
+  "optical_sensor_keepout": {
+    "offsets": [
+      1.0,
+      1.0
+    ],
+    "height": 0.84,
+    "rule": "no thickness below this line, all around",
+    "note": 6
+  },
+  "corner_profile": {
+    "detail": "B",
+    "x": [
+      0.0,
+      0.01,
+      0.05,
+      0.11,
+      0.23,
+      0.44,
+      0.78,
+      1.28,
+      1.94,
+      2.75,
+      3.68,
+      4.73,
+      5.86,
+      7.05,
+      8.28,
+      9.52,
+      10.76,
+      12.01,
+      13.25,
+      14.5
+    ],
+    "y": [
+      13.38,
+      12.13,
+      10.89,
+      9.65,
+      8.41,
+      7.18,
+      5.98,
+      4.84,
+      3.79,
+      2.84,
+      2.02,
+      1.35,
+      0.83,
+      0.47,
+      0.25,
+      0.12,
+      0.05,
+      0.02,
+      0.0
+    ]
+  },
+  "display_corner_profile": {
+    "detail": "B",
+    "x": [
+      0.0,
+      0.02,
+      0.06,
+      0.14,
+      0.28,
+      0.53,
+      0.94,
+      1.52,
+      2.25,
+      3.1,
+      4.03,
+      5.01,
+      6.01,
+      7.01,
+      8.01,
+      9.01
+    ],
+    "y": [
+      8.7,
+      7.7,
+      6.7,
+      5.7,
+      4.71,
+      3.74,
+      2.83,
+      2.01,
+      1.33,
+      0.8,
+      0.45,
+      0.23,
+      0.12,
+      0.05,
+      0.02,
+      0.0
+    ]
+  },
+  "edge_profile": {
+    "detail": "C",
+    "x": [
+      0.0,
+      0.02,
+      0.21,
+      0.45,
+      0.8,
+      1.27,
+      1.45,
+      1.91,
+      2.43,
+      2.99,
+      3.59,
+      4.21,
+      4.84,
+      5.48,
+      6.12,
+      6.8,
+      7.45,
+      8.06,
+      8.61,
+      9.09,
+      9.41,
+      9.54,
+      9.88,
+      10.16,
+      10.4,
+      10.57,
+      10.66,
+      10.7,
+      10.7
+    ],
+    "z_left": [
+      7.25,
+      6.43,
+      5.61,
+      4.79,
+      3.99,
+      3.21,
+      2.47,
+      1.8,
+      1.6,
+      1.16,
+      0.78,
+      0.47,
+      0.24,
+      0.08,
+      0.0
+    ],
+    "z_right": [
+      7.44,
+      6.66,
+      5.88,
+      5.15,
+      4.45,
+      3.76,
+      3.14,
+      2.55,
+      2.32,
+      1.88,
+      1.36,
+      0.91,
+      0.55,
+      0.27,
+      0.0
+    ]
+  },
+  "unverified": [
+    "no text layer | values read from renders",
+    "detail B case corner prints 20 x and 19 y ordinates as read; stored as printed",
+    "31.15 x 37.23 read as the cover glass outline"
+  ]
+}
