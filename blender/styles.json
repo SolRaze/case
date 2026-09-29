@@ -1,0 +1,67 @@
+{
+  "case": {
+    "knobs": {},
+    "output": "part",
+    "about": "full case: a window per button, fitted camera ring, full back"
+  },
+  "slot": {
+    "knobs": {"BUTTONS": "slot"},
+    "output": "part",
+    "about": "one button slot per side, fitted camera, full back"
+  },
+  "magsafe": {
+    "knobs": {"MAGSAFE": "ring", "KEYS": ["action", "side_power"]},
+    "output": "part",
+    "about": "pockets for the ADG 42.1 magnet array, glued in from the phone side; action and side buttons as flexure keys where the phone has them"
+  },
+  "sides": {
+    "knobs": {"WALLS": "sides", "KEYS": ["action", "side_power"]},
+    "output": "part",
+    "about": "top and bottom walls open between the corners"
+  },
+  "corners": {
+    "knobs": {"WALLS": "corners", "BUTTONS": "slot"},
+    "output": "part",
+    "about": "held at the four corners only, walls open between them"
+  },
+  "frame": {
+    "knobs": {"BUTTONS": "slot", "CAMERA": "universal", "BACK_BAND": 8.0},
+    "output": "part",
+    "about": "back kept as an 8 mm band round the edge, universal top-band camera window"
+  },
+  "backless": {
+    "knobs": {"BUTTONS": "slot", "CAMERA": "universal", "BACK_BAND": 1.5},
+    "output": "part",
+    "about": "side walls with a 1.5 mm band of back, universal top-band camera rim"
+  },
+  "plateframe": {
+    "knobs": {"BUTTONS": "slot", "CAMERA": "universal", "BACK_BAND": 8.0, "PLATE": true},
+    "output": "part",
+    "about": "frame with a rebate for the swap-in back plate"
+  },
+  "plate": {
+    "knobs": {"BUTTONS": "slot", "CAMERA": "universal", "BACK_BAND": 8.0, "PLATE": true},
+    "output": "plate",
+    "about": "1 mm swap-in back plate for plateframe, dropped in from the phone side and held by the phone"
+  },
+  "spine": {
+    "knobs": {"BUTTONS": "slot", "BACK_BAND": 1.5, "SLIDER": true},
+    "output": "part",
+    "about": "1.5 mm band and a full-width strip across the fitted camera ring carrying slider rails"
+  },
+  "slider": {
+    "knobs": {"BUTTONS": "slot", "BACK_BAND": 1.5, "SLIDER": true},
+    "output": "slider",
+    "about": "lens cover for spine, printed flat on its outside face, slides down clear of the lens and flash keepouts"
+  },
+  "cig": {
+    "knobs": {"CIG": true},
+    "output": "part",
+    "about": "snap clip for one unlit cigarette along the right edge of the back; PETG softens near 80 C"
+  },
+  "corner": {
+    "knobs": {"COUPON": 45.0},
+    "output": "part",
+    "about": "bottom-right corner only, 45 mm of each edge: squircle corner, USB-C edge and speaker group, a fit test that prints in minutes"
+  }
+}

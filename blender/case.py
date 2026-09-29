@@ -1,24 +1,38 @@
-"""Parametric phone case in Blender: the geometry of parts/case.py for any phone in
-ref/iphone/sizes.json. 1 unit = 1 mm.
+"""Phone case for any phone in ref/iphone/sizes.json, the print source. 1 unit = 1 mm.
 
-build123d stays the print source. This file reads the dimension constants and knob
-defaults out of case.py, and the style knob sets (STYLE) out of the case-* part files,
-with ast, so a value changed there changes here. Phones come from extract/phones.py,
-the loader case.py uses. The geometry below follows case.py block by block; change
-the two together.
+Geometry comes from the drawing JSON, not from measurement: extract/phones.py reads a
+phone out of ref/iphone/, and the Accessory Design Guidelines (extract/pdf/adg.pdf,
+fetched by extract/fetch.py) set the limits, cited below as ADG: chapter 5 "Cases"
+(pages 32-46) and 42.1 "MagSafe Case Magnet Array" (pages 269-272).
 
-Frame as case.py: x 0..W across the front, y 0..-L down, z 0 at the front glass.
+Frame: x 0..W across the front, y 0..-L down the length, z 0 at the front cover-glass
+plane and -T at the back face.
 
-Live, from Blender's python console, with the repo as the working directory:
-    ns = runpy.run_path("blender/case.py")
-    ns["build"]("16", "magsafe", WALLS="sides")      # phone, style, knob overrides
-    ns["check"](obj, ...)                             # manifold, one solid, glass gap
-Headless (Blender, or python with the bpy wheel), writes case.blend beside this file
-(gitignored):
-    python blender/case.py -- [phone ...] [style ...] [--all] [--png DIR]
+Knobs, defaults in KNOBS; a style in blender/styles.json is a named knob set.
+  BUTTONS    "windows" one window per button | "slot" one window per side
+  KEYS       button names printed as flexure keys that press through the wall;
+             names this phone lacks are dropped
+  CLOSED     button names covered, the wall relieved so it never presses them
+  CAMERA     "fitted" ring round this cluster | "universal" full-width top band
+  BACK_BAND  None full back | mm of back kept round the edge
+  PLATE      the band carries an inside rebate for a swap-in back plate, `plate`
+  WALLS      "full" | "sides" top and bottom walls open | "corners" corners only
+  MAGSAFE    None | "ring" pockets for the ADG 42.1 magnet array | "open" hole
+  SLIDER     lens cover sliding down rails on a raised track, `slider`
+  CIG        cigarette clip along the right edge of the back
+  COUPON     None | mm of each edge kept round the bottom-right corner, a fit test
+A fitted camera on a banded back stands on a spine, a full-width strip of back
+across the camera, which also carries the slider rails. ref/rules.json lists the
+valid combinations; the asserts in build() are the same rules.
+
+    python blender/case.py -- --phone 17e [--style magsafe ...] [--out out] [--png previews]
+
+builds each style, checks it (manifold, one solid, glass gap) and writes
+out/<phone>/<style>.stl and a PNG preview. Exit status 1 when a check fails.
+From an interactive session: ns = runpy.run_path("blender/case.py"), then
+ns["build"]("16", "magsafe", WALLS="sides") and ns["check"](obj).
 """
 
-import ast
 import importlib.util
 import json
 import math
@@ -26,48 +40,70 @@ import sys
 from pathlib import Path
 
 import bpy
-import bmesh  # after bpy: the pip bpy wheel only exposes bmesh once bpy is loaded
+import bmesh
 import numpy as np
+from mathutils import Matrix, Vector
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "parts/case.py"
 PHONES = ROOT / "extract/phones.py"
-BLEND = Path(__file__).resolve().parent / "case.blend"
+STYLES = Path(__file__).resolve().with_name("styles.json")
+RULES = ROOT / "ref/rules.json"
 SOLVER = "MANIFOLD"   # every operand is a closed loft, which is all this solver needs
 SEG = 64              # segments per full circle
 
+CLEAR = 0.25   # phone to inner wall, all round
+WALL = 1.55    # side wall. CLEAR + WALL is the bottom, 1.8 max for docks (ADG 5.1.3)
+BACK = 2.0     # 2.1 is the Apple hard limit for backside thickness
+LIP = 0.5      # rim reaches this far in over the phone's rolled front edge, clear
+               # of the glass edge at 1.05. Rigid print (PETG/PLA): the phone snaps
+               # past it by bowing the long walls LIP each side, and it retains only
+               # while LIP > CLEAR. PLA cracks sooner, 0.35 there
+GLASS_GAP = 1.0        # exposed glass to any flat surface: 0.85 min, 1.0 ideal (ADG 5.1.1)
+MIN_GAP = 0.85
+PROUD = GLASS_GAP      # how far the rim stands above the front glass plane
+RING_W = 1.5           # raised ring round the camera window, holds the lens off a table
+BUTTON_MARGIN = 0.75   # extra window each end of a button
+BUTTON_RAIL = 1.3      # wall left above and below a button window
+FEATURE_MARGIN = 1.2   # around the rear camera cluster
+PORT_OFFSET = 2.0      # speaker/mic opening past the port edge, thin case (ADG 5.2.3.1)
+PORT_LAND = 0.6        # straight wall at an opening's inner edge, 1.5 max (ADG 5.2.3.1)
+RECEIVER_CLEAR = 0.35  # round the receiver slot, which the rim notch leaves open forward
+UNI_L = 48.0           # universal camera window, full width, this deep from the top edge.
+                       # Deepest plateau drawn is 46.54 (15 Pro, 16 Pro Max); 17 Pro Max is full width
+UNI_INSET = 0.5        # universal window edge in from the phone outline; plateaus start 1.04 in
 
-def consts(knobs):
-    """case.py's upper-case top-level assignments, evaluated in order with the
-    knobs pre-set, the way runpy init_globals feeds them. Lines needing the phone
-    fail to evaluate and are skipped."""
-    ns = dict(knobs)
-    for node in ast.parse(SOURCE.read_text()).body:
-        if not (isinstance(node, ast.Assign) and len(node.targets) == 1
-                and isinstance(node.targets[0], ast.Name) and node.targets[0].id.isupper()):
-            continue
-        try:
-            ns[node.targets[0].id] = eval(compile(ast.Expression(node.value), str(SOURCE), "eval"), ns)
-        except (NameError, AttributeError):
-            pass
-    ns.pop("__builtins__", None)
-    return ns
+KEY_GAP = 0.2          # button top to the relieved wall face
+KEY_NUB = 0.15         # nub on a key, reaches KEY_GAP - KEY_NUB from the button top
+KEY_SLOT = 0.6         # cut round a key tab
+KEY_HINGE = 6.0        # key tab length past the window, hinged at the top end;
+                       # 0.35 press at the nub strains the 1.15 tab about 0.5 %
+CORNER_L = 20.0        # WALLS "sides"/"corners": wall kept this far along each edge from a corner
+SPINE_W = 4.0          # spine past the camera ring
+PLATE_T = 1.0          # swap-in back plate, the band keeps BACK - PLATE_T as its ledge
+PLATE_LEDGE = 3.0      # ledge the plate rests on, inside the band opening
+PLATE_CLR = 0.2        # plate to rebate, each side
+SL_T = 1.2             # slider plate
+SL_CLR = 0.3           # slider to rail web, and slider to rail lip
+RAIL_W = 1.5           # rail web
+RAIL_LIP = 1.0         # rail lip over the slider edge
+RAIL_LIP_T = 0.8
+MS_FLOOR = 0.85        # magnet to case outside, 0.85 max (ADG 42.1 fig 42-3)
+MS_T = 0.55            # magnet thickness (ADG fig 42-3)
+MS_CLR = 0.1           # magnet pocket, each side
+MS_OPEN_D = 60.0       # "open" hole, a MagSafe charger puck seats on the phone
+CIG_D = 8.0            # king size 7.9-8.0, slim 5.4
+CIG_WALL = 1.4
+CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
+CIG_LEN = 30.0
+CIG_Y = -120.0         # clip centre, below the MagSafe charger and clocking magnet
+
+KNOBS = {"BUTTONS": "windows", "KEYS": (), "CLOSED": (), "CAMERA": "fitted", "BACK_BAND": None,
+         "PLATE": False, "WALLS": "full", "MAGSAFE": None, "SLIDER": False, "CIG": False, "COUPON": None}
 
 
-def presets():
-    """{name: (STYLE, output)} from parts/case-*.py; `case` is the bare file.
-    case-corner cuts a coupon rather than setting knobs, so it has no entry."""
-    out = {"case": ({}, "part")}
-    for f in sorted(SOURCE.parent.glob("case-*.py")):
-        tree = ast.parse(f.read_text())
-        style = [n.value for n in tree.body if isinstance(n, ast.Assign)
-                 and any(isinstance(t, ast.Name) and t.id == "STYLE" for t in n.targets)]
-        if not style:
-            continue
-        sub = next(n.slice.value for n in ast.walk(tree)
-                   if isinstance(n, ast.Subscript) and isinstance(n.slice, ast.Constant))
-        out[f.stem.removeprefix("case-")] = (ast.literal_eval(style[0]), sub)
-    return out
+def styles():
+    """{name: {"knobs": {...}, "output": "part" | "plate" | "slider", "about": str}}."""
+    return json.loads(STYLES.read_text())
 
 
 def _module(name, path):
@@ -84,7 +120,7 @@ pb, offset, phone, phones = ph.pb, ph.offset, ph.phone, ph.phones
 # Solids ----------------------------------------------------------------------
 
 class S:
-    """A closed mesh with build123d's + - & operators, each a new boolean result."""
+    """A closed mesh with + - & as union, difference and intersection, each a new result."""
 
     def __init__(self, obj):
         self.obj = obj
@@ -152,7 +188,7 @@ def circle(r, cx=0.0, cy=0.0, n=SEG):
 
 
 def rounded(w, h, r, cx=0.0, cy=0.0, n=SEG // 4):
-    """build123d RectangleRounded."""
+    """Rectangle w x h with corners rounded to r, centred on cx, cy."""
     pts = []
     for k, (sx, sy) in enumerate(((1, 1), (-1, 1), (-1, -1), (1, -1))):
         ox, oy = cx + sx * (w / 2 - r), cy + sy * (h / 2 - r)
@@ -163,7 +199,7 @@ def rounded(w, h, r, cx=0.0, cy=0.0, n=SEG // 4):
 
 
 def slot(w, h, n=SEG // 2):
-    """build123d SlotOverall: w overall along the first axis, h across, round ends."""
+    """Obround w overall along the first axis, h across, round ends."""
     r = h / 2
     return [(sx * (w / 2 - r) + r * math.cos(a), r * math.sin(a))
             for sx, a0 in ((1, -math.pi / 2), (-1, math.pi / 2))
@@ -182,13 +218,12 @@ def keepout_cone(cx, cy, z0, r0, half_angle, z1):
 
 # Case ------------------------------------------------------------------------
 
-def build(name="17e", preset="case", **knobs):
-    """Every solid case.py makes for this phone and knob set, as objects in the
+def build(name="17e", style="case", **knobs):
+    """Every solid this phone, style and knob overrides make, as objects in the
     `case` collection: `part`, and `plate` / `slider` where the knobs make them."""
     global SCRATCH
-    base, _ = PRESETS[preset]
-    g = consts({**base, **knobs})
-    globals().update(g)
+    base = styles()[style]["knobs"]
+    globals().update({**KNOBS, **base, **knobs})
     p = phone(name)
     W, L, T = p["W"], p["L"], p["T"]
 
@@ -409,6 +444,9 @@ def build(name="17e", preset="case", **knobs):
                      CIG_Y + CIG_LEN, CIG_Y - CIG_LEN, ccz - r_out - 1, ccz)
         part += tube & prism(outer, Z_CASE_BACK - 30, Z_CASE_BACK + 0.5)
 
+    if COUPON:
+        part &= span(W - COUPON, W + COUPON, -L + COUPON, -L - COUPON, Z_CASE_BACK - 30, PROUD + 30)
+
     plate = None
     if PLATE:
         plate = prism(offset(ring, BACK_BAND - PLATE_LEDGE + PLATE_CLR), Z_BACK - PLATE_T, Z_BACK)
@@ -426,14 +464,14 @@ def build(name="17e", preset="case", **knobs):
     for key, s in (("part", part), ("plate", plate), ("slider", slider)):
         if s is None:
             continue
-        label = f"case-{name}-{preset}" + ("" if key == "part" else f"-{key}")
+        label = f"case-{name}-{style}" + ("" if key == "part" else f"-{key}")
         old = bpy.data.objects.get(label)
         if old:
             bpy.data.objects.remove(old)
         SCRATCH.objects.unlink(s.obj)
         col.objects.link(s.obj)
         s.obj.name = s.obj.data.name = label
-        s.obj["phone"], s.obj["preset"], s.obj["knobs"] = name, preset, json.dumps({**base, **knobs})
+        s.obj["phone"], s.obj["style"], s.obj["knobs"] = name, style, json.dumps({**base, **knobs})
         made[key] = s.obj
     for o in list(SCRATCH.objects):
         bpy.data.objects.remove(o)
@@ -447,7 +485,8 @@ def build(name="17e", preset="case", **knobs):
                        for lx, ly, d in p["lenses"] for t in np.linspace(0, 2 * math.pi, 180, endpoint=False)],
         "back glass": [(x, y, Z_BACK) for x in np.linspace(5, W - 5, 30) for y in np.linspace(-5, 5 - L, 60)],
     }
-    GLASS[made["part"].name] = glass
+    if not COUPON:
+        GLASS[made["part"].name] = glass
     for n in p["notes"]:
         print(f"{name}: {n}")
     return made
@@ -497,40 +536,118 @@ def glass_gap(obj, pts):
 
 
 def check(obj, glass=True):
+    """True when the mesh is closed, one piece, and every glass point stands at least
+    MIN_GAP off any flat surface the case rests on."""
     vol, bad, parts = solid_check(obj)
     line = f"{obj.name}: {vol / 1000:.2f} cm3, {bad} open edges, {parts} solid{'s' * (parts != 1)}"
     ok = bad == 0 and parts == 1 and vol > 0
     if glass and obj.name in GLASS:
         gaps = {k: glass_gap(obj, v) for k, v in GLASS[obj.name].items()}
         line += " | " + ", ".join(f"{k} {g:.3f}" for k, g in gaps.items())
-        ok &= all(g >= 0.85 - 1e-6 for g in gaps.values())
+        ok &= all(g >= MIN_GAP - 1e-6 for g in gaps.values())
     print(("ok   " if ok else "FAIL ") + line)
     return ok
 
 
-PRESETS = presets()
+# Output ----------------------------------------------------------------------
+
+def only(obj):
+    for o in bpy.context.scene.objects:
+        o.select_set(o == obj)
+        o.hide_render = o != obj and o.type == "MESH"
+    bpy.context.view_layer.objects.active = obj
+
+
+def export_stl(obj, path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    only(obj)
+    bpy.ops.wm.stl_export(filepath=str(path), export_selected_objects=True, ascii_format=False)
+
+
+def preview(obj, path, size=320):
+    """Solid-shaded view of the back, three-quarter from above the camera corner,
+    orthographic and framed on the object."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    s = bpy.context.scene
+    only(obj)
+    co = np.array([obj.matrix_world @ v.co for v in obj.data.vertices])
+    lo, hi = co.min(axis=0), co.max(axis=0)
+    mid = (lo + hi) / 2
+    cam = s.camera
+    if cam is None:
+        cam = bpy.data.objects.new("preview", bpy.data.cameras.new("preview"))
+        s.collection.objects.link(cam)
+        s.camera = cam
+        cam.data.type = "ORTHO"
+    look = np.array([0.45, 0.35, -1.0])
+    look /= np.linalg.norm(look)
+    up = np.array([0.0, 1.0, 0.0]) - look[1] * look      # phone top stays up
+    up /= np.linalg.norm(up)
+    rot = np.column_stack([np.cross(up, look), up, look])  # camera looks down its -Z
+    cam.matrix_world = Matrix.Translation(Vector(mid + look * 400)) @ Matrix(rot.tolist()).to_4x4()
+    cam.data.ortho_scale = float(max(hi - lo)) * 1.08
+    cam.data.clip_end = 2000
+    s.render.engine = "BLENDER_WORKBENCH"
+    s.display.shading.light = "STUDIO"
+    s.display.shading.color_type = "SINGLE"
+    s.display.shading.single_color = (0.62, 0.66, 0.72)
+    s.display.shading.show_cavity = True
+    s.render.film_transparent = True
+    s.render.resolution_x = s.render.resolution_y = size
+    s.render.image_settings.file_format = "PNG"
+    s.render.filepath = str(path)
+    bpy.ops.render.render(write_still=True)
+
+
+def invalid(name, style):
+    """Why ref/rules.json rules out this phone and style, or None."""
+    if not RULES.exists():
+        return None
+    rules = _module("rules", ROOT / "extract/rules.py")
+    return rules.why_invalid(name, style)
 
 
 def main():
     args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-    names = phones() if "--all" in args else [a for a in args if a in phones()] or ["17e"]
-    sets = [a for a in args if a in PRESETS] or list(PRESETS)
+
+    def opt(flag):
+        return [args[i + 1] for i, a in enumerate(args) if a == flag]
+
+    all_styles = styles()
+    names = opt("--phone") or ["17e"]
+    chosen = opt("--style") or list(all_styles)
+    out = Path(opt("--out")[0]) if opt("--out") else None
+    png = Path(opt("--png")[0]) if opt("--png") else None
     bpy.ops.wm.read_factory_settings(use_empty=True)
     s = bpy.context.scene
     s.unit_settings.system, s.unit_settings.scale_length, s.unit_settings.length_unit = "METRIC", 0.001, "MILLIMETERS"
-    for i, n in enumerate(names):
-        for j, pr in enumerate(sets):
-            try:
-                made = build(n, pr)
-            except AssertionError as e:
-                print(f"skip {n} {pr}: {e}")
+    failed = []
+    for n in names:
+        for st in chosen:
+            why = invalid(n, st)
+            if why:
+                print(f"skip {n} {st}: {why}")
                 continue
-            for k, o in enumerate(made.values()):
-                o.location = (j * 100 + k * 90, -i * 200, 0)
-                check(o)
-    bpy.ops.wm.save_as_mainfile(filepath=str(BLEND))
-    BLEND.with_suffix(".blend1").unlink(missing_ok=True)
-    print(f"saved {BLEND}")
+            try:
+                made = build(n, st)
+            except AssertionError as e:
+                print(f"FAIL {n} {st}: {e}")
+                failed.append(f"{n} {st}")
+                continue
+            obj = made[all_styles[st]["output"]]
+            if not check(obj):
+                failed.append(f"{n} {st}")
+            if out:
+                export_stl(obj, out / n / f"{st}.stl")
+            if png:
+                preview(obj, png / n / f"{st}.png")
+            for o in made.values():
+                bpy.data.objects.remove(o)
+            for m in [m for m in bpy.data.meshes if not m.users]:
+                bpy.data.meshes.remove(m)
+    if failed:
+        print(f"{len(failed)} failed: {', '.join(failed)}")
+        sys.exit(1)
 
 
 if __name__ == "__main__" and bpy.app.background:
