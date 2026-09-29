@@ -1,0 +1,770 @@
+{
+  "product": "iPhone 17",
+  "source": {
+    "file": "iphone-17.pdf",
+    "title": "iPhone 17 Dimensional Drawings",
+    "publisher": "Apple Inc.",
+    "sheet_date": "2025-09-09",
+    "sheets": 4,
+    "extracted_by": "sheets 1-2: text is vector outlines with no font, read off pdf-crop renders. sheets 3-4: ~/Projects/Assets/cad/extract/pdf-text.py plus pdf-crop for the view mapping",
+    "extracted_on": "2026-09-29",
+    "coordinate_note": null,
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-17.pdf"
+  },
+  "units": "mm",
+  "angle_units": "degrees",
+  "general_tolerance": null,
+  "datum": {
+    "origin": "top-left corner of the product outline, viewed from the front",
+    "x": "+X toward the right edge; product spans x 0 .. 71.45",
+    "y": "-Y down the length; product spans y 0 .. -149.61",
+    "z": "z 0 at the front cover-glass plane; -Z into the body. Back face at z = -7.95",
+    "confirmed_by": "island, receiver and magsafe centred on x 35.72, printed PRODUCT CENTER"
+  },
+  "body": {
+    "width": 71.45,
+    "length": 149.61,
+    "thickness": 7.95,
+    "edge_profile": {
+      "label": "detail B, bottom-edge section",
+      "symmetric_about_midplane": false,
+      "z_ordinates": [
+        3.93,
+        3.78,
+        3.39,
+        2.85,
+        2.27,
+        1.69,
+        0.0,
+        -1.69,
+        -2.28,
+        -2.86,
+        -3.4,
+        -3.79,
+        -3.93
+      ],
+      "x_offsets": {
+        "4X": 0.0,
+        "2X": [
+          0.05,
+          0.27,
+          0.7,
+          1.27
+        ]
+      },
+      "half_thickness": 3.975,
+      "pairing": [
+        {
+          "inward_offset": 0.0,
+          "z_from_midplane": [
+            1.69,
+            2.27,
+            -1.69,
+            -2.28
+          ]
+        },
+        {
+          "inward_offset": 0.05,
+          "z_from_midplane": [
+            2.85,
+            -2.86
+          ]
+        },
+        {
+          "inward_offset": 0.27,
+          "z_from_midplane": [
+            3.39,
+            -3.4
+          ]
+        },
+        {
+          "inward_offset": 0.7,
+          "z_from_midplane": [
+            3.78,
+            -3.79
+          ]
+        },
+        {
+          "inward_offset": 1.27,
+          "z_from_midplane": [
+            3.93,
+            -3.93
+          ]
+        }
+      ],
+      "pairing_note": "paired by count and tick order in detail B: 4X 0.00 takes the four inner ordinates, each 2X offset one front and one back ordinate. Front and back differ by 0.01 at three rows as printed.",
+      "face_inset": 2.41,
+      "face_inset_note": "ALL AROUND 2.41, exterior of housing to start of flat area on top side of product"
+    },
+    "corner": {
+      "type": "continuous curvature (squircle), not a circular arc",
+      "source": "detail A, CORNER PROFILE (ALL FOUR CORNERS)",
+      "plane": "XY plan view; x across the width from the side edge, y along the length from the end edge",
+      "dimensioned_points": [
+        [
+          0.0,
+          -19.23
+        ],
+        [
+          0.02,
+          -14.53
+        ],
+        [
+          0.48,
+          -9.87
+        ],
+        [
+          2.26,
+          -5.56
+        ],
+        [
+          5.56,
+          -2.26
+        ],
+        [
+          9.87,
+          -0.48
+        ],
+        [
+          14.53,
+          -0.02
+        ],
+        [
+          19.23,
+          0.0
+        ]
+      ],
+      "dimensioned_points_note": "the table is symmetric about the diagonal; points paired smallest x with largest y",
+      "polyline": null,
+      "applies_to": "all four corners, mirrored"
+    },
+    "concentric_plan_outlines": null
+  },
+  "glass": {
+    "front_glass_width": 69.45,
+    "front_glass_length": 147.61,
+    "back_glass_to_camera_plateau": 1.78,
+    "back_glass_to_camera_glass": 3.45
+  },
+  "display": {
+    "active_area_width": 66.57,
+    "active_area_length": 144.79,
+    "housing_edge_to_active_area": 2.44,
+    "housing_edge_to_flat_area_top_side": 2.41,
+    "margins": {
+      "left": 2.44,
+      "right": 2.44,
+      "top": 2.44,
+      "note": "ALL AROUND 2.44, exterior of housing to display active area"
+    },
+    "dynamic_island": {
+      "width": 20.74,
+      "height": 6.07,
+      "center": [
+        35.72,
+        -7.79
+      ]
+    }
+  },
+  "buttons": [
+    {
+      "name": "action",
+      "side": "left",
+      "center_y": -34.08,
+      "length": 6.9,
+      "length_source": "2X 3.45",
+      "protrusion": 0.45
+    },
+    {
+      "name": "volume_up",
+      "side": "left",
+      "center_y": -48.23,
+      "length": 11.2,
+      "length_source": "4X 5.60",
+      "protrusion": 0.45
+    },
+    {
+      "name": "volume_down",
+      "side": "left",
+      "center_y": -62.43,
+      "length": 11.2,
+      "length_source": "4X 5.60",
+      "protrusion": 0.45
+    },
+    {
+      "name": "side_power",
+      "side": "right",
+      "center_y": -55.32,
+      "length": 17.7,
+      "length_source": "2X 8.85",
+      "protrusion": 0.45
+    },
+    {
+      "name": "camera_control",
+      "side": "right",
+      "center_y": -98.2,
+      "length": 17.1,
+      "length_source": "2X 8.55",
+      "protrusion": 0.0
+    }
+  ],
+  "button_cross_section": {
+    "width_across_thickness": {
+      "left_buttons": 2.66,
+      "side_power": 2.66,
+      "camera_control": 3.03
+    },
+    "centre_from_front_glass": 3.97,
+    "centre_z": -3.97,
+    "source": "3X 2.66 / 3X 3.97 on the left view, 2.66 / 3.03 / 2X 3.97 on the right view"
+  },
+  "sim_tray": {
+    "side": "left",
+    "center_y": -105.66,
+    "length": 19.64,
+    "length_source": "2X 9.82",
+    "width": 2.56,
+    "centre_from_front_glass": 3.97,
+    "protrusion": 0.0
+  },
+  "bottom_edge": {
+    "usb_c": {
+      "opening_x": [
+        31.23,
+        40.22
+      ],
+      "opening_width": 8.99,
+      "centered_on_width": true,
+      "recommended_connector_keepout": {
+        "width": 12.45,
+        "height": 6.6,
+        "corner_radius": 3.25,
+        "corner_radius_count": 2,
+        "inner_height": 3.14,
+        "center_x": 35.72,
+        "center_z_from_front": 3.97,
+        "requirement": "mating connector keepout area flush to product surface required outward 14.0 mm"
+      }
+    },
+    "screws": {
+      "diameter": 1.5,
+      "count": 2,
+      "x": [
+        28.8,
+        42.65
+      ],
+      "centre_z": -3.975
+    },
+    "ports": {
+      "diameter": 1.35,
+      "count": 8,
+      "left_group": {
+        "count": 3,
+        "x_span": [
+          19.71,
+          24.22
+        ]
+      },
+      "right_group": {
+        "count": 5,
+        "x_span": [
+          47.23,
+          56.25
+        ]
+      },
+      "pitch": 2.255,
+      "note": "8X 1.35 ports; outer hole centres printed, inner centres spaced evenly at 2.255 in both groups",
+      "centres": [
+        19.71,
+        21.965,
+        24.22,
+        47.23,
+        49.485,
+        51.74,
+        53.995,
+        56.25
+      ],
+      "roles": [
+        {
+          "x": 19.71,
+          "role": null
+        },
+        {
+          "x": 21.965,
+          "role": "bottom_mic_1"
+        },
+        {
+          "x": 24.22,
+          "role": null
+        },
+        {
+          "x": 47.23,
+          "role": "speaker"
+        },
+        {
+          "x": 49.485,
+          "role": "speaker"
+        },
+        {
+          "x": 51.74,
+          "role": "speaker"
+        },
+        {
+          "x": 53.995,
+          "role": "speaker"
+        },
+        {
+          "x": 56.25,
+          "role": "bottom_mic_2"
+        }
+      ],
+      "centre_from_front_glass": 3.97
+    }
+  },
+  "top_edge": {
+    "receiver_slot": {
+      "width": 14.46,
+      "center_x": 35.72,
+      "callouts": [
+        0.45,
+        1.17
+      ],
+      "label": "PORTS: RECEIVER, FRONT MIC"
+    },
+    "receiver_keepout": {
+      "width": 14.02,
+      "center_x": 35.72,
+      "callouts": [
+        0.45,
+        0.95
+      ],
+      "source": "sheet 3 detail O"
+    },
+    "note": "0.45 and 1.17 (0.95 on the keepout) are across the thickness; not traced to z"
+  },
+  "rear_camera": {
+    "label": "detail D, back-facing",
+    "lenses": [
+      {
+        "center": [
+          57.83,
+          -13.62
+        ],
+        "diameter": 16.0,
+        "x_back": 13.62,
+        "x_front": 57.83,
+        "name": "rear_camera_1"
+      },
+      {
+        "center": [
+          57.83,
+          -31.34
+        ],
+        "diameter": 16.0,
+        "x_back": 13.62,
+        "x_front": 57.83,
+        "name": "rear_camera_2"
+      }
+    ],
+    "rear_mic": {
+      "center": [
+        50.91,
+        -22.48
+      ],
+      "diameter": 1.0,
+      "x_back": 20.54,
+      "x_front": 50.91
+    },
+    "flash": {
+      "center": [
+        41.04,
+        -22.48
+      ],
+      "diameter": 6.28,
+      "x_back": 30.41,
+      "x_front": 41.04
+    },
+    "plateau": {
+      "x_back": [
+        1.18,
+        26.06
+      ],
+      "y": [
+        -1.34,
+        -43.62
+      ],
+      "x": [
+        45.39,
+        70.27
+      ]
+    },
+    "plateau_glass": {
+      "x_back": [
+        3.79,
+        23.45
+      ],
+      "y": [
+        -3.97,
+        -40.99
+      ],
+      "x": [
+        48.0,
+        67.66
+      ]
+    },
+    "plateau_note": "outer and inner pill outlines of the camera bump; both centred on x_back 13.62, y -22.48",
+    "keepout_cones": {
+      "rear_camera_1": {
+        "angle": 123,
+        "to_cover_glass": 8.44
+      },
+      "rear_camera_2": {
+        "angle": 84,
+        "to_cover_glass": 7.01
+      },
+      "flash": {
+        "to_cover_glass": 7.85,
+        "transition_to_cover_glass": [
+          9.89,
+          9.72
+        ],
+        "inner": {
+          "v_fov": 112,
+          "h_fov": 97,
+          "base_diameter": [
+            5.5,
+            5.13
+          ]
+        },
+        "outer": {
+          "v_fov": 157,
+          "h_fov": 157
+        },
+        "other_callouts": {
+          "J-J": [
+            4.0,
+            2.06
+          ],
+          "N-N": [
+            4.0,
+            1.87
+          ]
+        }
+      },
+      "source": "sheet 3 detail P, sections G-G, J-J, N-N. Paired lists are J-J then N-N."
+    }
+  },
+  "camera_control": {
+    "label": "sheet 2 detail E, sections AJ-AJ, AK-AK, AH-AH, AL-AL, AC-AC",
+    "typical_keepout": {
+      "length": 25.0,
+      "width": 8.4,
+      "width_source": "2X 4.20",
+      "corner_radius": 2.2,
+      "corner_radius_count": 4,
+      "measured_at": "surface",
+      "angle_all_around": 55
+    },
+    "thin_case_keepout": {
+      "outer": {
+        "length": 29.7,
+        "width": 6.32,
+        "measured_at": "0.4 mm from surface"
+      },
+      "inner": {
+        "length": 17.5,
+        "width": 3.4,
+        "measured_at": "surface"
+      },
+      "angle_all_around": 25,
+      "depth_callouts": [
+        0.4,
+        0.0
+      ],
+      "note": "ends are full radii, 2X diameter 6.32 and 3.40"
+    },
+    "chamfer": {
+      "width_all_around": 0.18,
+      "angle_all_around": 16,
+      "depth_all_around": 0.63
+    },
+    "rule": "avoid narrow edges or acute angles in order to preserve tactile feel at this edge"
+  },
+  "front_sensors": {
+    "label": "sheet 3 detail O, sections S-S and T-T",
+    "front_camera_keepout": {
+      "width": 20.75,
+      "height": 5.12,
+      "center": [
+        35.72,
+        -7.79
+      ],
+      "corner_radius": 2.55,
+      "corner_radius_count": 2,
+      "cone_angle": 38,
+      "cone_base_to_cover_glass": 0.6
+    },
+    "als": {
+      "center_x": 30.35,
+      "center_y": -13.29,
+      "keepout_width": 5.55,
+      "keepout_height": 1.4,
+      "cone_angle": 30,
+      "cone_base_to_cover_glass": 0.94
+    },
+    "receiver_keepout_width": 14.02
+  },
+  "magsafe": {
+    "center": [
+      35.72,
+      -74.81
+    ],
+    "center_is_product_center": true,
+    "inner_zone": {
+      "diameter": 57.5,
+      "notes": [
+        5,
+        7
+      ],
+      "rule": "no metal, conductive material, or magnetic material"
+    },
+    "outer_zone": {
+      "radius": 49.39,
+      "diameter": 98.78,
+      "notes": [
+        5,
+        7
+      ],
+      "rule": "no magnetic or permeable material except MagSafe magnets",
+      "clip": "full width band from y -43.62 to y -112.01, then the R49.39 arc"
+    }
+  },
+  "compass": {
+    "center": [
+      17.12,
+      -142.88
+    ],
+    "keepout_diameter": null,
+    "x_back": 54.33,
+    "notes": [
+      5,
+      7
+    ]
+  },
+  "camera_keepout_region": {
+    "rule": "no magnetic or permeable material, full product volume including side walls",
+    "x_back": [
+      0.0,
+      26.06
+    ],
+    "x": [
+      45.39,
+      71.45
+    ],
+    "y": [
+      0.0,
+      -43.62
+    ]
+  },
+  "antenna_keepouts": {
+    "rule": "no metal or other conductive material, full product volume including side walls",
+    "regions": [
+      {
+        "name": "top_band",
+        "x_back": [
+          0.0,
+          71.45
+        ],
+        "x": [
+          0.0,
+          71.45
+        ],
+        "y": [
+          0.0,
+          -14.47
+        ]
+      },
+      {
+        "name": "top_camera_side",
+        "x_back": [
+          0.0,
+          8.96
+        ],
+        "x": [
+          62.49,
+          71.45
+        ],
+        "y": [
+          0.0,
+          -36.34
+        ]
+      },
+      {
+        "name": "top_block",
+        "x_back": [
+          57.49,
+          71.45
+        ],
+        "x": [
+          0.0,
+          13.96
+        ],
+        "y": [
+          0.0,
+          -26.96
+        ]
+      },
+      {
+        "name": "bottom_block_back_left",
+        "x_back": [
+          0.0,
+          13.96
+        ],
+        "x": [
+          57.49,
+          71.45
+        ],
+        "y": [
+          -122.45,
+          -149.61
+        ]
+      },
+      {
+        "name": "bottom_block_back_right",
+        "x_back": [
+          61.99,
+          71.45
+        ],
+        "x": [
+          0.0,
+          9.46
+        ],
+        "y": [
+          -120.21,
+          -149.61
+        ]
+      },
+      {
+        "name": "bottom_band",
+        "x_back": [
+          0.0,
+          71.45
+        ],
+        "x": [
+          0.0,
+          71.45
+        ],
+        "y": [
+          -135.15,
+          -149.61
+        ]
+      }
+    ],
+    "frame_note": "sheet 4 view 1, back-facing. x is product-frame; x_back keeps the printed ordinates. The top band's left end is drawn under the camera; treated as full width."
+  },
+  "rear_glass_keepouts": [
+    {
+      "name": "keepout_1",
+      "center": [
+        17.59,
+        -13.06
+      ],
+      "x_back": 53.86,
+      "width": 13.35,
+      "height": 8.15,
+      "corner_radius": 1.36,
+      "corner_radius_count": 4,
+      "rule": "do not obstruct this area with metal or other conductive material",
+      "cone_angle": 80,
+      "measured_at": "glass surface"
+    },
+    {
+      "name": "keepout_2",
+      "center": [
+        19.92,
+        -19.92
+      ],
+      "x_back": 51.53,
+      "width": 25.86,
+      "height": 9.04,
+      "corner_radius": 2.73,
+      "corner_radius_count": 4,
+      "rule": "non-conductive material to be uniform in thickness",
+      "cone_angle": 120,
+      "measured_at": "glass surface"
+    }
+  ],
+  "top_view_cone": null,
+  "rear_logo": {
+    "width": 15.75,
+    "height": 19.34,
+    "center": [
+      35.62,
+      -73.18
+    ],
+    "x_back": 35.83
+  },
+  "design_notes": [
+    {
+      "n": 1,
+      "text": "No metal contact with product."
+    },
+    {
+      "n": 2,
+      "text": "Do not obstruct ports."
+    },
+    {
+      "n": 3,
+      "text": "Do not obstruct the imaging features: front camera, rear cameras, rear flash."
+    },
+    {
+      "n": 4,
+      "text": "Do not obstruct forward facing sensors."
+    },
+    {
+      "n": 5,
+      "text": "Relative magnetic permeability of any metal used on case: 1.05 max, per ASTM A342/A342M-14."
+    },
+    {
+      "n": 6,
+      "text": "Do not touch glass."
+    },
+    {
+      "n": 7,
+      "text": "No magnets on rear of product except MagSafe magnets."
+    },
+    {
+      "n": 8,
+      "text": "Case thickness on backside of product: 2.1 mm max to ensure full functionality."
+    }
+  ],
+  "case_hard_limits": {
+    "max_backside_thickness": 2.1,
+    "max_relative_permeability": 1.05,
+    "permeability_standard": "ASTM A342/A342M-14",
+    "connector_clearance_outward": 14.0
+  },
+  "unverified": [
+    "sheets 1-2 values are read off rendered crops, not cross-checked against the vector geometry",
+    "edge_profile pairing and corner point pairing are by count and tick order, not solved",
+    "rear flash cone to-cover-glass and transition values are printed as ordinates in J-J and N-N; the reference edge is not traced",
+    "antenna top_band extent at the camera end"
+  ],
+  "derivation": null,
+  "frames": {
+    "product_frame": "x 0..71.45 measured from the product's left edge viewed from the FRONT, as datum declares.",
+    "front_facing_views": [
+      "sheet 1 front, left, right and bottom views",
+      "sheet 3 detail O"
+    ],
+    "back_facing_views": [
+      "sheet 1 back view and detail D",
+      "sheet 3 detail P",
+      "sheet 4 views 1-3"
+    ],
+    "identified_by": "the camera bump sits top-left in a back-facing view",
+    "rule": "an x ordinate read in a back-facing view is 71.45 - x in the product frame. y is unaffected.",
+    "affects": "rear_camera, compass, camera_keepout_region, antenna_keepouts, rear_glass_keepouts and rear_logo. Their printed x is kept as x_back."
+  },
+  "verified": null
+}
