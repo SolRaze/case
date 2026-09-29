@@ -636,7 +636,7 @@
   "magnets": {
     "sheet": 4,
     "count_per_insert": 31,
-    "polarity_note": "polarity toward top and bottom side tabulated per magnet M1-M31 for the left and right arrays",
+    "polarity_note": "bottom side is the opposite pole. The right-array table lists M15-M19, M22, M23, M26, M29, M30 in more than one row as printed; kept verbatim",
     "points_positioned": [
       [
         0.0,
@@ -1342,7 +1342,104 @@
         641.1,
         361.7
       ]
-    ]
+    ],
+    "polarity_toward_top": {
+      "left": {
+        "N": [
+          "M1",
+          "M2",
+          "M3",
+          "M4",
+          "M5",
+          "M6",
+          "M7",
+          "M18",
+          "M19",
+          "M20",
+          "M21",
+          "M29",
+          "M30",
+          "M31"
+        ],
+        "S": [
+          "M8",
+          "M9",
+          "M10",
+          "M11",
+          "M12",
+          "M13",
+          "M14",
+          "M15",
+          "M16",
+          "M17",
+          "M22",
+          "M23",
+          "M24",
+          "M25",
+          "M26",
+          "M27",
+          "M28"
+        ]
+      },
+      "right_as_printed": [
+        {
+          "magnets": [
+            "M1",
+            "M2",
+            "M5",
+            "M8",
+            "M9",
+            "M12",
+            "M15"
+          ],
+          "top": "S"
+        },
+        {
+          "magnets": [
+            "M18",
+            "M19",
+            "M22",
+            "M23",
+            "M26",
+            "M29",
+            "M30",
+            "M15",
+            "M16",
+            "M17"
+          ],
+          "top": "N"
+        },
+        {
+          "magnets": [
+            "M18",
+            "M19",
+            "M20",
+            "M21"
+          ],
+          "top": "S"
+        },
+        {
+          "magnets": [
+            "M22",
+            "M23",
+            "M24",
+            "M25",
+            "M26",
+            "M27",
+            "M28"
+          ],
+          "top": "N"
+        },
+        {
+          "magnets": [
+            "M29",
+            "M30",
+            "M31"
+          ],
+          "top": "S"
+        }
+      ]
+    }
   },
   "printed_values_in_stream_order": {
     "sheet 1": [
@@ -1378,7 +1475,6 @@
     ]
   },
   "unverified": [
-    "lens profile and magnet ordinates are kept with their page positions ([value, x pt, y pt, 'v' when vertical]); pairing x with y is left to the reader",
-    "per-magnet polarity table not transcribed row by row: the text layer interleaves both arrays"
+    "lens profile and magnet ordinates are kept with their page positions ([value, x pt, y pt, 'v' when vertical]); pairing x with y is left to the reader"
   ]
 }
