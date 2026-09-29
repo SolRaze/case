@@ -563,7 +563,7 @@ def export_stl(obj, path):
     bpy.ops.wm.stl_export(filepath=str(path), export_selected_objects=True, ascii_format=False)
 
 
-def preview(obj, path, size=320):
+def preview(obj, path, size=200):
     """Solid-shaded view of the back, three-quarter from above the camera corner,
     orthographic and framed on the object."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -594,6 +594,8 @@ def preview(obj, path, size=320):
     s.render.film_transparent = True
     s.render.resolution_x = s.render.resolution_y = size
     s.render.image_settings.file_format = "PNG"
+    s.render.image_settings.color_mode = "RGBA"
+    s.render.image_settings.compression = 100
     s.render.filepath = str(path)
     bpy.ops.render.render(write_still=True)
 
