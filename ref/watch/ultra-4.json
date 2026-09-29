@@ -34,9 +34,11 @@
   "cover_glass": {
     "width": 35.79,
     "height": 43.07,
-    "flat_width": 32.92,
-    "flat_height": 40.09,
     "note": 6
+  },
+  "display_active_area": {
+    "width": 32.92,
+    "height": 40.09
   },
   "digital_crown": {
     "diameter": 9.42,
