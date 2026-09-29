@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
-"""Run every parts/*.py and export its `part` to out/ as STEP and STL.
+"""Run every parts/*.py for each phone and export its `part` to out/ as STL and STEP.
 
-    ./build              every part
-    ./build motor-mount  one part
-    ./build --check      build only, assert each solid is valid and closed
+    ./build                          every part, for the 17e
+    ./build case-magsafe             one part
+    ./build --phone 16 --phone air   these phones
+    ./build --all                    every phone in ref/iphone/sizes.json
+    ./build --check                  build only, assert each solid is valid, closed,
+                                     one piece and clear of the glass (ADG 5.1.1)
+    ./build --stl                    stl only, no step
 
-Each part file is a script, not a module: it sets a module-level `part` and
-nothing else. Export lives here so the part files stay pure geometry.
+Writes out/<phone>/<part>.stl. A phone and style that ref/rules.json marks invalid is
+skipped, and says why; anything else that fails to build or check is an error.
+
+Each part file is a script, not a module: it sets a module-level `part`, and GLASS
+when the part is a case the phone sits in. Export lives here so the part files stay
+pure geometry.
 """
 
+import json
 import os
 import runpy
 import sys
@@ -18,34 +27,78 @@ ROOT = Path(__file__).resolve().parent
 PARTS = ROOT / "parts"
 OUT = ROOT / "out"
 VENV = ROOT / ".venv/bin/python"
+RULES = ROOT / "ref/rules.json"
+MIN_GAP = 0.85   # ADG 5.1.1 floor, 1.0 ideal
 
 # OCP is a binary extension, so the venv has to be the interpreter, not a path
 # entry. Re-exec rather than make every caller remember to activate.
-if sys.prefix == sys.base_prefix and VENV.exists():
+if __name__ == "__main__" and sys.prefix == sys.base_prefix and VENV.exists():
     os.execv(str(VENV), [str(VENV), str(Path(__file__).resolve()), *sys.argv[1:]])
 
-from build123d import export_step, export_stl  # noqa: E402
+
+def glass_gaps(part, glass):
+    """ADG 5.1.1: no exposed glass within GLASS_GAP of a flat surface in any
+    orientation. A flat surface touches the case's convex hull, so the gap is
+    each glass point's distance to the nearest hull facet."""
+    import numpy as np
+    from scipy.spatial import ConvexHull
+
+    verts, _ = part.tessellate(0.02)
+    eq = ConvexHull([(v.X, v.Y, v.Z) for v in verts]).equations
+    out = {}
+    for name, pts in glass.items():
+        pts = np.array(pts)
+        out[name] = float(-(pts @ eq[:, :3].T + eq[:, 3]).max(axis=1).min())
+    return out
 
 
-def load(path):
-    ns = runpy.run_path(str(path))
-    part = ns.get("part")
-    if part is None:
+def load(path, phone):
+    ns = runpy.run_path(str(path), init_globals={"PHONE": phone})
+    if ns.get("part") is None:
         raise SystemExit(f"{path.name}: no module-level `part`")
-    return part
+    return ns["part"], ns.get("GLASS")
 
 
-def check(name, part):
-    """Fails if the solid is not watertight — a mesh no slicer can use."""
+def check(name, part, glass):
+    """Fails if the solid is not watertight - a mesh no slicer can use - or sits
+    closer than MIN_GAP to a table on any side of the glass."""
     assert part.is_valid, f"{name}: invalid solid"
     assert part.is_manifold, f"{name}: not manifold, open edges"
     assert part.volume > 0, f"{name}: zero volume"
     assert len(part.solids()) == 1, f"{name}: {len(part.solids())} solids, want 1"
+    if not glass:
+        return ""
+    gaps = glass_gaps(part, glass)
+    bad = [k for k, g in gaps.items() if g < MIN_GAP - 1e-6]
+    assert not bad, f"{name}: glass gap {', '.join(f'{k} {gaps[k]:.3f}' for k in bad)}"
+    return ", glass " + " ".join(f"{g:.2f}" for g in gaps.values())
+
+
+def phones():
+    return list(json.loads((ROOT / "ref/iphone/sizes.json").read_text())["phones"])
+
+
+def invalid(phone, style):
+    """Why ref/rules.json rules out this phone and style, or None."""
+    if not RULES.exists():
+        return None
+    rules = runpy.run_path(str(ROOT / "extract/rules.py"))
+    return rules["why_invalid"](phone, style)
 
 
 def main(argv):
-    only = [a for a in argv if not a.startswith("-")]
+    flags = {"--check", "--all", "--stl"}
+    names, only, i = [], [], 0
+    while i < len(argv):
+        if argv[i] == "--phone":
+            names.append(argv[i + 1])
+            i += 2
+            continue
+        if argv[i] not in flags:
+            only.append(argv[i])
+        i += 1
     check_only = "--check" in argv
+    names = phones() if "--all" in argv else names or ["17e"]
 
     sources = sorted(PARTS.glob("*.py"))
     if only:
@@ -53,18 +106,34 @@ def main(argv):
         if not sources:
             raise SystemExit(f"no part named {', '.join(only)}")
 
-    if not check_only:
-        OUT.mkdir(exist_ok=True)
+    from build123d import export_step, export_stl
 
-    for src in sources:
-        part = load(src)
-        check(src.stem, part)
-        if check_only:
-            print(f"{src.stem}: ok, {part.volume / 1000:.1f} cm3")
-            continue
-        export_step(part, str(OUT / f"{src.stem}.step"))
-        export_stl(part, str(OUT / f"{src.stem}.stl"))
-        print(f"{src.stem}: step stl, {part.volume / 1000:.1f} cm3")
+    failed = []
+    for phone in names:
+        for src in sources:
+            label = f"{phone} {src.stem}"
+            why = invalid(phone, src.stem)
+            if why:
+                print(f"{label}: skip, {why}")
+                continue
+            try:
+                part, glass = load(src, phone)
+                extra = check(label, part, glass)
+            except Exception as e:   # noqa: BLE001 - report every combination, then fail
+                print(f"{label}: FAIL {type(e).__name__}: {e}")
+                failed.append(label)
+                continue
+            if check_only:
+                print(f"{label}: ok, {part.volume / 1000:.1f} cm3{extra}")
+                continue
+            out = OUT / phone
+            out.mkdir(parents=True, exist_ok=True)
+            export_stl(part, str(out / f"{src.stem}.stl"))
+            if "--stl" not in argv:
+                export_step(part, str(out / f"{src.stem}.step"))
+            print(f"{label}: written, {part.volume / 1000:.1f} cm3{extra}")
+    if failed:
+        raise SystemExit(f"{len(failed)} failed: {', '.join(failed)}")
 
 
 if __name__ == "__main__":
