@@ -1,0 +1,290 @@
+{
+  "about": "which knob combinations build, per phone, and the Apple guideline limits every build is checked against. blender/case.py reads the knob defaults here; its asserts are the same rules; ./build skips what these rules out and fails on anything else. ADG = Accessory Design Guidelines (extract/pdf/adg.pdf).",
+  "knobs": {
+    "BUTTONS": {
+      "default": "windows",
+      "values": [
+        "windows",
+        "slot"
+      ]
+    },
+    "KEYS": {
+      "default": [],
+      "values": "button names; names a phone lacks are dropped"
+    },
+    "CLOSED": {
+      "default": [],
+      "values": "button names, none shared with KEYS"
+    },
+    "CAMERA": {
+      "default": "fitted",
+      "values": [
+        "fitted",
+        "universal"
+      ]
+    },
+    "BACK_BAND": {
+      "default": null,
+      "values": "null (full back) or mm of back kept round the edge"
+    },
+    "PLATE": {
+      "default": false,
+      "values": [
+        false,
+        true
+      ]
+    },
+    "WALLS": {
+      "default": "full",
+      "values": [
+        "full",
+        "sides",
+        "corners"
+      ]
+    },
+    "MAGSAFE": {
+      "default": null,
+      "values": [
+        null,
+        "ring",
+        "open"
+      ]
+    },
+    "SLIDER": {
+      "default": false,
+      "values": [
+        false,
+        true
+      ]
+    },
+    "CIG": {
+      "default": false,
+      "values": [
+        false,
+        true
+      ]
+    },
+    "COUPON": {
+      "default": null,
+      "values": "null or mm of each edge kept round the bottom-right corner"
+    }
+  },
+  "combinations": [
+    {
+      "id": "slider-fitted",
+      "if": {
+        "SLIDER": true
+      },
+      "require": {
+        "CAMERA": "fitted"
+      },
+      "why": "the slider covers a fitted window"
+    },
+    {
+      "id": "slider-no-magsafe",
+      "if": {
+        "SLIDER": true
+      },
+      "require": {
+        "MAGSAFE": null
+      },
+      "why": "slider rails reach y -52, a charger's top edge is at -45"
+    },
+    {
+      "id": "magsafe-full-back",
+      "if": {
+        "MAGSAFE": [
+          "ring",
+          "open"
+        ]
+      },
+      "require": {
+        "BACK_BAND": null
+      },
+      "why": "magnets and the charger need the full back"
+    },
+    {
+      "id": "plate-band",
+      "if": {
+        "PLATE": true
+      },
+      "require": {
+        "BACK_BAND": "set"
+      },
+      "why": "the plate sits in a banded back"
+    },
+    {
+      "id": "keys-need-walls",
+      "if": {
+        "KEYS": "set"
+      },
+      "require": {
+        "WALLS": [
+          "full",
+          "sides"
+        ]
+      },
+      "why": "corner walls leave no wall for a key"
+    },
+    {
+      "id": "keys-closed-apart",
+      "if": {
+        "KEYS": "set",
+        "CLOSED": "set"
+      },
+      "require": {
+        "disjoint": [
+          "KEYS",
+          "CLOSED"
+        ]
+      },
+      "why": "a button is either a key or covered"
+    }
+  ],
+  "phones": [
+    {
+      "id": "corner-profile",
+      "phones": [
+        "5s",
+        "se-2-3"
+      ],
+      "why": "sheet has no corner profile",
+      "test": "ref/iphone/sizes.json entry has a corner list (or a full spec)"
+    },
+    {
+      "id": "full-width-plateau",
+      "if": {
+        "CAMERA": "fitted"
+      },
+      "phones": [
+        "air",
+        "17-pro",
+        "17-pro-max",
+        "18-pro",
+        "18-pro-max"
+      ],
+      "why": "full-width camera plateau, use CAMERA universal",
+      "test": "sizes.json camera plateau is not a bounded outline"
+    },
+    {
+      "id": "rail-fit",
+      "if": {
+        "SLIDER": true
+      },
+      "phones": [
+        "12-mini",
+        "12-pro",
+        "12-pro-max",
+        "13-mini",
+        "13",
+        "13-pro",
+        "13-pro-max",
+        "14",
+        "14-plus",
+        "14-pro",
+        "14-pro-max",
+        "15",
+        "15-plus",
+        "15-pro",
+        "15-pro-max",
+        "16",
+        "16-plus",
+        "16-pro",
+        "16-pro-max",
+        "17"
+      ],
+      "why": "right rail falls off the case",
+      "test": "slider right edge + SL_CLR + RAIL_W <= W + CLEAR + WALL, the rails clear of every lens and flash cone at their depth"
+    },
+    {
+      "id": "cig-fit",
+      "if": {
+        "CIG": true
+      },
+      "phones": [
+        "12-mini",
+        "13-mini"
+      ],
+      "why": "cigarette clip runs off the bottom",
+      "test": "CIG_Y - CIG_LEN / 2 > -L"
+    },
+    {
+      "id": "universal-window",
+      "if": {
+        "CAMERA": "universal"
+      },
+      "phones": [],
+      "why": "camera reaches past the universal window",
+      "test": "camera cluster bottom >= -UNI_L"
+    }
+  ],
+  "limits": [
+    {
+      "id": "glass-gap",
+      "rule": "exposed glass to any flat surface the case rests on",
+      "min": 0.85,
+      "ideal": 1.0,
+      "unit": "mm",
+      "source": "ADG 5.1.1",
+      "case": "GLASS_GAP 1.0; rim PROUD 1.0 over the front glass, camera ring 1.0 past the lens cover",
+      "checked": "check(): front glass, lens cover and back glass points against the convex hull, every build"
+    },
+    {
+      "id": "backside-thickness",
+      "rule": "case thickness on the back of the phone",
+      "max": 2.1,
+      "unit": "mm",
+      "source": "sheet note 8 on every iPhone drawing (SE: 5.0)",
+      "case": "BACK 2.0",
+      "checked": "assert BACK <= phone max_back"
+    },
+    {
+      "id": "bottom-wall",
+      "rule": "case wall below the phone, for docks and cables",
+      "max": 1.8,
+      "unit": "mm",
+      "source": "ADG 5.1.3",
+      "case": "CLEAR 0.25 + WALL 1.55 = 1.80",
+      "checked": "assert CLEAR + WALL <= 1.8"
+    },
+    {
+      "id": "magsafe-magnet-depth",
+      "rule": "MagSafe magnet to the case outside",
+      "max": 0.85,
+      "unit": "mm",
+      "source": "ADG 42.1 fig 42-3",
+      "case": "MS_FLOOR 0.85, magnet 0.55 thick, 0.55 from the device",
+      "checked": "assert pocket depth >= MS_T + 0.5"
+    },
+    {
+      "id": "camera-keepout",
+      "rule": "lens and flash light cones clear of the case",
+      "source": "ADG 5.7.1 and each sheet's keepout cones",
+      "case": "every cone cut through the case, grown by CLEAR for the phone's shift",
+      "checked": "the cut is part of every build"
+    },
+    {
+      "id": "connector-keepout",
+      "rule": "USB-C recommended connector keepout, flush to the product surface, 14.0 outward",
+      "source": "each sheet, ADG 5.1.2.3",
+      "case": "obround keepout grown by CLEAR, through the bottom wall",
+      "checked": "the cut is part of every build"
+    },
+    {
+      "id": "port-openings",
+      "rule": "speaker and mic openings",
+      "source": "ADG 5.2.3.1",
+      "case": "PORT_OFFSET 2.0 past the port edge, 45 deg outside chamfer, PORT_LAND 0.6 straight wall (1.5 max)",
+      "checked": "the cut is part of every build"
+    },
+    {
+      "id": "lip",
+      "rule": "rim lip over the rolled front edge clear of the glass edge",
+      "max": 1.05,
+      "unit": "mm",
+      "source": "17e sheet, glass edge 1.05 in",
+      "case": "LIP 0.5, and LIP > CLEAR so the phone is retained",
+      "checked": "assert CLEAR < LIP < 1.05"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ fetched by extract/fetch.py) set the limits, cited below as ADG: chapter 5 "Case
 Frame: x 0..W across the front, y 0..-L down the length, z 0 at the front cover-glass
 plane and -T at the back face.
 
-Knobs, defaults in KNOBS; a style in blender/styles.json is a named knob set.
+Knobs, defaults in ref/rules.json; a style in blender/styles.json is a named knob set.
   BUTTONS    "windows" one window per button | "slot" one window per side
   KEYS       button names printed as flexure keys that press through the wall;
              names this phone lacks are dropped
@@ -97,8 +97,7 @@ CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
 CIG_LEN = 30.0
 CIG_Y = -120.0         # clip centre, below the MagSafe charger and clocking magnet
 
-KNOBS = {"BUTTONS": "windows", "KEYS": (), "CLOSED": (), "CAMERA": "fitted", "BACK_BAND": None,
-         "PLATE": False, "WALLS": "full", "MAGSAFE": None, "SLIDER": False, "CIG": False, "COUPON": None}
+KNOBS = {k: v["default"] for k, v in json.loads(RULES.read_text())["knobs"].items()}
 
 
 def styles():
@@ -601,8 +600,6 @@ def preview(obj, path, size=320):
 
 def invalid(name, style):
     """Why ref/rules.json rules out this phone and style, or None."""
-    if not RULES.exists():
-        return None
     rules = _module("rules", ROOT / "extract/rules.py")
     return rules.why_invalid(name, style)
 
