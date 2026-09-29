@@ -1,0 +1,686 @@
+{
+  "product": "iPad Pro 11-inch (M4)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-pro-11-inch-m4.pdf",
+    "file": "extract/pdf/ipad-pro-11-inch-m4.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2024-05-13"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 5,
+  "general_tolerance": null,
+  "covers": "iPad Pro 11-inch (M5) | same dimensions as iPad Pro 11-inch (M4)",
+  "notes": {
+    "1": "do not obstruct acoustic openings: top mic, side mic, front mic, rear mic, speakers (SPKR)",
+    "2": "do not obstruct rear camera (RCAM), rear flash, rear lidar, rear ALS",
+    "3": "do not obstruct ambient light sensor (ALS)",
+    "4": "do not obstruct front camera (FCAM), IR camera, flood illuminator, dot projector",
+    "5": "accessory shall not damage display coatings in any operating condition | hard plastic, metal or glass edges shall not contact display active area"
+  },
+  "frames": {
+    "front": "portrait, viewed from display | front sensor row on right long edge | row ordinates from top",
+    "back": "viewed from back | ordinates from product centre"
+  },
+  "body": {
+    "width": 249.7,
+    "height": 177.51,
+    "thickness": 5.268
+  },
+  "display_active_area": {
+    "width": 232.32,
+    "height": 160.13
+  },
+  "corner_profile": {
+    "applies": "all four corners",
+    "ordinates": [
+      0.0,
+      0.06,
+      0.43,
+      1.12,
+      1.72,
+      7.6,
+      12.88,
+      14.68,
+      20.54
+    ],
+    "radius": 0.95
+  },
+  "edge_profile": {
+    "detail": "AA",
+    "top": [
+      0.0,
+      -0.06,
+      -0.43,
+      -1.12
+    ],
+    "bottom": [
+      -4.1,
+      -4.79,
+      -5.16,
+      -5.22
+    ],
+    "flat": 2.66
+  },
+  "speakers": {
+    "hole_diameter": 1.6,
+    "count": 28,
+    "x": [
+      2.61,
+      35.07,
+      65.49
+    ],
+    "keepout": "1 mm all around | 45 deg outward",
+    "note": 1
+  },
+  "top_mic": {
+    "x": [
+      2.61,
+      88.76
+    ],
+    "keepout_diameter": 1.6,
+    "to_cover_glass": [
+      1.6,
+      0.8
+    ],
+    "note": 1
+  },
+  "top_button": {
+    "x": [
+      1.48,
+      2.26,
+      12.06,
+      13.98
+    ],
+    "section": [
+      2.66,
+      7.6,
+      1.72,
+      0.2,
+      0.06,
+      0.0,
+      14.62,
+      20.54
+    ]
+  },
+  "front_camera": {
+    "size": 2.68,
+    "keepout_zone_angle": 121.01,
+    "keepout_at_surface": 3.89,
+    "note": 4
+  },
+  "ir_camera": {
+    "size": 3.5,
+    "keepout_zone_angle": 89.23,
+    "keepout_at_surface": 2.93,
+    "note": 4
+  },
+  "dot_projector": {
+    "size": 3.5,
+    "keepout_zone_angle": 100.0,
+    "keepout_at_surface": 3.45,
+    "note": 4
+  },
+  "flood_illuminator": {
+    "size": 3.5,
+    "keepout_zone_angle": 69.98,
+    "keepout_at_surface": 3.5,
+    "note": 4
+  },
+  "als": {
+    "edge_offset": 4.71,
+    "x": 88.76,
+    "diameter": 2.5,
+    "keepout_at_surface": 3.89,
+    "keepout_zone_angle": 120.0,
+    "count": 2,
+    "note": 3
+  },
+  "front_row_ordinates": {
+    "from_top": [
+      103.65,
+      110.9,
+      116.2,
+      124.85,
+      133.5,
+      140.3
+    ],
+    "edge_offset": 4.71
+  },
+  "front_mic": {
+    "keepout_diameter": 1.6,
+    "opening_diameter": 0.8,
+    "note": 1
+  },
+  "side_mic": {
+    "x": 24.36,
+    "edge_offset": 2.62,
+    "keepout_diameter": 1.6,
+    "opening_diameter": 0.8,
+    "note": 1
+  },
+  "usb_c": {
+    "x": [
+      93.03,
+      84.49
+    ],
+    "recommended_keepout": [
+      12.45,
+      6.6
+    ],
+    "mating_connector_keepout": "flush to product surface | 14.0 outward required"
+  },
+  "rear_camera": {
+    "lens_diameter": 10.83,
+    "keepout_zone_angle": 76.9,
+    "keepout_at_surface": 3.56,
+    "min_keepout": 1.95,
+    "from_center_y": 110.82,
+    "to_cover_glass_surface": 6.71,
+    "bump_profile": {
+      "detail": "P",
+      "z": [
+        2.28,
+        0.95,
+        0.09,
+        0.0
+      ],
+      "x": [
+        -1.45,
+        -1.32,
+        -0.45,
+        -0.13,
+        0.0
+      ]
+    },
+    "note": 2
+  },
+  "rear_module": {
+    "detail_l": {
+      "x": {
+        "2X": 14.03,
+        "3X": 26.82
+      },
+      "y": [
+        -11.93,
+        -14.03,
+        -20.04,
+        -26.05,
+        -27.98
+      ]
+    },
+    "detail_m": {
+      "x": [
+        0,
+        4.35,
+        6.63,
+        7.55,
+        10.78,
+        15.32,
+        20.04,
+        33.44,
+        35.72
+      ],
+      "y": [
+        0,
+        -4.35,
+        -6.63,
+        -7.55,
+        -10.78,
+        -15.32,
+        -20.04,
+        -33.44,
+        -35.72
+      ]
+    },
+    "from_center_x": {
+      "2X": -74.73,
+      "3X": -61.94
+    }
+  },
+  "rear_flash": {
+    "diameter": 6.7,
+    "keepout_zone_angle": [
+      78.5,
+      33.5
+    ],
+    "min_keepout": 1.61,
+    "keepout_at_surface": 5.63,
+    "from_center_y": 104.81,
+    "note": 2
+  },
+  "rear_lidar": {
+    "diameter": 8.41,
+    "keepout_zone_angle": [
+      65.99,
+      50.47
+    ],
+    "min_keepout": 0.81,
+    "keepout_at_surface": 4.99,
+    "zone": 1.9,
+    "from_center_y": 98.8,
+    "note": 2
+  },
+  "rear_als": {
+    "diameter": 3.6,
+    "keepout_zone_angle": 120.0,
+    "keepout_at_surface": 3.12,
+    "from_center_y": 112.92,
+    "note": 2
+  },
+  "rear_mic": {
+    "opening_diameter": 1.72,
+    "keepout_diameter": 3.44,
+    "from_center_y": 96.87,
+    "note": 1
+  },
+  "volume_buttons": {
+    "plus": {
+      "from_top": 19.33,
+      "length": 10.06
+    },
+    "minus": {
+      "from_top": 31.39,
+      "length": 10.06
+    },
+    "width": 2.26
+  },
+  "magnetic_connector_keepout": [
+    137.59,
+    112.08
+  ],
+  "smart_connector": {
+    "count": 3,
+    "pitch": 5.27,
+    "contact_diameter": 3.4,
+    "opening_diameter": 4.26,
+    "to_enclosure": 12.0,
+    "x": 81.36
+  },
+  "inductive_charging_window": {
+    "section": [
+      2.26,
+      2.66,
+      2.65,
+      2.99
+    ]
+  },
+  "magnets": {
+    "polarity_frame": "outer = pole toward cosmetic surface | inner = pole toward inside of device",
+    "polarity": {
+      "L1": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L2": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "L3": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L4": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "L5": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L6": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "L7": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L8": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "L9": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L10": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "L11": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L12": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "L13": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L14": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "L15": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L16": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "L17": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L18": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "L19": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "L20": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-11": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-12": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-13": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-21": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV1-22": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-23": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV1-33": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "O1": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "O2": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "OR-11": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "OR-12": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "OR-21": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "OR-22": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-11": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-12": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-13": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-21": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-22": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-23": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-31": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-32": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-33": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-41": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV2-42": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV2-43": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "PM-CH-1": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "PM-CH-2": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "PM-CH-3": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "PM-CH-4": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "PM-FH-1": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "PM-FH-2": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "PM-FH-3": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "PM-FH-4": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-11": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-12": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-13": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-14": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-21": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-31": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-41": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-51": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-61": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-71": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-72": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV3-73": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV3-74": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-11": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-12": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-13": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-21": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-22": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-23": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-31": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "BV4-32": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "BV4-33": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "CG-C3-1": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "CG-C3-2": {
+        "outer": "N",
+        "inner": "S"
+      },
+      "CG-C3-SHUNT": {
+        "outer": "NONE",
+        "inner": "NONE"
+      },
+      "CG-C2-1": {
+        "outer": "S",
+        "inner": "N"
+      },
+      "CG-C2-2": {
+        "outer": "N",
+        "inner": "S"
+      }
+    },
+    "keepouts": [
+      130.1,
+      128.92,
+      120.92,
+      117.1,
+      103.1,
+      92.46,
+      90.1,
+      86.46,
+      71.76,
+      60.85,
+      53.85,
+      2.0
+    ],
+    "limits": [
+      "maximum 0.25mt in cross-hatched region",
+      "maximum 1.3mt anwhere along this line",
+      "maximum 2.5mt in hatched region",
+      "maximum 5mt in hatched region"
+    ],
+    "hall_effect": "HES1 activated with B-field north",
+    "sensor_ordinates": {
+      "compass": [
+        233.03,
+        -3.8
+      ],
+      "hes2": [
+        20.39,
+        77.41
+      ],
+      "hes1": [
+        24.85,
+        -74.5
+      ]
+    },
+    "compass_bottom_to_housing_outside": 1.26
+  },
+  "antenna_keepout": {
+    "note": "do not obstruct with metal",
+    "housing_outside_band": 9.54,
+    "housing_inside_band": 10.34,
+    "ordinates": [
+      102.18,
+      -102.18,
+      -49.24,
+      -86.94,
+      -14.59
+    ]
+  },
+  "unverified": [
+    "page 2 read from M4 text layer | M5 page 2 outlined, render matches",
+    "magnet limit text reads 'anwhere' on sheet",
+    "sheets 2-5 print the same numbers as the M5 sheets and every sheet-1 number is in the M5 ref; values carried over from it"
+  ]
+}
