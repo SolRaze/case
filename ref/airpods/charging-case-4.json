@@ -1,0 +1,150 @@
+{
+  "product": "Charging Case (USB-C) for AirPods 4 and Wireless Charging Case (USB-C) for AirPods 4 (ANC)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/wireless-charging-case-usb-c-for-airpods-4.pdf",
+    "file": "extract/pdf/wireless-charging-case-usb-c-for-airpods-4.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2024-09-19"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 3,
+  "general_tolerance": null,
+  "notes": {
+    "1": "accessories intruding into shaded regions will negatively affect product performance",
+    "2": "do not obstruct this area with metal or other conductive material",
+    "3": "minimize material thickness for Qi charging performance",
+    "4": "to charge via an Apple Watch charger, no material between the back of the device and the watch charger",
+    "5": "protective cases may detune or impact RF and wireless charging | avoid metal",
+    "6": "cases may impact pairing and factory reset on the charging case for AirPods 4",
+    "7": "cases may impact pairing, factory reset and serial number lookup on the wireless charging case for AirPods 4 (ANC)",
+    "8": "only applicable to the wireless charging case for AirPods 4 (ANC)"
+  },
+  "body": {
+    "length": 50.08,
+    "height": 46.2,
+    "depth": null,
+    "depth_note": "not dimensioned; the hinge-side view draws the depth without a value"
+  },
+  "lid": {
+    "open_angle_nominal": 115.0,
+    "lid_clearance_scoop": 35.04,
+    "hinge_keepout": "shaded, note 1"
+  },
+  "interior": {
+    "rim_keepout_width": 49.84,
+    "lid_rim_keepout_width": 50.08,
+    "rim_keepout_depth": 18.99,
+    "note": 1
+  },
+  "led": {
+    "outer_diameter": 0.8,
+    "recommended_opening_diameter": 2.8,
+    "from_bottom": 27.52,
+    "from_right": 25.04,
+    "note": 1
+  },
+  "pairing_sensor": {
+    "from_right": 25.04,
+    "notes": [
+      6,
+      7
+    ],
+    "note_text": "arrow on the front face below the LED"
+  },
+  "hinge_side": {
+    "shaded_width": 39.04,
+    "shaded_width_note": "varies depending on accessory's material thickness",
+    "band_above_seam": 1.0,
+    "band_below_recommended": 7.63,
+    "note": 1
+  },
+  "bottom": {
+    "usb_c": {
+      "recommended_keepout": [
+        12.46,
+        6.6
+      ],
+      "detail": "B",
+      "profile": {
+        "x": [
+          0.0,
+          0.05,
+          0.19,
+          0.43,
+          0.76,
+          1.16,
+          1.63,
+          2.15,
+          2.7,
+          3.26,
+          3.83
+        ],
+        "y": [
+          0.0,
+          0.01,
+          0.08,
+          0.23,
+          0.47,
+          0.79,
+          1.2,
+          1.66,
+          2.18,
+          2.73,
+          3.3
+        ]
+      }
+    },
+    "port_hole_keepout_diameter": 3.42,
+    "speaker_hole_keepout": {
+      "height": 3.42,
+      "width": 7.73
+    },
+    "notes": [
+      1,
+      8
+    ]
+  },
+  "qi_charging": {
+    "recommended_distance_to_charger": 1.0,
+    "max_distance": 2.5,
+    "notes": [
+      3,
+      8
+    ]
+  },
+  "watch_charger": {
+    "recommended_minimum_keepout_diameter": 28.62,
+    "centre_from_bottom": 16.61,
+    "centre_from_right": 25.04,
+    "rule": "material in the area may disable watch charging",
+    "notes": [
+      4,
+      8
+    ]
+  },
+  "wireless_charging_keepout": {
+    "width": 40.08,
+    "height": 36.2,
+    "from_top": 5.0,
+    "rule": "metal or conductive material in the keepout will negatively impact wireless charging",
+    "notes": [
+      2,
+      8
+    ]
+  },
+  "antenna_keepout": {
+    "width_from_right": 11.69,
+    "height_from_bottom": 27.5,
+    "rule": "metal or conductive material in the keepout will negatively impact RF antenna performance | low Dk/Df material",
+    "notes": [
+      2,
+      5,
+      8
+    ]
+  },
+  "unverified": [
+    "no text layer on the drawing | values read from renders",
+    "pairing sensor position inferred from the note arrow, not dimensioned"
+  ]
+}
