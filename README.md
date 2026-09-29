@@ -46,7 +46,7 @@ knobs
 
 design
 - The outside is one rounded shape: a 1.8 mm round on the back edge, a 0.8 mm round on the front rim, and the rim opening flared 0.4 mm.
-- The camera window is the hull of the lenses, flash and mic, widened to every light cone where it leaves the back, with a rounded ring 1.5 mm wide round it.
+- The camera bump (the lenses and any plateau) gets a round window with a rounded ring 1.5 mm wide, standing 1.0 mm past the lens; a flash or mic outside the bump gets its own flush hole, and the flash light cone is cut as a shallow countersink round it.
 - Button windows and port openings are obround; the receiver gets a shallow dip in the top rim that eases back up over 4 mm each side.
 - Styles only change knobs, so every style shares this shape.
 
