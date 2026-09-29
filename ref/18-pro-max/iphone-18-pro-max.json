@@ -1,0 +1,718 @@
+{
+  "product": "iPhone 18 Pro Max",
+  "source": {
+    "file": "iphone-18-pro-max.pdf",
+    "title": "iPhone 18 Pro Max Dimensional Drawings",
+    "publisher": "Apple Inc.",
+    "sheet_date": "2026-09-09",
+    "sheets": 4,
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-18-pro-max.pdf",
+    "extracted_by": "sheet 1: text is vector outlines with no font, read off pdf-crop renders. sheets 2-4: ~/Projects/Assets/cad/extract/pdf-text.py plus pdf-crop for the view mapping",
+    "extracted_on": "2026-09-29",
+    "coordinate_note": "sheet 1 geometry lives in Form XObject /I0 placed by '1 0 0 1 32.162 34.35 cm'. Add that offset to convert form coordinates to page points."
+  },
+  "units": "mm",
+  "angle_units": "degrees",
+  "general_tolerance": null,
+  "datum": {
+    "origin": "top-left corner of the product outline, viewed from the front",
+    "x": "+X toward the right edge; product spans x 0 .. 77.98",
+    "y": "-Y down the length; product spans y 0 .. -163.43",
+    "z": "z 0 at the front cover-glass plane; -Z into the body. Back face at z = -8.75",
+    "confirmed_by": "island and front camera centred on x 38.99 = 77.98/2"
+  },
+  "body": {
+    "width": 77.98,
+    "length": 163.43,
+    "thickness": 8.75,
+    "edge_profile": {
+      "label": "PROFILE (ALL SIDES), detail B",
+      "symmetric_about_midplane": false,
+      "z_ordinates": [
+        4.38,
+        4.29,
+        4.24,
+        2.99,
+        1.5,
+        0.0,
+        -1.44,
+        -2.86,
+        -4.01,
+        -4.35,
+        -4.38
+      ],
+      "x_offsets_front": [
+        0.01,
+        0.15,
+        0.9,
+        1.2,
+        2.61
+      ],
+      "x_offsets_back": [
+        0.0,
+        0.17,
+        0.97,
+        2.35,
+        3.79
+      ],
+      "half_thickness": 4.375,
+      "pairing": null,
+      "pairing_note": "z is from the midplane. The front and back rolls are dimensioned separately, front offsets above the view and back offsets below it. The sheet does not print which offset pairs with which z; solve from the tick marks as done for the 17e.",
+      "face_inset": null,
+      "face_inset_note": "2.61 on the front view is housing edge to the start of the flat top face, which matches the last front offset in detail B."
+    },
+    "corner": {
+      "type": "continuous curvature (squircle), not a circular arc",
+      "source": "detail A, CORNER PROFILE (ALL FOUR CORNERS)",
+      "plane": "XY plan view; x across the width from the side edge, y along the length from the end edge",
+      "dimensioned_points": [
+        [
+          0.0,
+          -19.43
+        ],
+        [
+          0.04,
+          -13.9
+        ],
+        [
+          0.92,
+          -8.46
+        ],
+        [
+          3.8,
+          -3.8
+        ],
+        [
+          8.46,
+          -0.92
+        ],
+        [
+          13.9,
+          -0.04
+        ],
+        [
+          19.43,
+          0.0
+        ]
+      ],
+      "dimensioned_points_note": "every ordinate is printed; the table is symmetric about the diagonal",
+      "polyline": null,
+      "polyline_note": "not traced yet",
+      "applies_to": "all four corners, mirrored"
+    },
+    "concentric_plan_outlines": null
+  },
+  "glass": {
+    "front_glass_width": 75.58,
+    "front_glass_length": 161.03,
+    "back_glass_to_camera_glass": 4.89,
+    "note": "sheet prints 2.78 back plate to camera plateau and 2.11 camera plateau to rear camera glass; 4.89 is their sum"
+  },
+  "display": {
+    "active_area_width": 72.86,
+    "active_area_length": 158.31,
+    "cutout": {
+      "type": "island: pill-shaped cutout inside the display active area",
+      "width": 15.68,
+      "depth": 6.07,
+      "x": [
+        31.15,
+        46.83
+      ],
+      "y_top": -4.875,
+      "y_bottom": -10.945,
+      "centre_y": -7.91,
+      "centred_on_product": true,
+      "bottom_corner_radius": null,
+      "bottom_corner_radius_count": null,
+      "top_corner_radius": null,
+      "top_corner_radius_count": null,
+      "radius_note": "no radius printed; the ends are drawn as full semicircles, R 3.035 if exact",
+      "corner_note": "x, y_top and y_bottom are derived from the printed width, height 6.07 and centre"
+    },
+    "housing_edge_to_active_area": 2.56,
+    "housing_edge_to_flat_area_top_side": 2.56,
+    "margins": {
+      "left": 2.56,
+      "right": 2.56,
+      "top": 2.56,
+      "note": "housing edge to active area is 2.56 all around"
+    }
+  },
+  "buttons": [
+    {
+      "name": "action",
+      "side": "left",
+      "center_y": -34.28,
+      "length": 6.9,
+      "length_source": "2X 3.45",
+      "protrusion": 0.45
+    },
+    {
+      "name": "volume_up",
+      "side": "left",
+      "center_y": -48.43,
+      "length": 11.2,
+      "length_source": "4X 5.60",
+      "protrusion": 0.45
+    },
+    {
+      "name": "volume_down",
+      "side": "left",
+      "center_y": -62.63,
+      "length": 11.2,
+      "length_source": "4X 5.60",
+      "protrusion": 0.45
+    },
+    {
+      "name": "side_power",
+      "side": "right",
+      "center_y": -55.53,
+      "length": 17.7,
+      "length_source": "2X 8.85",
+      "protrusion": 0.45
+    },
+    {
+      "name": "camera_control",
+      "side": "right",
+      "center_y": -111.82,
+      "length": 17.1,
+      "length_source": "2X 8.55",
+      "protrusion": 0.0,
+      "width_across_thickness": 3.03
+    }
+  ],
+  "button_cross_section": {
+    "width_across_thickness": 2.66,
+    "centre_z": -4.375,
+    "callouts": [
+      "3X 2.66",
+      "4X 4.375",
+      "2.66 and 2X 4.375 on the right-side view",
+      "3.03 camera control"
+    ],
+    "note": "2.66 is the width of action, volume and side buttons across the thickness; camera control is 3.03. 4.375 is the centre depth from the front face, the midplane."
+  },
+  "sim_tray": {
+    "side": "left",
+    "center_y": -125.38,
+    "length": 19.6,
+    "length_source": "2X 9.80",
+    "width_across_thickness": 2.56,
+    "centre_z": -4.375,
+    "measured": null,
+    "note": "flush: front view calls out 0.00 protrusion"
+  },
+  "camera_control": {
+    "source": "sheet 2, details E and X, sections H-H, L-L, J-J, K-K, Z-Z",
+    "typical_keepout": {
+      "length": 25.0,
+      "width": 8.4,
+      "width_source": "2X 4.20 from the centreline",
+      "corner_radius": 2.2,
+      "corner_radius_count": 4,
+      "measured": "from surface",
+      "angle_all_around": 55
+    },
+    "thin_case_keepout": {
+      "length_at_0_4": 29.7,
+      "width_at_0_4": 6.32,
+      "length_at_surface": 17.5,
+      "width_at_surface": 3.4,
+      "depth": 0.4,
+      "angle_all_around": 130,
+      "wall_angle": 25
+    },
+    "chamfer": {
+      "width": 0.18,
+      "angle": 16,
+      "depth": 0.63,
+      "all_around": true
+    },
+    "note": "sections L-L and K-K: avoid narrow edges or acute angles to preserve tactile feel at the keepout edge"
+  },
+  "bottom_edge": {
+    "usb_c": {
+      "opening_x": [
+        34.49,
+        43.49
+      ],
+      "opening_width": 9.0,
+      "centered_on_width": true,
+      "recommended_connector_keepout": {
+        "width": 12.45,
+        "height": 6.6,
+        "corner_radius": 3.25,
+        "corner_radius_count": 2,
+        "inner_height": null,
+        "requirement": "keepout area must be flush to the product surface and extend outward 14.0 mm"
+      },
+      "opening_height": 3.14,
+      "opening_centre_z": -4.375,
+      "opening_height_note": "3.14 dimensioned in detail C"
+    },
+    "screws": {
+      "diameter": 1.5,
+      "count": 2,
+      "x": [
+        32.06,
+        45.91
+      ],
+      "centre_z": -4.375
+    },
+    "speaker_ports": {
+      "diameter": 1.53,
+      "count": 12,
+      "left_group": {
+        "count": 6,
+        "x_span": null
+      },
+      "right_group": {
+        "count": 6,
+        "x_span": null
+      },
+      "note": "12X 1.53 ports, each centre printed. Roles are from the leaders; unlabelled ports have role null.",
+      "pitch": null,
+      "centres": [
+        15.4,
+        17.65,
+        19.91,
+        22.16,
+        24.42,
+        26.67,
+        51.3,
+        53.56,
+        55.81,
+        58.07,
+        60.32,
+        62.58
+      ],
+      "roles": [
+        {
+          "x": 15.4,
+          "role": "speaker"
+        },
+        {
+          "x": 17.65,
+          "role": "speaker"
+        },
+        {
+          "x": 19.91,
+          "role": "speaker"
+        },
+        {
+          "x": 22.16,
+          "role": "speaker"
+        },
+        {
+          "x": 24.42,
+          "role": "speaker"
+        },
+        {
+          "x": 26.67,
+          "role": "bottom_mic_2"
+        },
+        {
+          "x": 51.3,
+          "role": null
+        },
+        {
+          "x": 53.56,
+          "role": null
+        },
+        {
+          "x": 55.81,
+          "role": null
+        },
+        {
+          "x": 58.07,
+          "role": "bottom_mic_1"
+        },
+        {
+          "x": 60.32,
+          "role": "bottom_mic_1"
+        },
+        {
+          "x": 62.58,
+          "role": null
+        }
+      ],
+      "centre_z": -4.375
+    },
+    "face_height": 4.375
+  },
+  "top_edge": {
+    "receiver_slot": {
+      "width": 26.58,
+      "center_x": 38.99,
+      "z_from_front": null,
+      "callouts": [
+        0.46,
+        1.37,
+        26.58
+      ]
+    },
+    "note": "detail A: ports for receiver and front mic, 26.58 wide centred on x 38.99. 1.37 and 0.46 are across the thickness; not traced to z."
+  },
+  "rear_camera": {
+    "all_features_on_row_y": null,
+    "row_callout": null,
+    "lens": [
+      {
+        "name": "rear_camera_1",
+        "center": [
+          63.61,
+          -14.37
+        ],
+        "x_back": 14.37,
+        "outer_diameter": 16.58
+      },
+      {
+        "name": "rear_camera_2",
+        "center": [
+          63.61,
+          -33.61
+        ],
+        "x_back": 14.37,
+        "outer_diameter": 16.58
+      },
+      {
+        "name": "rear_camera_3",
+        "center": [
+          45.49,
+          -23.99
+        ],
+        "x_back": 32.49,
+        "outer_diameter": 16.58
+      }
+    ],
+    "rear_mic": {
+      "center": [
+        13.82,
+        -23.99
+      ],
+      "diameter": 1.15,
+      "x_back": 64.16,
+      "x_front": 13.82
+    },
+    "flash": {
+      "center": [
+        13.82,
+        -13.82
+      ],
+      "diameter": 6.9,
+      "x_back": 64.16,
+      "x_front": 13.82
+    },
+    "rear_sensor": {
+      "center": [
+        13.82,
+        -34.16
+      ],
+      "diameter": 6.9,
+      "x_back": 64.16,
+      "x_front": 13.82
+    },
+    "plateau_height_above_back_glass": 2.78,
+    "keepout_cones": {
+      "rear_camera_1": {
+        "angle": 125,
+        "base_diameter": 5.0,
+        "cone_to_cover_glass": 10.76
+      },
+      "rear_camera_2": {
+        "angle": 90,
+        "base_diameter": 5.0,
+        "cone_to_cover_glass": 7.81
+      },
+      "rear_camera_3": {
+        "angle": 34,
+        "base_diameter": 5.0,
+        "cone_to_cover_glass": 8.43
+      },
+      "flash_inner": {
+        "angle": 123,
+        "base_diameter": 6.65
+      },
+      "flash_outer": {
+        "angle": 157
+      },
+      "flash_callouts": [
+        14.0,
+        11.53
+      ],
+      "rear_sensor": {
+        "angle": 84,
+        "base_diameter": 5.0,
+        "callout": 10.28
+      }
+    },
+    "plateau_step_above_back_face": 2.78,
+    "glass_above_plateau": 2.11,
+    "frame_note": "detail D is a back-facing view. center is product-frame; x_back keeps the printed ordinate."
+  },
+  "front_sensors": {
+    "label": "detail M, sections P-P and R-R",
+    "receiver_keepout_width": 28.85,
+    "front_camera_cone_angle": 38,
+    "als_cone_angle": 30,
+    "block_width": null,
+    "front_camera_keepout": {
+      "width": 15.68,
+      "height": 6.07,
+      "center": [
+        38.99,
+        -7.91
+      ],
+      "corner_radius": 2.93,
+      "corner_radius_count": 2
+    },
+    "front_sensor": {
+      "center_x": 14.07,
+      "radius": 1.84,
+      "keepout_height": 1.4,
+      "cone_angle": 46,
+      "cone_base_to_cover_glass": 0.6
+    },
+    "als": {
+      "center_x": 24.93,
+      "center_y": -11.46,
+      "keepout_width": 5.55,
+      "keepout_height": 1.4,
+      "end_radius": 0.7,
+      "end_radius_count": 2,
+      "cone_base_to_cover_glass": 0.95
+    },
+    "front_camera_cone_base_to_cover_glass": 0.6,
+    "other_callouts": [
+      0.45,
+      1.15
+    ],
+    "corner_radius": 2.93,
+    "corner_radius_count": 2,
+    "confidence": "values exact. The row of front sensor, ALS and camera is read from leader positions; 0.45 and 1.15 were not traced to an edge."
+  },
+  "magsafe": {
+    "center": [
+      38.99,
+      -81.71
+    ],
+    "center_is_product_center": false,
+    "inner_zone": {
+      "diameter": 57.5,
+      "notes": [
+        1,
+        5,
+        7
+      ],
+      "rule": "no metal, conductive material, or magnetic material"
+    },
+    "outer_zone": {
+      "radius": 49.39,
+      "diameter": 98.78,
+      "notes": [
+        5,
+        7
+      ],
+      "rule": "no magnetic or permeable material except MagSafe magnets",
+      "clip": "full width band from the camera region down to y -115.14 (2X 115.14), then the R49.39 arc"
+    }
+  },
+  "compass": {
+    "center": [
+      28.19,
+      -157.45
+    ],
+    "keepout_diameter": null,
+    "x_back": 49.79
+  },
+  "camera_keepout_region": null,
+  "antenna_keepouts": {
+    "rule": "no metal or other conductive material, full product volume including side walls",
+    "regions": [
+      {
+        "name": "top_region",
+        "x": [
+          0.0,
+          77.98
+        ],
+        "y": [
+          0.0,
+          -58.01
+        ],
+        "x_back": [
+          0.0,
+          77.98
+        ],
+        "corner_radii": [
+          11.7,
+          11.96,
+          14.0,
+          14.0
+        ]
+      },
+      {
+        "name": "bottom_block_back_left",
+        "x": [
+          63.78,
+          77.98
+        ],
+        "y": [
+          -131.09,
+          -163.43
+        ],
+        "x_back": [
+          0.0,
+          14.2
+        ]
+      },
+      {
+        "name": "bottom_step_back_left",
+        "x": [
+          50.45,
+          63.78
+        ],
+        "y": [
+          -136.62,
+          -163.43
+        ],
+        "x_back": [
+          14.2,
+          27.53
+        ],
+        "corner_radius": 3.2
+      },
+      {
+        "name": "bottom_block_back_right",
+        "x": [
+          0.0,
+          14.2
+        ],
+        "y": [
+          -131.09,
+          -163.43
+        ],
+        "x_back": [
+          63.78,
+          77.98
+        ]
+      },
+      {
+        "name": "bottom_band",
+        "x": [
+          0.0,
+          77.98
+        ],
+        "y": [
+          -149.23,
+          -163.43
+        ],
+        "x_back": [
+          0.0,
+          77.98
+        ]
+      }
+    ],
+    "frame_note": "dimensioned in sheet 4 view 1, a back-facing view. x is product-frame; x_back keeps the printed ordinates."
+  },
+  "top_view_cone": {
+    "rule": "do not obstruct this view cone with metal or other conductive material",
+    "x_back": [
+      [
+        22.05,
+        62.05
+      ],
+      [
+        12.05,
+        72.05
+      ]
+    ],
+    "x": [
+      [
+        15.93,
+        55.93
+      ],
+      [
+        5.93,
+        65.93
+      ]
+    ],
+    "height_above_top_edge": 0.78,
+    "angle_x": 27,
+    "width_across_thickness": 14.5,
+    "angle_z": 44,
+    "note": "sheet 4 view 3 (back view) and the side view beside it. Listed ranges are cone base first, then its outer edge where printed."
+  },
+  "rear_logo": {
+    "width": 16.32,
+    "height": 20.04,
+    "center": [
+      38.88,
+      -97.51
+    ],
+    "x_back": 39.1
+  },
+  "design_notes": [
+    {
+      "n": 1,
+      "text": "No metal contact with product."
+    },
+    {
+      "n": 2,
+      "text": "Do not obstruct ports."
+    },
+    {
+      "n": 3,
+      "text": "Do not obstruct the imaging features: front camera, rear cameras, rear flash, rear sensors."
+    },
+    {
+      "n": 4,
+      "text": "Do not obstruct forward facing sensors."
+    },
+    {
+      "n": 5,
+      "text": "Relative magnetic permeability of any metal used on case: 1.05 max, per ASTM A342/A342M-14."
+    },
+    {
+      "n": 6,
+      "text": "Do not touch glass."
+    },
+    {
+      "n": 7,
+      "text": "No magnets on rear of product except MagSafe magnets."
+    },
+    {
+      "n": 8,
+      "text": "Case thickness on backside of product: 2.1 mm max to ensure full functionality."
+    }
+  ],
+  "case_hard_limits": {
+    "max_backside_thickness": 2.1,
+    "max_relative_permeability": 1.05,
+    "permeability_standard": "ASTM A342/A342M-14",
+    "connector_clearance_outward": 14.0
+  },
+  "unverified": [
+    "sheet 1 values are read off rendered crops, not the content stream; the digits are unambiguous at 3x but not cross-checked against the vector geometry",
+    "edge_profile pairing, corner polyline and concentric outlines are not solved",
+    "front_sensors 0.45 and 1.15 mapping",
+    "top_view_cone base vs outer edge assignment"
+  ],
+  "derivation": null,
+  "frames": {
+    "product_frame": "x 0..77.98 measured from the product's left edge viewed from the FRONT, as datum declares.",
+    "front_facing_views": [
+      "sheet 1 front view",
+      "sheet 1 bottom view",
+      "sheet 3 detail M"
+    ],
+    "back_facing_views": [
+      "sheet 1 back view and detail D",
+      "sheet 4 views 1-3"
+    ],
+    "identified_by": "action and volume are on the product's left, side button and camera control on its right. A back-facing view has them swapped.",
+    "rule": "an x ordinate read in a back-facing view is 77.98 - x in the product frame. y is unaffected.",
+    "affects": "rear_camera, compass, rear_logo, antenna_keepouts and top_view_cone. Their printed x is kept as x_back."
+  },
+  "verified": null
+}
