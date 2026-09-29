@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Every text run of a drawing PDF with its position, one line each.
 
-    pdf-text.py <pdf> [page]     page x0 y0 text, points from the page's top left
+    pdf_text.py <pdf> [page]     page x0 y0 text, points from the page's top left
 
 Sheets whose text is drawn as vector outlines with no font print nothing here;
-read those off pdf-crop.py renders.
+read those off pdf_crop.py renders.
 """
 
 import sys

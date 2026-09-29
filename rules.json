@@ -1,5 +1,5 @@
 {
-  "about": "which knob combinations build, per phone, and the Apple guideline limits every build is checked against. the case source reads the knob defaults here and asserts the same rules; ./build skips what these rules out and fails on anything else. ADG = Accessory Design Guidelines (extract/pdf/adg.pdf).",
+  "about": "which knob combinations build, per phone, and the Apple guideline limits every build is checked against. case.py reads the knob defaults here and asserts the same rules; it skips what these rule out and fails on anything else. ADG = Accessory Design Guidelines (pdf/adg.pdf).",
   "knobs": {
     "BUTTONS": {
       "default": "windows",

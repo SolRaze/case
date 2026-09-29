@@ -2,7 +2,7 @@
   "product": "Apple Vision Pro",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-vision-pro.pdf",
-    "file": "extract/pdf/apple-vision-pro.pdf",
+    "file": "pdf/apple-vision-pro.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2024-05-13",
     "sheets": 8

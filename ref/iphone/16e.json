@@ -1,12 +1,12 @@
 {
   "product": "iPhone 16e",
   "source": {
-    "file": "extract/pdf/iphone-16e.pdf",
+    "file": "pdf/iphone-16e.pdf",
     "title": "iPhone 16e Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2025-03-17",
     "sheets": 2,
-    "extracted_by": "sheet 1 is vector outlines with no font; compared against the iPhone 17e sheet by pixel diff (pdf-crop + magick compare) and read off renders where they differ. Sheet 2 text layer matches the 17e sheet value for value except R49.39.",
+    "extracted_by": "sheet 1 is vector outlines with no font; compared against the iPhone 17e sheet by pixel diff (pdf_crop + magick compare) and read off renders where they differ. Sheet 2 text layer matches the 17e sheet value for value except R49.39.",
     "extracted_on": "2026-09-29",
     "coordinate_note": "drawing geometry lives in a Form XObject placed by the page stream with '1 0 0 1 31.946 34.35 cm'. Add that offset to convert extracted form coordinates to page points.",
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-16e.pdf"
@@ -732,7 +732,7 @@
     "affects": "rear_camera, compass, camera_keepout_region and antenna_keepouts were all dimensioned in back-facing views. Their printed x values are kept below as x_back with the product-frame value alongside as x_front. Everything else in this file is already product-frame or symmetric about x 35.76."
   },
   "verified": {
-    "tool": "extract/phone-body-check.py",
+    "tool": "tools/body_check.py",
     "method": "every value above measured against the drawn vector paths in the PDF, mapped to mm from each view's own extents",
     "worst_deviation_mm": 0.0416,
     "resolved_here": [

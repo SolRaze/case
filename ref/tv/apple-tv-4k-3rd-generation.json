@@ -2,7 +2,7 @@
   "product": "Apple TV 4K (3rd generation)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-tv-4k-3rd-generation.pdf",
-    "file": "extract/pdf/apple-tv-4k-3rd-generation.pdf",
+    "file": "pdf/apple-tv-4k-3rd-generation.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2022-10-26",
     "sheets": 1

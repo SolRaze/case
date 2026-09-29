@@ -2,7 +2,7 @@
   "product": "AirPods Max",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/airpods-max.pdf",
-    "file": "extract/pdf/airpods-max.pdf",
+    "file": "pdf/airpods-max.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2024-09-19"
   },

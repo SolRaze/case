@@ -2,7 +2,7 @@
   "product": "AirPods (2nd generation)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/airpods-2nd-generation.pdf",
-    "file": "extract/pdf/airpods-2nd-generation.pdf",
+    "file": "pdf/airpods-2nd-generation.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2022-04-26",
     "sheets": 1

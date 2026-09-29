@@ -2,7 +2,7 @@
   "product": "iPad (10th generation)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-10th-generation.pdf",
-    "file": "extract/pdf/ipad-10th-generation.pdf",
+    "file": "pdf/ipad-10th-generation.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2022-10-26"
   },
@@ -17,7 +17,7 @@
     "angles": 0.5
   },
   "covers": "title block reads 11 inch iPad MFI; same product as the 10th generation part of the iPad (A16) sheet",
-  "extracted_by": "every sheet is vector outlines with no font; read off pdf-crop renders",
+  "extracted_by": "every sheet is vector outlines with no font; read off pdf_crop renders",
   "notes": {
     "1": "do not obstruct acoustic openings: front mic, rear mic, speakers",
     "2": "do not obstruct rear camera",

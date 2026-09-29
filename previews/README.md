@@ -1,6 +1,6 @@
 previews
 
-one section per phone, every style that builds, seen from the back | ./build writes them
+one section per phone, every style that builds, seen from the back | python case.py writes them
 
 <a name="12-mini"></a>12-mini
 

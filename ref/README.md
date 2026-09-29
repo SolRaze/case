@@ -1,9 +1,8 @@
 ref
 
 apple dimensional drawings, one json per model, grouped by family | 1 unit = 1 mm | null = not dimensioned on the sheet
-- pdfs from the source urls, fetched by extract/fetch.py into extract/pdf/, not committed
+- pdfs from the source urls, fetched by tools/fetch.py into pdf/, not committed
 - iphone/sizes.json | main-sheet summary of every iphone, what the case loader reads
-- rules.json | case knob rules and guideline limits
 - each json lists what was read by eye under unverified
 
 airpods

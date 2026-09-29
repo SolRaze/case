@@ -1,12 +1,12 @@
 {
   "product": "iPhone 14 Pro Max",
   "source": {
-    "file": "extract/pdf/iphone-14-pro-max.pdf",
+    "file": "pdf/iphone-14-pro-max.pdf",
     "title": "iPhone 14 Pro Max Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2022-09-21",
     "sheets": 3,
-    "extracted_by": "all sheets: vector outlines with no font, read off pdf-crop renders",
+    "extracted_by": "all sheets: vector outlines with no font, read off pdf_crop renders",
     "extracted_on": "2026-09-29",
     "coordinate_note": null,
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-14-pro-max.pdf"

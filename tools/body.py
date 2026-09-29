@@ -5,8 +5,8 @@ Sweeps the plan outline - the detail-A corner polyline reflected into four corne
 through the detail-B edge profile and writes a binary STL in drawing coordinates:
 x 0..width, y 0..-length, z 0..-thickness, with z 0 at the front cover-glass plane.
 
-Usage: phone-body.py <spec.json> [out.stl]
-Self-check: phone-body.py --test
+Usage: python tools/body.py <spec.json> [out.stl]
+Self-check: python tools/body.py --test
 """
 
 import json
@@ -15,51 +15,8 @@ import struct
 import sys
 from pathlib import Path
 
-
-def shoelace(ring):
-    return sum(ring[i - 1][0] * ring[i][1] - ring[i][0] * ring[i - 1][1]
-               for i in range(len(ring))) / 2.0
-
-
-def plan_outline(corner, width, length):
-    """The corner polyline reflected into all four corners, closed and counterclockwise.
-
-    The polyline runs from the side edge (x 0) to the end edge (y 0), so the reflected
-    copies must alternate direction for the ring to stay continuous.
-    """
-    mx = [(width - x, y) for x, y in corner]
-    my = [(x, -length - y) for x, y in corner]
-    mxy = [(width - x, -length - y) for x, y in corner]
-    ring = [tuple(p) for p in corner] + mx[::-1] + mxy + my[::-1]
-    if shoelace(ring) < 0:
-        ring.reverse()
-    return ring
-
-
-def offset_ring(ring, dist):
-    """Inward offset of a convex ring by dist, exact: each vertex is the intersection
-    of its two offset edges."""
-    n = len(ring)
-    normals = []
-    for i in range(n):
-        ax, ay = ring[i]
-        bx, by = ring[(i + 1) % n]
-        tx, ty = bx - ax, by - ay
-        m = math.hypot(tx, ty)
-        normals.append((-ty / m, tx / m))  # inward, for a counterclockwise ring
-    out = []
-    for i in range(n):
-        n1, n2 = normals[i - 1], normals[i]
-        vx, vy = ring[i]
-        det = n1[0] * n2[1] - n1[1] * n2[0]
-        if abs(det) < 1e-9:  # collinear edges: no corner to solve, slide along the normal
-            out.append((vx + dist * n2[0], vy + dist * n2[1]))
-            continue
-        c1 = vx * n1[0] + vy * n1[1] + dist
-        c2 = vx * n2[0] + vy * n2[1] + dist
-        out.append(((c1 * n2[1] - c2 * n1[1]) / det,
-                    (n1[0] * c2 - n2[0] * c1) / det))
-    return out
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from phone import offset_ring, plan_outline  # noqa: E402
 
 
 def levels(spec):

@@ -1,12 +1,12 @@
 {
   "product": "iPhone 16",
   "source": {
-    "file": "extract/pdf/iphone-16.pdf",
+    "file": "pdf/iphone-16.pdf",
     "title": "iPhone 16 Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2024-09-19",
     "sheets": 4,
-    "extracted_by": "sheets 1, 3, 4: extract/pdf-text.py text layer plus pdf-crop for the view mapping. sheet 2: vector outlines, read off renders",
+    "extracted_by": "sheets 1, 3, 4: tools/pdf_text.py text layer plus pdf_crop for the view mapping. sheet 2: vector outlines, read off renders",
     "extracted_on": "2026-09-29",
     "coordinate_note": null,
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-16.pdf"

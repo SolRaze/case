@@ -2,7 +2,7 @@
   "product": "ZEISS Optical Inserts for Apple Vision Pro",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/zeiss-optical-inserts.pdf",
-    "file": "extract/pdf/zeiss-optical-inserts.pdf",
+    "file": "pdf/zeiss-optical-inserts.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2024-05-13",
     "sheets": 4

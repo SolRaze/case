@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Download Apple's public dimensional drawings into extract/pdf/ (gitignored).
+"""Download Apple's public dimensional drawings into pdf/ (gitignored).
 
-    python3 extract/fetch.py            every pdf linked from the drawings page
-    python3 extract/fetch.py iphone-17  only names containing any argument
-    python3 extract/fetch.py --list     print the urls, newest first, download nothing
+    python3 tools/fetch.py            every pdf linked from the drawings page
+    python3 tools/fetch.py iphone-17  only names containing any argument
+    python3 tools/fetch.py --list     print the urls, newest first, download nothing
 
-The page lists products newest first; that order is kept in extract/pdf/index.txt.
+The page lists products newest first; that order is kept in pdf/index.txt.
 The Accessory Design Guidelines, the case rules, come along as adg.pdf.
 """
 
@@ -17,7 +17,7 @@ from pathlib import Path
 SITE = "https://developer.apple.com"
 PAGE = SITE + "/accessories/dimensional-drawings/"
 ADG = SITE + "/accessories/Accessory-Design-Guidelines.pdf"
-DEST = Path(__file__).resolve().parent / "pdf"
+DEST = Path(__file__).resolve().parents[1] / "pdf"
 
 
 def get(url):

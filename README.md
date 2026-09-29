@@ -3,18 +3,18 @@ case
 parametric iphone case for any phone in ref/iphone | 3d-printable stl | apple dimensional drawing data for every product on the accessories drawings page
 
 layout
-- blender/ | case.py print source: constants, geometry, checks, stl export, previews | styles.json styles as named knob sets
-- build | every phone x style, one process per phone, to out/<phone>/<style>.stl and previews/<phone>/<style>.png
-- ref/rules.json | knob defaults, invalid combinations and why, guideline limits | extract/rules.py reads it
-- ref/ | drawing data per product family, one json per model | index in ref/README.md
-- extract/ | phone loader, drawing fetch and reading tools, body solid and its check against the drawing
+- case.py | the case: geometry, checks, stl export, previews, command line
+- phone.py | a phone from ref/iphone | rules.py and rules.json | which knobs build, and the guideline limits
+- styles.json | styles as named knob sets
+- ref/ | drawing data per product, one json per model, index in ref/README.md
+- previews/ | every build seen from the back | tools/ | drawing fetch and reading, phone body check, readme writer
 
 run
-- `./build` 17e, every style | `./build magsafe frame` | `./build --phone 16 --phone air` | `./build --all`
-- `./build --check` no output files | `--no-png` stl only
-- `python extract/rules.py` phone x style table | `--write` refresh the invalid table | `--verify`
-- `python extract/fetch.py` drawings and guidelines into extract/pdf/, not committed
-- `python extract/readme.py` rewrite the readmes from styles, rules, refs and previews
+- `python case.py` 17e, every style | `python case.py magsafe frame` | `--phone 16 --phone air` | `--all`
+- `--check` no output files | `--no-png` stl only | stl to out/, not committed
+- `python rules.py` phone x style table | `--write` refresh the invalid table | `--verify`
+- `python tools/fetch.py` drawings and guidelines into pdf/, not committed
+- `python tools/readme.py` rewrite the readmes
 
 styles
 - case | full case: a window per button, fitted camera ring, full back
@@ -75,7 +75,7 @@ limits | from the apple accessory design guidelines and the phone sheets, checke
 
 checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass
-- 277 of 390 phone x style build and pass | the rest are in ref/rules.json invalid
+- 277 of 390 phone x style build and pass | the rest are in rules.json invalid
 
 previews | from the back, grid in previews/README.md
 - 5s | none, sheet has no corner profile
@@ -110,6 +110,6 @@ previews | from the back, grid in previews/README.md
 - [18-pro-max](previews/README.md#18-pro-max) | 4 styles
 
 requirements
-- `pip install -r requirements.txt` | numpy, pymupdf and the python module of the modelling tool | libegl for headless previews
+- `pip install -r requirements.txt` | blender's python module, numpy, pymupdf | libegl for headless previews
 
 license mit

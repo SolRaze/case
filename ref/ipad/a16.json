@@ -2,7 +2,7 @@
   "product": "iPad (A16)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-a16.pdf",
-    "file": "extract/pdf/ipad-a16.pdf",
+    "file": "pdf/ipad-a16.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",
@@ -16,7 +16,7 @@
     "angles": 0.5
   },
   "covers": "title block lists iPad (A16) and iPad (10th generation); sheet 4 magnet detail is 10th generation only, sheet 5 is A16",
-  "extracted_by": "every sheet is vector outlines with no font; read off pdf-crop renders",
+  "extracted_by": "every sheet is vector outlines with no font; read off pdf_crop renders",
   "notes": {
     "1": "do not obstruct acoustic openings: front mic, rear mic, speakers",
     "2": "do not obstruct front camera, rear camera",

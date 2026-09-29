@@ -2,7 +2,7 @@
   "product": "Apple Vision Pro Battery",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-vision-pro-battery.pdf",
-    "file": "extract/pdf/apple-vision-pro-battery.pdf",
+    "file": "pdf/apple-vision-pro-battery.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2024-05-13",
     "sheets": 1

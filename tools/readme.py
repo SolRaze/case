@@ -1,29 +1,29 @@
-"""Write README.md, previews/README.md and ref/README.md from styles.json, ref/rules.json, the
-refs and the built previews. Run after ./build --all or any ref change."""
+"""Write README.md, previews/README.md and ref/README.md from styles.json, rules.json, the
+refs and the built previews. Run after python case.py --all or any ref change."""
 
 import json
 from pathlib import Path
 
 R = Path(__file__).resolve().parents[1]
-styles = json.loads((R / "blender/styles.json").read_text())
-rules = json.loads((R / "ref/rules.json").read_text())
+styles = json.loads((R / "styles.json").read_text())
+rules = json.loads((R / "rules.json").read_text())
 phones = list(json.loads((R / "ref/iphone/sizes.json").read_text())["phones"])
 
 L = []
 L += ["case", "",
       "parametric iphone case for any phone in ref/iphone | 3d-printable stl | apple dimensional drawing data for every product on the accessories drawings page", "",
       "layout",
-      "- blender/ | case.py print source: constants, geometry, checks, stl export, previews | styles.json styles as named knob sets",
-      "- build | every phone x style, one process per phone, to out/<phone>/<style>.stl and previews/<phone>/<style>.png",
-      "- ref/rules.json | knob defaults, invalid combinations and why, guideline limits | extract/rules.py reads it",
-      "- ref/ | drawing data per product family, one json per model | index in ref/README.md",
-      "- extract/ | phone loader, drawing fetch and reading tools, body solid and its check against the drawing", "",
+      "- case.py | the case: geometry, checks, stl export, previews, command line",
+      "- phone.py | a phone from ref/iphone | rules.py and rules.json | which knobs build, and the guideline limits",
+      "- styles.json | styles as named knob sets",
+      "- ref/ | drawing data per product, one json per model, index in ref/README.md",
+      "- previews/ | every build seen from the back | tools/ | drawing fetch and reading, phone body check, readme writer", "",
       "run",
-      "- `./build` 17e, every style | `./build magsafe frame` | `./build --phone 16 --phone air` | `./build --all`",
-      "- `./build --check` no output files | `--no-png` stl only",
-      "- `python extract/rules.py` phone x style table | `--write` refresh the invalid table | `--verify`",
-      "- `python extract/fetch.py` drawings and guidelines into extract/pdf/, not committed",
-      "- `python extract/readme.py` rewrite the readmes from styles, rules, refs and previews", "",
+      "- `python case.py` 17e, every style | `python case.py magsafe frame` | `--phone 16 --phone air` | `--all`",
+      "- `--check` no output files | `--no-png` stl only | stl to out/, not committed",
+      "- `python rules.py` phone x style table | `--write` refresh the invalid table | `--verify`",
+      "- `python tools/fetch.py` drawings and guidelines into pdf/, not committed",
+      "- `python tools/readme.py` rewrite the readmes", "",
       "styles"]
 L += [f"- {n} | {s['about']}" for n, s in styles.items()]
 L += ["", "knobs"]
@@ -47,9 +47,9 @@ for r in rules["phones"]:
 L += ["", "limits | from the apple accessory design guidelines and the phone sheets, checked on every build"]
 L += [f"- {r['text']} ({r['source']})" for r in rules["limits"]]
 L += ["", "checks", "- every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass",
-      f"- {sum(1 for p in phones for s in styles if not (rules['invalid'].get(p, {}).get(s)))} of {len(phones) * len(styles)} phone x style build and pass | the rest are in ref/rules.json invalid", "",
+      f"- {sum(1 for p in phones for s in styles if not (rules['invalid'].get(p, {}).get(s)))} of {len(phones) * len(styles)} phone x style build and pass | the rest are in rules.json invalid", "",
       "previews | from the back, grid in previews/README.md"]
-P = ["previews", "", "one section per phone, every style that builds, seen from the back | ./build writes them", ""]
+P = ["previews", "", "one section per phone, every style that builds, seen from the back | python case.py writes them", ""]
 for p in phones:
     built = [s for s in styles if (R / f"previews/{p}/{s}.png").exists()]
     if built:
@@ -59,7 +59,7 @@ for p in phones:
     else:
         L.append(f"- {p} | none, {', '.join(sorted(set(rules['invalid'][p].values())))}")
 (R / "previews/README.md").write_text("\n".join(P))
-L += ["", "requirements", "- `pip install -r requirements.txt` | numpy, pymupdf and the python module of the modelling tool | libegl for headless previews", "",
+L += ["", "requirements", "- `pip install -r requirements.txt` | blender's python module, numpy, pymupdf | libegl for headless previews", "",
       "license mit"]
 (R / "README.md").write_text("\n".join(L) + "\n")
 
@@ -72,9 +72,9 @@ for f in sorted(R.glob("ref/*/*.json")):
     s = d.get("source", {})
     fam.setdefault(f.parent.name, []).append((d.get("product", f.stem), f.relative_to(R / "ref"), s.get("sheet_date"), s.get("url")))
 X = ["ref", "", "apple dimensional drawings, one json per model, grouped by family | 1 unit = 1 mm | null = not dimensioned on the sheet",
-     "- pdfs from the source urls, fetched by extract/fetch.py into extract/pdf/, not committed",
+     "- pdfs from the source urls, fetched by tools/fetch.py into pdf/, not committed",
      "- iphone/sizes.json | main-sheet summary of every iphone, what the case loader reads",
-     "- rules.json | case knob rules and guideline limits", "- each json lists what was read by eye under unverified", ""]
+     "- each json lists what was read by eye under unverified", ""]
 for k in sorted(fam):
     X += [k, "", "| model | file | sheet date | source |", "|---|---|---|---|"]
     for prod, path, date, url in sorted(fam[k], key=lambda t: t[2] or "", reverse=True):

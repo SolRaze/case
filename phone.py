@@ -9,29 +9,64 @@ from the 17e drawing.
 Frame: x 0..W across the front, y 0..-L down, z 0 at the front glass.
 """
 
-import importlib.util
 import json
 import math
 from pathlib import Path
 
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parent
 APPLE = ROOT / "ref/iphone"
 SIZES = APPLE / "sizes.json"
 REF_SPEC = APPLE / "17e.json"
 SPLINE = 8            # samples per span between dimensioned corner points
 
 
-def _outline_module():
-    """phone-body.py owns the squircle outline and the exact ring offset."""
-    spec = importlib.util.spec_from_file_location("phone_body", ROOT / "extract/phone-body.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+def shoelace(ring):
+    return sum(ring[i - 1][0] * ring[i][1] - ring[i][0] * ring[i - 1][1]
+               for i in range(len(ring))) / 2.0
 
 
-pb = _outline_module()
+def plan_outline(corner, width, length):
+    """The corner polyline reflected into all four corners, closed and counterclockwise.
+
+    The polyline runs from the side edge (x 0) to the end edge (y 0), so the reflected
+    copies must alternate direction for the ring to stay continuous.
+    """
+    mx = [(width - x, y) for x, y in corner]
+    my = [(x, -length - y) for x, y in corner]
+    mxy = [(width - x, -length - y) for x, y in corner]
+    ring = [tuple(p) for p in corner] + mx[::-1] + mxy + my[::-1]
+    if shoelace(ring) < 0:
+        ring.reverse()
+    return ring
+
+
+def offset_ring(ring, dist):
+    """Inward offset of a convex ring by dist, exact: each vertex is the intersection
+    of its two offset edges."""
+    n = len(ring)
+    normals = []
+    for i in range(n):
+        ax, ay = ring[i]
+        bx, by = ring[(i + 1) % n]
+        tx, ty = bx - ax, by - ay
+        m = math.hypot(tx, ty)
+        normals.append((-ty / m, tx / m))  # inward, for a counterclockwise ring
+    out = []
+    for i in range(n):
+        n1, n2 = normals[i - 1], normals[i]
+        vx, vy = ring[i]
+        det = n1[0] * n2[1] - n1[1] * n2[0]
+        if abs(det) < 1e-9:  # collinear edges: no corner to solve, slide along the normal
+            out.append((vx + dist * n2[0], vy + dist * n2[1]))
+            continue
+        c1 = vx * n1[0] + vy * n1[1] + dist
+        c2 = vx * n2[0] + vy * n2[1] + dist
+        out.append(((c1 * n2[1] - c2 * n1[1]) / det,
+                    (n1[0] * c2 - n2[0] * c1) / det))
+    return out
+
 
 def convex(ring):
     n = len(ring)
@@ -40,9 +75,9 @@ def convex(ring):
 
 
 def offset(ring, dist):
-    """pb.offset_ring, or where its mitres fold over - an inward offset deeper than a
+    """offset_ring, or where its mitres fold over - an inward offset deeper than a
     corner's curvature - the intersection of the ring's inward-shifted half-planes."""
-    out = pb.offset_ring(ring, dist)
+    out = offset_ring(ring, dist)
     if convex(out):
         return out
     poly = list(ring)

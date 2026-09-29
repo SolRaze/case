@@ -2,12 +2,12 @@
   "product": "iPhone SE (3rd generation)",
   "covers": "title block lists iPhone SE (3rd generation) and iPhone SE (2nd generation)",
   "source": {
-    "file": "extract/pdf/iphone-se-3rd-generation.pdf",
+    "file": "pdf/iphone-se-3rd-generation.pdf",
     "title": "iPhone SE (3rd generation) Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2022-04-26",
     "sheets": 1,
-    "extracted_by": "vector outlines with no font, read off pdf-crop renders",
+    "extracted_by": "vector outlines with no font, read off pdf_crop renders",
     "extracted_on": "2026-09-29",
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-se-3rd-generation.pdf"
   },

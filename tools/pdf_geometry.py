@@ -9,7 +9,7 @@ that form's frame, with every cm inside it applied. Text objects are skipped.
     components(segs)       connected groups of endpoints, rounded to 0.01 pt
     streams(doc)           xrefs of every form or page content stream, biggest first
 
-Usage: pdf-geometry.py <pdf>   lists the streams and their segment counts
+Usage: pdf_geometry.py <pdf>   lists the streams and their segment counts
 """
 
 import re

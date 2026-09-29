@@ -1,14 +1,14 @@
 """Phone case for any phone in ref/iphone/sizes.json, the print source. 1 unit = 1 mm.
 
-Geometry comes from the drawing JSON, not from measurement: extract/phones.py reads a
-phone out of ref/iphone/, and the Accessory Design Guidelines (extract/pdf/adg.pdf,
-fetched by extract/fetch.py) set the limits, cited below as ADG: chapter 5 "Cases"
+Geometry comes from the drawing JSON, not from measurement: phone.py reads a
+phone out of ref/iphone/, and the Accessory Design Guidelines (pdf/adg.pdf,
+fetched by tools/fetch.py) set the limits, cited below as ADG: chapter 5 "Cases"
 (pages 32-46) and 42.1 "MagSafe Case Magnet Array" (pages 269-272).
 
 Frame: x 0..W across the front, y 0..-L down the length, z 0 at the front cover-glass
 plane and -T at the back face.
 
-Knobs, defaults in ref/rules.json; a style in styles.json beside this file is a named knob set.
+Knobs, defaults in rules.json; a style in styles.json is a named knob set.
   BUTTONS    "windows" one window per button | "slot" one window per side
   KEYS       button names printed as flexure keys that press through the wall;
              names this phone lacks are dropped
@@ -22,20 +22,26 @@ Knobs, defaults in ref/rules.json; a style in styles.json beside this file is a 
   CIG        cigarette clip along the right edge of the back
   COUPON     None | mm of each edge kept round the bottom-right corner, a fit test
 A fitted camera on a banded back stands on a spine, a full-width strip of back
-across the camera, which also carries the slider rails. ref/rules.json lists the
+across the camera, which also carries the slider rails. rules.json lists the
 valid combinations; the asserts in build() are the same rules.
 
-    python case.py -- --phone 17e [--style magsafe ...] [--out out] [--png previews]
+    python case.py                         every style, for the 17e
+    python case.py magsafe frame           these styles
+    python case.py --phone 16 --phone air  these phones
+    python case.py --all                   every phone in ref/iphone/sizes.json
+    python case.py --check                 check only, write nothing
+    python case.py --no-png                STL only
 
 builds each style, checks it (manifold, one solid, glass gap) and writes
-out/<phone>/<style>.stl and a PNG preview. Exit status 1 when a check fails.
-From an interactive session: ns = runpy.run_path(path to this file), then
-ns["build"]("16", "magsafe", WALLS="sides") and ns["check"](obj).
+out/<phone>/<style>.stl and previews/<phone>/<style>.png. Several phones run one
+process each, which keeps memory bounded. A phone and style that rules.json rules
+out is skipped and says why; any other failure exits 1.
+From Python: import case; case.build("16", "magsafe", WALLS="sides"); case.check(obj).
 """
 
-import importlib.util
 import json
 import math
+import subprocess
 import sys
 from pathlib import Path
 
@@ -44,10 +50,10 @@ import bmesh
 import numpy as np
 from mathutils import Matrix, Vector
 
-ROOT = Path(__file__).resolve().parents[1]
-PHONES = ROOT / "extract/phones.py"
-STYLES = Path(__file__).resolve().with_name("styles.json")
-RULES = ROOT / "ref/rules.json"
+import phone as ph
+import rules
+
+ROOT = Path(__file__).resolve().parent
 SOLVER = "MANIFOLD"   # every operand is a closed loft, which is all this solver needs
 SEG = 64              # segments per full circle
 
@@ -102,23 +108,15 @@ CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
 CIG_LEN = 30.0
 CIG_Y = -120.0         # clip centre, below the MagSafe charger and clocking magnet
 
-KNOBS = {k: v["default"] for k, v in json.loads(RULES.read_text())["knobs"].items()}
+KNOBS = rules.knob_defaults()
 
 
 def styles():
     """{name: {"knobs": {...}, "output": "part" | "plate" | "slider", "about": str}}."""
-    return json.loads(STYLES.read_text())
+    return rules.STYLES
 
 
-def _module(name, path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-ph = _module("phones", PHONES)
-pb, offset, phone, phones = ph.pb, ph.offset, ph.phone, ph.phones
+offset, phone = ph.offset, ph.phone
 
 
 # Solids ----------------------------------------------------------------------
@@ -272,7 +270,7 @@ def build(name="17e", style="case", **knobs):
     bpy.context.scene.collection.children.link(SCRATCH)
 
     OUT = CLEAR + WALL
-    ring = pb.plan_outline(p["corner"], W, L)
+    ring = ph.plan_outline(p["corner"], W, L)
     outer = offset(ring, -OUT)
     inner = offset(ring, -CLEAR)
     front = offset(ring, LIP)
@@ -651,30 +649,31 @@ def preview(obj, path, size=200):
     bpy.ops.render.render(write_still=True)
 
 
-def invalid(name, style):
-    """Why ref/rules.json rules out this phone and style, or None."""
-    rules = _module("rules", ROOT / "extract/rules.py")
-    return rules.why_invalid(name, style)
-
-
-def main():
-    args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-
-    def opt(flag):
-        return [args[i + 1] for i, a in enumerate(args) if a == flag]
-
+def main(args):
     all_styles = styles()
-    names = opt("--phone") or ["17e"]
-    chosen = opt("--style") or list(all_styles)
-    out = Path(opt("--out")[0]) if opt("--out") else None
-    png = Path(opt("--png")[0]) if opt("--png") else None
+    names = [args[i + 1] for i, a in enumerate(args) if a == "--phone"]
+    names = ph.phones() if "--all" in args else names or ["17e"]
+    chosen = [a for i, a in enumerate(args) if not a.startswith("--") and (i == 0 or args[i - 1] != "--phone")]
+    bad = [st for st in chosen if st not in all_styles]
+    if bad:
+        raise SystemExit(f"no style named {', '.join(bad)}; styles are {', '.join(all_styles)}")
+    chosen = chosen or list(all_styles)
+    if len(names) > 1:
+        flags = [a for a in args if a in ("--check", "--no-png")]
+        failed = [n for n in names
+                  if subprocess.run([sys.executable, __file__, *chosen, *flags, "--phone", n], cwd=ROOT).returncode]
+        if failed:
+            raise SystemExit(f"failed: {', '.join(failed)}")
+        return
+    out = None if "--check" in args else ROOT / "out"
+    png = None if "--check" in args or "--no-png" in args else ROOT / "previews"
     bpy.ops.wm.read_factory_settings(use_empty=True)
     s = bpy.context.scene
     s.unit_settings.system, s.unit_settings.scale_length, s.unit_settings.length_unit = "METRIC", 0.001, "MILLIMETERS"
     failed = []
     for n in names:
         for st in chosen:
-            why = invalid(n, st)
+            why = rules.why_invalid(n, st)
             if why:
                 print(f"skip {n} {st}: {why}")
                 continue
@@ -700,5 +699,5 @@ def main():
         sys.exit(1)
 
 
-if __name__ == "__main__" and bpy.app.background:
-    main()
+if __name__ == "__main__":
+    main(sys.argv[1:])

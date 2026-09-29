@@ -17,29 +17,19 @@ Circles and corner blends are drawn as curves, so beziers are flattened before t
 components are walked - without that the camera, the screws and the MagSafe zone are
 all invisible.
 
-Usage: phone-body-check.py [spec.json] [drawing.pdf]
-The pdf defaults to the spec's source file under extract/pdf/, see extract/fetch.py.
+Usage: python tools/body_check.py [spec.json] [drawing.pdf]
+The pdf defaults to the spec's source file under pdf/, see tools/fetch.py.
 """
 
-import importlib.util
 import json
 import math
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent
-
-
-def _load(name, filename):
-    spec = importlib.util.spec_from_file_location(name, HERE / filename)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-geom = _load("pdfgeom", "pdf-geometry.py")
-body = _load("phonebody", "phone-body.py")
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+import pdf_geometry as geom  # noqa: E402
+from phone import plan_outline  # noqa: E402
 
 SHEET1, SHEET2 = 20, 25
 S1, S2 = 2.074425, 1.38293          # pt per mm, sheet 1 and sheet 2
@@ -171,7 +161,7 @@ def main():
     # ---- body outline, from both full-size views on sheet 1
     views = [c for c in c1 if abs((c[0][1] - c[0][0]) / W - S1) < 0.01
              and abs((c[0][3] - c[0][2]) / L - S1) < 0.01]
-    ring = body.plan_outline(b["corner"]["polyline"], W, L)
+    ring = plan_outline(b["corner"]["polyline"], W, L)
     for n, (bb, nodes, segs) in enumerate(sorted(views, key=lambda c: c[0][0]), 1):
         x0, x1, y0, y1 = bb
         sx, sy = (x1 - x0) / W, (y1 - y0) / L

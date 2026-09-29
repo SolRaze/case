@@ -2,7 +2,7 @@
   "product": "Apple Watch Ultra",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-watch-ultra.pdf",
-    "file": "extract/pdf/apple-watch-ultra.pdf",
+    "file": "pdf/apple-watch-ultra.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2022-09-21"
   },

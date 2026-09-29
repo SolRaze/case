@@ -2,7 +2,7 @@
   "product": "Apple Watch Series 11, 46 mm",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-watch-series-11-46mm.pdf",
-    "file": "extract/pdf/apple-watch-series-11-46mm.pdf",
+    "file": "pdf/apple-watch-series-11-46mm.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",

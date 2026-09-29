@@ -2,7 +2,7 @@
   "product": "iPad Pro 13-inch (M5)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-pro-13-inch-m5.pdf",
-    "file": "extract/pdf/ipad-pro-13-inch-m5.pdf",
+    "file": "pdf/ipad-pro-13-inch-m5.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",

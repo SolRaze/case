@@ -1,13 +1,13 @@
 {
   "product": "iPhone 18 Pro Max",
   "source": {
-    "file": "extract/pdf/iphone-18-pro-max.pdf",
+    "file": "pdf/iphone-18-pro-max.pdf",
     "title": "iPhone 18 Pro Max Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2026-09-09",
     "sheets": 4,
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-18-pro-max.pdf",
-    "extracted_by": "sheet 1: text is vector outlines with no font, read off pdf-crop renders. sheets 2-4: extract/pdf-text.py plus pdf-crop for the view mapping",
+    "extracted_by": "sheet 1: text is vector outlines with no font, read off pdf_crop renders. sheets 2-4: tools/pdf_text.py plus pdf_crop for the view mapping",
     "extracted_on": "2026-09-29",
     "coordinate_note": "sheet 1 geometry lives in Form XObject /I0 placed by '1 0 0 1 32.162 34.35 cm'. Add that offset to convert form coordinates to page points."
   },

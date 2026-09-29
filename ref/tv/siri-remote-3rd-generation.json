@@ -2,7 +2,7 @@
   "product": "Siri Remote (3rd generation)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/siri-remote-3rd-generation.pdf",
-    "file": "extract/pdf/siri-remote-3rd-generation.pdf",
+    "file": "pdf/siri-remote-3rd-generation.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2022-10-26",
     "sheets": 1

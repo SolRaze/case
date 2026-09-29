@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-"""ref/rules.json as code: which phone and style combinations build.
+"""rules.json as code: which phone and style combinations build.
 
     why_invalid(phone, style)   the first rule that rules the pair out, or None
     knob_defaults()             {knob: default}
 
-    python extract/rules.py            table of every phone x style, x where ruled out
-    python extract/rules.py --write    store the phone x style table as "invalid"
-    python extract/rules.py --verify   the sizes.json-derived phone lists and the table still match
+    python rules.py            table of every phone x style, x where ruled out
+    python rules.py --write    store the phone x style table as "invalid"
+    python rules.py --verify   the sizes.json-derived phone lists and the table still match
 """
 
 import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-RULES = json.loads((ROOT / "ref/rules.json").read_text())
-STYLES = json.loads((ROOT / "blender/styles.json").read_text())
+ROOT = Path(__file__).resolve().parent
+RULES = json.loads((ROOT / "rules.json").read_text())
+STYLES = json.loads((ROOT / "styles.json").read_text())
 
 
 def knob_defaults():
@@ -76,8 +76,8 @@ def invalid_table():
 
 
 def write_table():
-    """Store the table in ref/rules.json under "invalid", generated from the rules above."""
-    path = ROOT / "ref/rules.json"
+    """Store the table in rules.json under "invalid", generated from the rules above."""
+    path = ROOT / "rules.json"
     data = json.loads(path.read_text())
     data["invalid"] = invalid_table()
     path.write_text(json.dumps(data, indent=2) + "\n")

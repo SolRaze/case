@@ -1,12 +1,12 @@
 {
   "product": "iPhone 17",
   "source": {
-    "file": "extract/pdf/iphone-17.pdf",
+    "file": "pdf/iphone-17.pdf",
     "title": "iPhone 17 Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2025-09-09",
     "sheets": 4,
-    "extracted_by": "sheets 1-2: text is vector outlines with no font, read off pdf-crop renders. sheets 3-4: extract/pdf-text.py plus pdf-crop for the view mapping",
+    "extracted_by": "sheets 1-2: text is vector outlines with no font, read off pdf_crop renders. sheets 3-4: tools/pdf_text.py plus pdf_crop for the view mapping",
     "extracted_on": "2026-09-29",
     "coordinate_note": null,
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-17.pdf"

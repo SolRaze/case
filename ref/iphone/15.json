@@ -1,12 +1,12 @@
 {
   "product": "iPhone 15",
   "source": {
-    "file": "extract/pdf/iphone-15.pdf",
+    "file": "pdf/iphone-15.pdf",
     "title": "iPhone 15 Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2023-10-10",
     "sheets": 3,
-    "extracted_by": "sheet 1: vector outlines, read off pdf-crop renders. sheets 2-3: extract/pdf-text.py text layer plus pdf-crop for the view mapping",
+    "extracted_by": "sheet 1: vector outlines, read off pdf_crop renders. sheets 2-3: tools/pdf_text.py text layer plus pdf_crop for the view mapping",
     "extracted_on": "2026-09-29",
     "coordinate_note": null,
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-15.pdf"

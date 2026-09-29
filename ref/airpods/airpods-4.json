@@ -2,7 +2,7 @@
   "product": "AirPods 4",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/airpods-4.pdf",
-    "file": "extract/pdf/airpods-4.pdf",
+    "file": "pdf/airpods-4.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing",
     "sheet_date": "2024-09-19"
   },

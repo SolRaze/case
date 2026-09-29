@@ -2,7 +2,7 @@
   "product": "Apple Watch SE 3, 44 mm",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-watch-se-3-44mm.pdf",
-    "file": "extract/pdf/apple-watch-se-3-44mm.pdf",
+    "file": "pdf/apple-watch-se-3-44mm.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",
