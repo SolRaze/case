@@ -1,0 +1,73 @@
+{
+  "product": "AirPods (3rd generation)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/airpods-3rd-generation.pdf",
+    "file": "extract/pdf/airpods-3rd-generation.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2022-04-26",
+    "sheets": 1
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": {
+    "x.x": 0.2,
+    "x.xx": 0.1,
+    "x.xxx": 0.05,
+    "angles": 0.5
+  },
+  "body": {
+    "width": null,
+    "height": 26.2,
+    "depth": null,
+    "note": "height is stem tip to top of bud"
+  },
+  "notes": {
+    "1": "accessories intruding into shaded regions will negatively affect product performance",
+    "2": "accessories must not cover these metal surfaces"
+  },
+  "keepouts": [
+    {
+      "name": "stem and bud back shaded region",
+      "note": 1,
+      "applies": "stem outer surface and bud rear as hatched"
+    },
+    {
+      "name": "bud underside to stem tip",
+      "note": 1,
+      "height": 17.6
+    },
+    {
+      "name": "speaker nozzle",
+      "note": 1,
+      "dimensions": [
+        5.3,
+        9.2
+      ]
+    },
+    {
+      "name": "rear vent",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "top mic",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "stem front sensor",
+      "note": 1,
+      "band": 1.0
+    }
+  ],
+  "no_cover": [
+    {
+      "name": "stem tip charging contact ring",
+      "note": 2
+    }
+  ],
+  "unverified": [
+    "no text layer | values read from renders",
+    "feature names inferred from the views"
+  ]
+}
