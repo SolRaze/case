@@ -1,0 +1,405 @@
+{
+  "product": "iPad Air 11-inch (M2)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-air-11-inch-m2.pdf",
+    "file": "extract/pdf/ipad-air-11-inch-m2.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2024-05-13"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 5,
+  "general_tolerance": null,
+  "covers": "sheet title block lists iPad Air 11-inch (M4), (M3), (M2)",
+  "notes": {
+    "1": "do not obstruct acoustic openings: front mic, rear mic, speakers",
+    "2": "do not obstruct imaging features: front camera (FC), rear camera",
+    "3": "do not obstruct ambient light sensor (ALS)",
+    "4": "do not obstruct top button",
+    "5": "accessory shall not damage display coatings in any operating condition | hard plastic, metal or glass edges shall not contact display active area"
+  },
+  "frames": {
+    "front": "portrait, viewed from display | x from left edge | y from top or bottom edge as dimensioned",
+    "back": "viewed from back | rear camera top-left"
+  },
+  "body": {
+    "width": 178.52,
+    "height": 247.64,
+    "thickness": 6.123
+  },
+  "display_active_area": {
+    "width": 158.44,
+    "height": 227.56,
+    "border": 10.04
+  },
+  "corner_profile": {
+    "detail": "M",
+    "applies": "all four corners",
+    "x": [
+      0.0,
+      0.05,
+      1.52,
+      6.75,
+      12.88,
+      14.68
+    ],
+    "y": [
+      13.13,
+      6.75,
+      1.52,
+      0.01,
+      0.0
+    ]
+  },
+  "edge_profile": {
+    "detail": "N",
+    "x_top": [
+      0.0,
+      0.02,
+      0.21,
+      0.54,
+      0.97
+    ],
+    "z_top": [
+      0.0,
+      -0.02,
+      -0.19,
+      -0.54,
+      -1.12
+    ],
+    "z_bottom": [
+      1.12,
+      0.41,
+      0.24,
+      0.07,
+      0.0
+    ],
+    "x_bottom": [
+      0.0,
+      0.06,
+      0.17,
+      0.39,
+      0.7
+    ]
+  },
+  "speakers": {
+    "hole_diameter": 1.76,
+    "top_edge": {
+      "count": 21,
+      "x": [
+        3.04,
+        28.22,
+        35.92,
+        56.44
+      ]
+    },
+    "bottom_edge": {
+      "count": 24,
+      "x": [
+        3.04,
+        28.22,
+        56.44
+      ]
+    },
+    "note": 1,
+    "section_ab": [
+      3.09,
+      2.21
+    ]
+  },
+  "top_button": {
+    "x": [
+      1.09,
+      4.0,
+      12.69,
+      17.12
+    ],
+    "keepout_zone_angle": 120.0,
+    "keepout_at_surface": 20.12,
+    "keepout_to_housing": 0.0,
+    "keepout_to_cover_glass": 0.0,
+    "section_zz": [
+      3.09,
+      1.09
+    ],
+    "note": 4
+  },
+  "front_camera": {
+    "x": 114.32,
+    "y": 4.49,
+    "keepout_zone_diameter": 4.35,
+    "keepout_zone_angle": 121.01,
+    "keepout_at_surface": 3.89,
+    "note": 2
+  },
+  "als": {
+    "top": {
+      "x": [
+        22.13,
+        51.4
+      ],
+      "size": 3.0,
+      "corner": "C4",
+      "count": 2,
+      "edge_offset": 4.62,
+      "keepout_zone_angle": 99.64,
+      "keepout_at_surface_diameter": 3.2
+    },
+    "right": {
+      "y": 138.92,
+      "edge_offset": 4.49,
+      "keepout_at_surface_diameter": 3.7
+    },
+    "note": 3
+  },
+  "right_mic": {
+    "y": 133.32,
+    "edge_offset": 4.49,
+    "section_an": [
+      4.49,
+      4.09
+    ],
+    "note": 1
+  },
+  "usb_c": {
+    "recommended_keepout": [
+      12.45,
+      6.6
+    ],
+    "mating_connector_keepout": "flush to product surface | 14.0 outward required"
+  },
+  "rear_camera": {
+    "lens_diameter": 9.85,
+    "side_wall_diameter": 11.89,
+    "ring_diameter": 16.92,
+    "x": 12.68,
+    "y": 12.69,
+    "from_center_x": 76.56,
+    "from_center_y": 111.12,
+    "protrusion_to_cg_surface": 8.2,
+    "window_to_housing_back": 2.08,
+    "min_keepout": 3.21,
+    "keepout_zone_angle": 77,
+    "bump_profile": {
+      "detail": "K",
+      "x": [
+        -1.93,
+        -1.74,
+        -1.48,
+        -1.14,
+        -0.79,
+        -0.46,
+        -0.14,
+        0.0
+      ],
+      "z": [
+        2.52,
+        0.83,
+        0.47,
+        0.21,
+        0.07,
+        0.01,
+        0.0
+      ],
+      "radius": 0.12
+    },
+    "note": 2
+  },
+  "rear_mic": {
+    "keepout_diameter": 2.9,
+    "x": 12.68,
+    "y": 27.62,
+    "from_center_y": 96.2,
+    "note": 1
+  },
+  "volume_buttons": {
+    "plus": {
+      "from_top": 19.49,
+      "length": 10.06
+    },
+    "minus": {
+      "from_top": 31.55,
+      "length": 10.06
+    },
+    "gap": 2.0,
+    "width": 2.56,
+    "section_yy": [
+      1.81,
+      3.09
+    ]
+  },
+  "smart_connector": {
+    "count": 3,
+    "pitch": 4.97,
+    "contact_diameter": 3.4,
+    "opening_diameter": 3.96,
+    "to_enclosure": 10.05,
+    "from_bottom": 12.0
+  },
+  "inductive_charging_window": {
+    "section_xx": [
+      3.11,
+      3.09
+    ]
+  },
+  "magnets": {
+    "polarity_frame": "value is pole toward outer cosmetic surface | inside pole is opposite",
+    "polarity_outer": {
+      "BV1-11": "N",
+      "BV1-12": "S",
+      "BV1-21": "S",
+      "BV1-22": "N",
+      "BV1-23": "S",
+      "BV1-31": "N",
+      "BV1-32": "S",
+      "BV1-33": "N",
+      "BV1-41": "N",
+      "BV1-42": "N",
+      "BV1-43": "S",
+      "BV2-11": "N",
+      "BV2-12": "N",
+      "BV2-13": "S",
+      "BV2-21": "S",
+      "BV2-22": "N",
+      "BV2-31": "S",
+      "BV2-32": "S",
+      "BV2-41": "N",
+      "BV2-42": "S",
+      "BV2-43": "N",
+      "BV3-11": "S",
+      "BV3-12": "N",
+      "BV3-21": "N",
+      "BV3-22": "S",
+      "BV3-31": "S",
+      "BV3-32": "N",
+      "BV3-41": "N",
+      "BV3-42": "S",
+      "BV3-51": "S",
+      "BV3-52": "S",
+      "BV3-61": "N",
+      "BV3-62": "N",
+      "BV4-11": "S",
+      "BV4-12": "N",
+      "BV4-31": "S",
+      "BV4-32": "N",
+      "BV4-33": "S",
+      "BV4-41": "N",
+      "BV4-42": "S",
+      "BV4-43": "S",
+      "BV4-51": "S",
+      "BV4-52": "N",
+      "BV4-53": "N",
+      "CV1": "S",
+      "CV2": "N",
+      "CV3": "N",
+      "CV4": "S",
+      "HE1": "N",
+      "OR1": "S",
+      "OR2": "N",
+      "OR3": "N",
+      "OR4": "S",
+      "PM-CH-1": "S",
+      "PM-CH-2": "S",
+      "PM-CH-3": "N",
+      "PM-CH-4": "N",
+      "PM-FH-1": "N",
+      "PM-FH-2": "S",
+      "PM-FH-3": "S",
+      "SP-CH-1": "S",
+      "SP-CH-2": "N",
+      "SP-FH-1": "N",
+      "SP-FH-2": "S",
+      "A1": "S",
+      "A2": "N",
+      "A3": "S",
+      "PM-FH-4": "N"
+    },
+    "cg_split": {
+      "CG1": "N top half | S bottom half",
+      "CG2": "S top half | N bottom half"
+    },
+    "pm_notes": "PM-CH-1, PM-FH-2 S toward USB-C | PM-CH-3, PM-FH-4 N toward USB-C",
+    "right_edge_keepouts_from_bottom": {
+      "flux_upper": [
+        140.57,
+        143.37
+      ],
+      "pm_fh": [
+        136.51,
+        139.7,
+        143.41,
+        148.77
+      ],
+      "keepout_block": [
+        89.05,
+        100.57,
+        117.68,
+        129.07
+      ],
+      "flux_lower": [
+        74.77,
+        77.57
+      ],
+      "pm_ch": [
+        71.37,
+        74.73,
+        78.44,
+        81.63
+      ]
+    },
+    "magnetic_flux_keepout": "3 mm thick centred in product thickness | max 0.25 mT in cross-hatched region",
+    "flux_line_limit": "max 1.3 mT anywhere along line",
+    "flux_keepout_to_housing_outside": 3.04,
+    "hall_effect": {
+      "HES1": {
+        "y": 200.14,
+        "x": -81.57,
+        "depth": 2.5
+      },
+      "HES2": {
+        "y": 213.42,
+        "x": 69.63,
+        "depth": 1.35
+      },
+      "HES3": {
+        "y": 198.43,
+        "x": -76.47,
+        "depth": 2.5
+      }
+    },
+    "compass": {
+      "y": 77.57,
+      "x": -87.41,
+      "depth": 1.98
+    },
+    "left_edge_from_bottom": {
+      "SP-FH-2": 203.19,
+      "SP-FH-1": 186.73,
+      "CV4": 187.37,
+      "CV3": 177.87,
+      "CV2": 168.01,
+      "HE1": 167.0,
+      "CV1": 158.51,
+      "SP-CH-2": 42.59,
+      "SP-CH-1": 24.38
+    },
+    "right_edge_from_bottom": {
+      "CG1": 206.41,
+      "CG2": 17.23
+    }
+  },
+  "antenna_keepout": {
+    "note": "do not obstruct with metal",
+    "band_top_bottom_from_housing": 8.0,
+    "side_band": 11.88,
+    "side_span": [
+      102.43,
+      102.43
+    ]
+  },
+  "unverified": [
+    "magnet position ordinates read from 0.8x render",
+    "antenna 8.00 and 11.88 read as band depths",
+    "sheets render pixel-identical to the iPad Air 11-inch (M4) sheets outside the title block; values carried over from that ref"
+  ]
+}
