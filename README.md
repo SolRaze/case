@@ -44,28 +44,34 @@ knobs
 - CIG | default false | false true
 - COUPON | default null | null or mm of each edge kept round the bottom-right corner
 
-rules | a style breaking one is skipped by build, with the reason
-- slider-fitted | if {"SLIDER": true} require {"CAMERA": "fitted"} | the slider covers a fitted window
-- slider-no-magsafe | if {"SLIDER": true} require {"MAGSAFE": null} | slider rails reach y -52, a charger's top edge is at -45
-- magsafe-full-back | if {"MAGSAFE": ["ring", "open"]} require {"BACK_BAND": null} | magnets and the charger need the full back
-- plate-band | if {"PLATE": true} require {"BACK_BAND": "set"} | the plate sits in a banded back
-- keys-need-walls | if {"KEYS": "set"} require {"WALLS": ["full", "sides"]} | corner walls leave no wall for a key
-- keys-closed-apart | if {"KEYS": "set", "CLOSED": "set"} require {"disjoint": ["KEYS", "CLOSED"]} | a button is either a key or covered
-- corner-profile | sheet has no corner profile | 5s, se-2-3
-- full-width-plateau | if {"CAMERA": "fitted"} full-width camera plateau, use CAMERA universal | air, 17-pro, 17-pro-max, 18-pro, 18-pro-max
-- rail-fit | if {"SLIDER": true} right rail falls off the case | 12-mini, 12-pro, 12-pro-max, 13-mini, 13, 13-pro, 13-pro-max, 14, 14-plus, 14-pro, 14-pro-max, 15, 15-plus, 15-pro, 15-pro-max, 16, 16-plus, 16-pro, 16-pro-max, 17
-- cig-fit | if {"CIG": true} cigarette clip runs off the bottom | 12-mini, 13-mini
-- universal-window | if {"CAMERA": "universal"} camera reaches past the universal window | none
+design
+- The outside is one rounded shape: a 1.8 mm round on the back edge, a 0.8 mm round on the front rim, and the rim opening flared 0.4 mm.
+- The camera window is the hull of the lenses, flash and mic, widened to every light cone where it leaves the back, with a rounded ring 1.5 mm wide round it.
+- Button windows and port openings are obround; the receiver gets a shallow dip in the top rim that eases back up over 4 mm each side.
+- Styles only change knobs, so every style shares this shape.
 
-limits | apple accessory design guidelines, checked on every build
-- glass-gap | exposed glass to any flat surface the case rests on | min 0.85 ideal 1.0 | GLASS_GAP 1.0; rim PROUD 1.0 over the front glass, camera ring 1.0 past the lens cover | ADG 5.1.1
-- backside-thickness | case thickness on the back of the phone | max 2.1 | BACK 2.0 | sheet note 8 on every iPhone drawing (SE: 5.0)
-- bottom-wall | case wall below the phone, for docks and cables | max 1.8 | CLEAR 0.25 + WALL 1.55 = 1.80 | ADG 5.1.3
-- magsafe-magnet-depth | MagSafe magnet to the case outside | max 0.85 | MS_FLOOR 0.85, magnet 0.55 thick, 0.55 from the device | ADG 42.1 fig 42-3
-- camera-keepout | lens and flash light cones clear of the case | every cone cut through the case, grown by CLEAR for the phone's shift | ADG 5.7.1 and each sheet's keepout cones
-- connector-keepout | USB-C recommended connector keepout, flush to the product surface, 14.0 outward | obround keepout grown by CLEAR, through the bottom wall | each sheet, ADG 5.1.2.3
-- port-openings | speaker and mic openings | PORT_OFFSET 2.0 past the port edge, 45 deg outside chamfer, PORT_LAND 0.6 straight wall (1.5 max) | ADG 5.2.3.1
-- lip | rim lip over the rolled front edge clear of the glass edge | max 1.05 | LIP 0.5, and LIP > CLEAR so the phone is retained | 17e sheet, glass edge 1.05 in
+rules | build skips a phone and style that break one, and says which
+- The slider needs the fitted camera ring; it slides over that window.
+- The slider and MagSafe don't mix: the rails run down to y -52 and the charger's top edge sits at -45.
+- MagSafe needs the full back, since the magnets and the charger both sit on it.
+- A back plate needs a banded back to sit in.
+- Keys need side walls, so they don't work with corner-only walls.
+- A button is either a key or closed over, never both.
+- Phones whose sheet has no corner profile can't be built. Ruled out: 5s, se-2-3.
+- Phones with a full-width camera plateau need the universal camera window. Ruled out: air, 17-pro, 17-pro-max, 18-pro, 18-pro-max.
+- The slider needs room for its right rail beside the camera. Fits only 12, 16e, 17e.
+- The cigarette clip needs a phone long enough to hold it. Ruled out: 12-mini, 13-mini.
+- The universal window only works when the camera sits within 48 mm of the top. Ruled out: none.
+
+limits | from the apple accessory design guidelines and the phone sheets, checked on every build
+- Any exposed glass stays at least 0.85 mm, ideally 1.0, off a flat table; the rim and camera ring stand 1.0 proud. (ADG 5.1.1)
+- The back of the case is 2.0 mm thick, under the 2.1 each phone sheet allows (5.0 on the SE). (note 8 on every iPhone sheet)
+- The bottom wall is 1.8 mm, the most docks and cables allow. (ADG 5.1.3)
+- MagSafe magnets sit 0.85 mm from the outside face at most. (ADG 42.1 fig 42-3)
+- Every lens and flash light cone is cut clear, with the fit clearance added. (ADG 5.7.1 and each sheet's keepout cones)
+- The USB-C connector keepout is cut through the bottom wall, with the fit clearance added. (each sheet, ADG 5.1.2.3)
+- Speaker and mic openings reach 2.0 mm past the port, with a 45 degree chamfer outside and a 0.6 mm straight land. (ADG 5.2.3.1)
+- The front rim reaches 0.5 mm over the phone's rolled edge: more than the 0.25 clearance so it holds the phone, and short of the glass edge at 1.05. (17e sheet, glass edge 1.05 in)
 
 checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass

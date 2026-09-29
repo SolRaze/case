@@ -72,6 +72,7 @@
   "combinations": [
     {
       "id": "slider-fitted",
+      "text": "The slider needs the fitted camera ring; it slides over that window.",
       "if": {
         "SLIDER": true
       },
@@ -82,6 +83,7 @@
     },
     {
       "id": "slider-no-magsafe",
+      "text": "The slider and MagSafe don't mix: the rails run down to y -52 and the charger's top edge sits at -45.",
       "if": {
         "SLIDER": true
       },
@@ -92,6 +94,7 @@
     },
     {
       "id": "magsafe-full-back",
+      "text": "MagSafe needs the full back, since the magnets and the charger both sit on it.",
       "if": {
         "MAGSAFE": [
           "ring",
@@ -105,6 +108,7 @@
     },
     {
       "id": "plate-band",
+      "text": "A back plate needs a banded back to sit in.",
       "if": {
         "PLATE": true
       },
@@ -115,6 +119,7 @@
     },
     {
       "id": "keys-need-walls",
+      "text": "Keys need side walls, so they don't work with corner-only walls.",
       "if": {
         "KEYS": "set"
       },
@@ -128,6 +133,7 @@
     },
     {
       "id": "keys-closed-apart",
+      "text": "A button is either a key or closed over, never both.",
       "if": {
         "KEYS": "set",
         "CLOSED": "set"
@@ -144,6 +150,7 @@
   "phones": [
     {
       "id": "corner-profile",
+      "text": "Phones whose sheet has no corner profile can't be built.",
       "phones": [
         "5s",
         "se-2-3"
@@ -153,6 +160,7 @@
     },
     {
       "id": "full-width-plateau",
+      "text": "Phones with a full-width camera plateau need the universal camera window.",
       "if": {
         "CAMERA": "fitted"
       },
@@ -168,6 +176,7 @@
     },
     {
       "id": "rail-fit",
+      "text": "The slider needs room for its right rail beside the camera.",
       "if": {
         "SLIDER": true
       },
@@ -198,6 +207,7 @@
     },
     {
       "id": "cig-fit",
+      "text": "The cigarette clip needs a phone long enough to hold it.",
       "if": {
         "CIG": true
       },
@@ -210,6 +220,7 @@
     },
     {
       "id": "universal-window",
+      "text": "The universal window only works when the camera sits within 48 mm of the top.",
       "if": {
         "CAMERA": "universal"
       },
@@ -221,6 +232,7 @@
   "limits": [
     {
       "id": "glass-gap",
+      "text": "Any exposed glass stays at least 0.85 mm, ideally 1.0, off a flat table; the rim and camera ring stand 1.0 proud.",
       "rule": "exposed glass to any flat surface the case rests on",
       "min": 0.85,
       "ideal": 1.0,
@@ -231,15 +243,17 @@
     },
     {
       "id": "backside-thickness",
+      "text": "The back of the case is 2.0 mm thick, under the 2.1 each phone sheet allows (5.0 on the SE).",
       "rule": "case thickness on the back of the phone",
       "max": 2.1,
       "unit": "mm",
-      "source": "sheet note 8 on every iPhone drawing (SE: 5.0)",
+      "source": "note 8 on every iPhone sheet",
       "case": "BACK 2.0",
       "checked": "assert BACK <= phone max_back"
     },
     {
       "id": "bottom-wall",
+      "text": "The bottom wall is 1.8 mm, the most docks and cables allow.",
       "rule": "case wall below the phone, for docks and cables",
       "max": 1.8,
       "unit": "mm",
@@ -249,6 +263,7 @@
     },
     {
       "id": "magsafe-magnet-depth",
+      "text": "MagSafe magnets sit 0.85 mm from the outside face at most.",
       "rule": "MagSafe magnet to the case outside",
       "max": 0.85,
       "unit": "mm",
@@ -258,6 +273,7 @@
     },
     {
       "id": "camera-keepout",
+      "text": "Every lens and flash light cone is cut clear, with the fit clearance added.",
       "rule": "lens and flash light cones clear of the case",
       "source": "ADG 5.7.1 and each sheet's keepout cones",
       "case": "every cone cut through the case, grown by CLEAR for the phone's shift",
@@ -265,6 +281,7 @@
     },
     {
       "id": "connector-keepout",
+      "text": "The USB-C connector keepout is cut through the bottom wall, with the fit clearance added.",
       "rule": "USB-C recommended connector keepout, flush to the product surface, 14.0 outward",
       "source": "each sheet, ADG 5.1.2.3",
       "case": "obround keepout grown by CLEAR, through the bottom wall",
@@ -272,6 +289,7 @@
     },
     {
       "id": "port-openings",
+      "text": "Speaker and mic openings reach 2.0 mm past the port, with a 45 degree chamfer outside and a 0.6 mm straight land.",
       "rule": "speaker and mic openings",
       "source": "ADG 5.2.3.1",
       "case": "PORT_OFFSET 2.0 past the port edge, 45 deg outside chamfer, PORT_LAND 0.6 straight wall (1.5 max)",
@@ -279,6 +297,7 @@
     },
     {
       "id": "lip",
+      "text": "The front rim reaches 0.5 mm over the phone's rolled edge: more than the 0.25 clearance so it holds the phone, and short of the glass edge at 1.05.",
       "rule": "rim lip over the rolled front edge clear of the glass edge",
       "max": 1.05,
       "unit": "mm",

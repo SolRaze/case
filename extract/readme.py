@@ -29,17 +29,23 @@ L += [f"- {n} | {s['about']}" for n, s in styles.items()]
 L += ["", "knobs"]
 L += [f"- {k} | default {json.dumps(v['default'])} | {v['values'] if isinstance(v['values'], str) else ' '.join(json.dumps(x) for x in v['values'])}"
       for k, v in rules["knobs"].items()]
-L += ["", "rules | a style breaking one is skipped by build, with the reason"]
-for r in rules["combinations"]:
-    L.append(f"- {r['id']} | if {json.dumps(r['if'])} require {json.dumps(r['require'])} | {r['why']}")
+L += ["", "design",
+      "- The outside is one rounded shape: a 1.8 mm round on the back edge, a 0.8 mm round on the front rim, and the rim opening flared 0.4 mm.",
+      "- The camera window is the hull of the lenses, flash and mic, widened to every light cone where it leaves the back, with a rounded ring 1.5 mm wide round it.",
+      "- Button windows and port openings are obround; the receiver gets a shallow dip in the top rim that eases back up over 4 mm each side.",
+      "- Styles only change knobs, so every style shares this shape.",
+      "", "rules | build skips a phone and style that break one, and says which"]
+L += [f"- {r['text']}" for r in rules["combinations"]]
 for r in rules["phones"]:
-    ph = ", ".join(r["phones"]) or "none"
-    cond = f"if {json.dumps(r['if'])} " if r.get("if") else ""
-    L.append(f"- {r['id']} | {cond}{r['why']} | {ph}")
-L += ["", "limits | apple accessory design guidelines, checked on every build"]
-for r in rules["limits"]:
-    lim = " ".join(f"{k} {r[k]}" for k in ("min", "ideal", "max") if k in r)
-    L.append(f"- {r['id']} | {r['rule']}{' | ' + lim if lim else ''} | {r['case']} | {r['source']}")
+    dflt = {k: v["default"] for k, v in rules["knobs"].items()}
+    hit = [s for s, v in styles.items() if all({**dflt, **v["knobs"]}[k] == w for k, w in r.get("if", {}).items())]
+    fits = [p for p in phones if any(s not in rules["invalid"].get(p, {}) for s in hit)]
+    if fits and len(r["phones"]) > len(fits):
+        L.append(f"- {r['text']} Fits only {', '.join(fits)}.")
+    else:
+        L.append(f"- {r['text']} Ruled out: {', '.join(r['phones']) or 'none'}.")
+L += ["", "limits | from the apple accessory design guidelines and the phone sheets, checked on every build"]
+L += [f"- {r['text']} ({r['source']})" for r in rules["limits"]]
 L += ["", "checks", "- every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass",
       f"- {sum(1 for p in phones for s in styles if not (rules['invalid'].get(p, {}).get(s)))} of {len(phones) * len(styles)} phone x style build and pass | the rest are in ref/rules.json invalid", "",
       "previews | from the back, grid in previews/README.md"]
