@@ -1,0 +1,80 @@
+{
+  "product": "AirPods 4",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/airpods-4.pdf",
+    "file": "extract/pdf/airpods-4.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2024-09-19"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 1,
+  "general_tolerance": null,
+  "body": {
+    "width": null,
+    "height": null,
+    "depth": null,
+    "note": "sheet gives no overall envelope"
+  },
+  "notes": {
+    "1": "accessories intruding into shaded regions will negatively affect product performance",
+    "2": "accessories may not cover these metal surfaces"
+  },
+  "keepouts": [
+    {
+      "name": "stem shaded region",
+      "note": 1,
+      "from_stem_tip": 3.0,
+      "to_stem_tip": 23.8,
+      "applies": "stem outer surface, full circumference, between 3.0 and 23.8 above the tip"
+    },
+    {
+      "name": "bud underside to stem tip",
+      "note": 1,
+      "height": 17.8,
+      "note_text": "stem length from tip to bud underside junction"
+    },
+    {
+      "name": "speaker mesh ring",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "optical sensor",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "top mic / vent",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "stem front sensor oval",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "stem tip mic",
+      "note": 1,
+      "band": 1.0
+    },
+    {
+      "name": "stem back vent slot",
+      "note": 1,
+      "band": 1.0
+    }
+  ],
+  "no_cover": [
+    {
+      "name": "stem tip charging contacts",
+      "note": 2,
+      "count": 2
+    }
+  ],
+  "unverified": [
+    "no text layer | values read from renders",
+    "band 1.0 read as offset around each shaded feature, not its width",
+    "feature names inferred from the views: speaker mesh, sensor, top vent, stem sensor, stem tip mic, rear vent slot"
+  ]
+}
