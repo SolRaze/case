@@ -1,0 +1,491 @@
+{
+  "product": "Apple Watch Ultra 3",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-watch-ultra-3.pdf",
+    "file": "~/Reference/apple/apple-watch-ultra-3.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 3,
+  "general_tolerance": null,
+  "notes": {
+    "1": "case does not interfere with click or rotation of digital crown | no force on crown | does not obstruct crown face",
+    "2": "case does not obstruct acoustic openings and altimeter | must not degrade acoustic or water ejection performance",
+    "3": "case does not obstruct charging interface",
+    "4": "case does not obstruct optical sensors",
+    "5": "case does not extend into sensor windows",
+    "6": "case does not contact cover glass | does not obstruct gap around cover glass",
+    "7": "case does not contact electrical sensors",
+    "8": "case does not interfere with click function of button",
+    "9": "no metal cases | antenna function | RF-transparent material only",
+    "10": "case does not contain ferromagnetic material",
+    "11": "case does not trap water between case and antenna split"
+  },
+  "body": {
+    "width": 38.42,
+    "width_including_crown": 43.32,
+    "height": 49.14,
+    "side_height": 45.7,
+    "thickness_overall": 14.44,
+    "thickness_to_back_flat": 12.0,
+    "thickness_bezel_side": 10.62
+  },
+  "cover_glass": {
+    "width": 35.79,
+    "height": 43.07,
+    "note": 6
+  },
+  "display_active_area": {
+    "width": 32.92,
+    "height": 40.09,
+    "ultra_2": {
+      "width": 31.98,
+      "height": 39.16
+    }
+  },
+  "digital_crown": {
+    "diameter": 9.42,
+    "height": 7.0,
+    "protrusion": 3.17,
+    "guard_span": 27.62,
+    "keepout_diameter": 10.42,
+    "keepout_center_y": 11.65,
+    "keepout_note": "no thickness in area shown",
+    "notes": [
+      1
+    ]
+  },
+  "crown_side": {
+    "frame": "y from case centreline | z from cover glass side ordinates",
+    "mic_upper": {
+      "y": [
+        18.75,
+        16.24
+      ]
+    },
+    "crown_y": [
+      11.65,
+      6.44
+    ],
+    "mic_port": {
+      "diameter": 2.0,
+      "y": [
+        1.23,
+        0.69,
+        -0.31
+      ]
+    },
+    "button": {
+      "y": [
+        -1.31,
+        -1.71,
+        -7.31,
+        -12.91
+      ]
+    },
+    "mic_lower": {
+      "y": [
+        -16.24,
+        -18.75
+      ]
+    },
+    "z": [
+      0.0,
+      3.64,
+      5.24,
+      6.24,
+      7.24,
+      8.84
+    ],
+    "z_top": [
+      5.24,
+      6.24,
+      7.24
+    ]
+  },
+  "speaker_side": {
+    "frame": "y from case centreline | z from cover glass side ordinates",
+    "mic": {
+      "y": [
+        18.75,
+        16.24
+      ]
+    },
+    "speaker_top_y": 12.3,
+    "speaker_y": [
+      4.57,
+      3.1
+    ],
+    "button_y": [
+      0.0,
+      18.6,
+      -11.41
+    ],
+    "siren": {
+      "diameter": 2.65,
+      "y": [
+        -12.55,
+        -15.2
+      ]
+    },
+    "z_top": [
+      9.06,
+      7.24,
+      5.24,
+      3.42
+    ],
+    "z_bottom": [
+      8.84,
+      -6.24,
+      3.64,
+      0.0
+    ]
+  },
+  "back": {
+    "crystal_width": 36.8,
+    "crystal_height": 44.07,
+    "dome_diameter": 27.3,
+    "electrical_sensor_keepout_diameter": 29.38,
+    "electrical_sensors": null,
+    "band_release_y": [
+      19.48,
+      -19.48
+    ],
+    "notes": [
+      3,
+      4,
+      5,
+      7
+    ]
+  },
+  "charging": {
+    "max_offset_from_puck_center": 0.86,
+    "note": 3,
+    "keepout": "no thickness allowed"
+  },
+  "bandslot": {
+    "port": "do not obstruct port in bandslot"
+  },
+  "antenna_split": {
+    "note": 11
+  },
+  "acoustic_keepout_cones": {
+    "AA": {
+      "part": "speaker",
+      "angles": [
+        60.0,
+        0.0
+      ],
+      "all_around": 0.5
+    },
+    "AB": {
+      "part": "microphone",
+      "angles": [
+        60.0,
+        0.0
+      ],
+      "all_around": 0.5
+    },
+    "AC": {
+      "part": "microphone",
+      "angles": [
+        60.0,
+        0.0
+      ],
+      "all_around": 0.5
+    },
+    "AD": {
+      "part": "microphone",
+      "angles": [
+        0.03,
+        60.0
+      ],
+      "all_around": 0.5
+    },
+    "AE": {
+      "part": "siren",
+      "angles": [
+        0.0,
+        60.0
+      ],
+      "all_around": 0.5
+    },
+    "AF": {
+      "part": "microphone",
+      "angles": [
+        60.0,
+        0.0
+      ],
+      "all_around": 0.5
+    }
+  },
+  "profiles": {
+    "pairing": "ordinate lists as printed | outer ends match by index, pairing unverified",
+    "crown_side_top": {
+      "x_top": [
+        -13.81,
+        -13.43,
+        -12.39,
+        -10.92,
+        -9.31,
+        0.0,
+        10.41,
+        12.11,
+        13.35,
+        13.81
+      ],
+      "x_bottom": [
+        -13.43,
+        -12.39,
+        -10.92,
+        -9.31,
+        10.41,
+        12.11,
+        13.35
+      ],
+      "y_left": [
+        0.0,
+        -0.1,
+        -0.73,
+        -1.94,
+        -3.5,
+        -5.06,
+        -6.27,
+        -6.9,
+        -7.0
+      ],
+      "y_right": [
+        -0.03,
+        -0.54,
+        -1.79,
+        -6.24,
+        -7.95,
+        -9.2,
+        -9.71
+      ]
+    },
+    "crown_guard_section": {
+      "x_top": [
+        3.27,
+        3.17,
+        3.14,
+        2.9,
+        2.31,
+        1.6,
+        0.87,
+        0.15,
+        0.0
+      ],
+      "y_upper": [
+        0.0,
+        0.1,
+        0.82,
+        1.55,
+        2.22,
+        2.62,
+        2.72,
+        2.73,
+        2.74,
+        2.89
+      ],
+      "x_bottom": [
+        7.69,
+        6.89,
+        6.0,
+        5.14,
+        4.32,
+        3.56,
+        2.83,
+        1.96,
+        1.06,
+        0.15
+      ],
+      "y_lower": [
+        9.59,
+        9.74,
+        9.75,
+        9.76,
+        9.98,
+        10.52,
+        11.02,
+        11.4,
+        11.69,
+        11.86,
+        11.95
+      ]
+    },
+    "crown_side_front": {
+      "x": [
+        2.45,
+        2.23,
+        1.99,
+        1.55,
+        0.86,
+        0.15,
+        0.0
+      ],
+      "y": [
+        15.94,
+        15.26,
+        14.59,
+        14.03,
+        13.85,
+        13.81,
+        13.66
+      ],
+      "symmetric_y": true
+    },
+    "plan_corner_outer": {
+      "x": [
+        0.0,
+        0.17,
+        0.49,
+        0.95,
+        1.58,
+        2.39,
+        3.35,
+        4.46,
+        5.7,
+        7.04,
+        8.47,
+        9.96,
+        11.49,
+        13.04,
+        14.59,
+        16.14,
+        17.7,
+        19.25,
+        20.81
+      ],
+      "y": [
+        13.16,
+        11.53,
+        9.91,
+        8.42,
+        7.0,
+        5.67,
+        4.45,
+        3.37,
+        2.43,
+        1.65,
+        1.04,
+        0.6,
+        0.31,
+        0.15,
+        0.06,
+        0.02,
+        0.01,
+        0.0,
+        0.0
+      ]
+    },
+    "plan_corner_inner": {
+      "x": [
+        0.0,
+        0.01,
+        0.05,
+        0.13,
+        0.32,
+        0.7,
+        1.34,
+        2.2,
+        3.26,
+        4.56,
+        5.98,
+        7.43,
+        8.89,
+        10.35,
+        11.81
+      ],
+      "y": [
+        12.57,
+        11.11,
+        9.65,
+        8.19,
+        6.74,
+        5.3,
+        3.93,
+        2.76,
+        1.79,
+        1.0,
+        0.49,
+        0.21,
+        0.08,
+        0.02,
+        0.0
+      ]
+    },
+    "bandslot_edge": {
+      "x": [
+        0.0,
+        0.1,
+        0.7,
+        1.04,
+        1.58,
+        2.24,
+        2.5,
+        3.1,
+        3.7,
+        4.3,
+        4.9,
+        5.5,
+        6.1,
+        6.7,
+        7.3,
+        7.9,
+        8.5,
+        9.1,
+        9.7,
+        10.3,
+        10.62,
+        10.82,
+        11.2,
+        11.54,
+        11.71,
+        11.84,
+        11.94,
+        11.99,
+        12.0
+      ],
+      "y_left": [
+        1.82,
+        1.72,
+        1.71,
+        1.68,
+        1.49,
+        1.36,
+        0.99,
+        0.64,
+        0.36,
+        0.17,
+        0.05
+      ],
+      "y_right": [
+        9.41,
+        8.34,
+        7.26,
+        6.19,
+        5.28,
+        4.63,
+        4.05,
+        3.22,
+        2.53,
+        2.23,
+        1.83,
+        1.25,
+        0.82,
+        0.5,
+        0.26,
+        0.1,
+        0.02
+      ]
+    }
+  },
+  "band_slot": null,
+  "unverified": [
+    "no text layer | pages 2-3 match Ultra 4 render, values taken from Ultra 4 text layer",
+    "speaker side button ordinate printed 18.60, likely -8.60",
+    "speaker side bottom z printed -6.24 between 8.84 and 3.64"
+  ]
+}
