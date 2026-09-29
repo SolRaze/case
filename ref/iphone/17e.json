@@ -1,12 +1,13 @@
 {
   "product": "iPhone 17e",
   "source": {
-    "file": "iphone-17e.pdf",
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-17e.pdf",
+    "file": "extract/pdf/iphone-17e.pdf",
     "title": "iPhone 17e Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2026-03-09",
     "sheets": 2,
-    "extracted_by": "~/Projects/Assets/extract/pdf-text.py (content-stream text) + pdf-crop (visual check)",
+    "extracted_by": "extract/pdf-text.py (content-stream text) + pdf-crop (visual check)",
     "extracted_on": "2026-09-01",
     "coordinate_note": "drawing geometry lives in a Form XObject placed by the page stream with '1 0 0 1 31.946 34.35 cm'. Add that offset to convert extracted form coordinates to page points."
   },
@@ -738,7 +739,7 @@
     "affects": "rear_camera, compass, camera_keepout_region and antenna_keepouts were all dimensioned in back-facing views. Their printed x values are kept below as x_back with the product-frame value alongside as x_front. Everything else in this file is already product-frame or symmetric about x 35.76."
   },
   "verified": {
-    "tool": "~/Projects/Assets/extract/phone-body-check.py",
+    "tool": "extract/phone-body-check.py",
     "method": "every value above measured against the drawn vector paths in the PDF, mapped to mm from each view's own extents",
     "worst_deviation_mm": 0.0416,
     "resolved_here": [

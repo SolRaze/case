@@ -2,7 +2,7 @@
   "product": "iPad Air 13-inch (M3)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-air-13-inch-m3.pdf",
-    "file": "~/Reference/apple/ipad-air-13-inch-m3.pdf",
+    "file": "extract/pdf/ipad-air-13-inch-m3.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",

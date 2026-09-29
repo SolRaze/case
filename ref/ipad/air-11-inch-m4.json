@@ -2,7 +2,7 @@
   "product": "iPad Air 11-inch (M4)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-air-11-inch-m4.pdf",
-    "file": "~/Reference/apple/ipad-air-11-inch-m4.pdf",
+    "file": "extract/pdf/ipad-air-11-inch-m4.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",

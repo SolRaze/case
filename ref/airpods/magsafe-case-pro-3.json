@@ -2,7 +2,7 @@
   "product": "MagSafe Charging Case for AirPods Pro 3",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/magsafe-charging-case-for-airpods-pro-3.pdf",
-    "file": "~/Reference/apple/magsafe-charging-case-for-airpods-pro-3.pdf",
+    "file": "extract/pdf/magsafe-charging-case-for-airpods-pro-3.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",

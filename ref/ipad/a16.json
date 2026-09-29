@@ -2,7 +2,7 @@
   "product": "iPad (A16)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-a16.pdf",
-    "file": "~/Reference/apple/ipad-a16.pdf",
+    "file": "extract/pdf/ipad-a16.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",

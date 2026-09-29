@@ -1,7 +1,7 @@
 {
  "units": "mm",
  "frame": "body w x l x t. corner: profile ordinates from the corner, one list when x and y match. buttons: c = centre from the top edge, len = full length; left/right w = button width across the thickness, c = its centre depth from the front glass. sim: centre from top, length. camera: back-view frame, x from the back-left edge, y down from the top edge (negative), d = diameter; plateau x/y = outer edge. proud: back glass to plateau and to lens glass. null = not dimensioned on the sheet",
- "source": "page 2 main sheet of each iphone-*.pdf in this folder, read off the drawing",
+ "source": "page 2 main sheet of each extract/pdf/iphone-*.pdf, read off the drawing",
  "phones": {
   "5s": {
    "body": {

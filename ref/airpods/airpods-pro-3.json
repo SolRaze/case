@@ -2,7 +2,7 @@
   "product": "AirPods Pro 3",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/airpods-pro-3.pdf",
-    "file": "~/Reference/apple/airpods-pro-3.pdf",
+    "file": "extract/pdf/airpods-pro-3.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",

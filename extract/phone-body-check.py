@@ -18,6 +18,7 @@ components are walked - without that the camera, the screws and the MagSafe zone
 all invisible.
 
 Usage: phone-body-check.py [spec.json] [drawing.pdf]
+The pdf defaults to the spec's source file under extract/pdf/, see extract/fetch.py.
 """
 
 import importlib.util
@@ -27,6 +28,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
 
 
 def _load(name, filename):
@@ -145,7 +147,7 @@ def main():
     spec_path = Path(sys.argv[1]) if len(sys.argv) > 1 else \
         Path(__file__).resolve().parents[1] / "ref/iphone/17e.json"
     spec = json.loads(spec_path.read_text())
-    pdf = Path(sys.argv[2]) if len(sys.argv) > 2 else spec_path.with_suffix(".pdf")
+    pdf = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / spec["source"]["file"]
 
     b = spec["body"]
     W, L, T = b["width"], b["length"], b["thickness"]

@@ -1,13 +1,13 @@
 {
   "product": "iPhone 17 Pro",
   "source": {
-    "file": "iphone-17-pro.pdf",
+    "file": "extract/pdf/iphone-17-pro.pdf",
     "title": "iPhone 17 Pro Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2025-09-09",
     "sheets": 4,
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-17-pro.pdf",
-    "extracted_by": "sheet 1: text is vector outlines with no font, read off pdf-crop renders. sheets 2-4: ~/Projects/Assets/cad/extract/pdf-text.py plus pdf-crop for the view mapping",
+    "extracted_by": "sheet 1: text is vector outlines with no font, read off pdf-crop renders. sheets 2-4: extract/pdf-text.py plus pdf-crop for the view mapping",
     "extracted_on": "2026-09-29",
     "coordinate_note": null
   },

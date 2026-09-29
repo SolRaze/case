@@ -1,7 +1,7 @@
 {
   "product": "iPhone 16e",
   "source": {
-    "file": "iphone-16e.pdf",
+    "file": "extract/pdf/iphone-16e.pdf",
     "title": "iPhone 16e Dimensional Drawings",
     "publisher": "Apple Inc.",
     "sheet_date": "2025-03-17",
@@ -732,7 +732,7 @@
     "affects": "rear_camera, compass, camera_keepout_region and antenna_keepouts were all dimensioned in back-facing views. Their printed x values are kept below as x_back with the product-frame value alongside as x_front. Everything else in this file is already product-frame or symmetric about x 35.76."
   },
   "verified": {
-    "tool": "~/Projects/Assets/extract/phone-body-check.py",
+    "tool": "extract/phone-body-check.py",
     "method": "every value above measured against the drawn vector paths in the PDF, mapped to mm from each view's own extents",
     "worst_deviation_mm": 0.0416,
     "resolved_here": [

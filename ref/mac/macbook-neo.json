@@ -2,7 +2,7 @@
   "product": "MacBook Neo",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/macbook-neo.pdf",
-    "file": "~/Reference/apple/macbook-neo.pdf",
+    "file": "extract/pdf/macbook-neo.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",

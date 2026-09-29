@@ -2,7 +2,7 @@
   "product": "iPad Pro 11-inch (M5)",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-pro-11-inch-m5.pdf",
-    "file": "~/Reference/apple/ipad-pro-11-inch-m5.pdf",
+    "file": "extract/pdf/ipad-pro-11-inch-m5.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",

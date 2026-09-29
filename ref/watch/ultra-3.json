@@ -2,7 +2,7 @@
   "product": "Apple Watch Ultra 3",
   "source": {
     "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-watch-ultra-3.pdf",
-    "file": "~/Reference/apple/apple-watch-ultra-3.pdf",
+    "file": "extract/pdf/apple-watch-ultra-3.pdf",
     "publisher": "Apple Accessory Design Guidelines dimensional drawing"
   },
   "units": "mm",
