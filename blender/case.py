@@ -8,7 +8,7 @@ fetched by extract/fetch.py) set the limits, cited below as ADG: chapter 5 "Case
 Frame: x 0..W across the front, y 0..-L down the length, z 0 at the front cover-glass
 plane and -T at the back face.
 
-Knobs, defaults in ref/rules.json; a style in blender/styles.json is a named knob set.
+Knobs, defaults in ref/rules.json; a style in styles.json beside this file is a named knob set.
   BUTTONS    "windows" one window per button | "slot" one window per side
   KEYS       button names printed as flexure keys that press through the wall;
              names this phone lacks are dropped
@@ -25,11 +25,11 @@ A fitted camera on a banded back stands on a spine, a full-width strip of back
 across the camera, which also carries the slider rails. ref/rules.json lists the
 valid combinations; the asserts in build() are the same rules.
 
-    python blender/case.py -- --phone 17e [--style magsafe ...] [--out out] [--png previews]
+    python case.py -- --phone 17e [--style magsafe ...] [--out out] [--png previews]
 
 builds each style, checks it (manifold, one solid, glass gap) and writes
 out/<phone>/<style>.stl and a PNG preview. Exit status 1 when a check fails.
-From an interactive session: ns = runpy.run_path("blender/case.py"), then
+From an interactive session: ns = runpy.run_path(path to this file), then
 ns["build"]("16", "magsafe", WALLS="sides") and ns["check"](obj).
 """
 

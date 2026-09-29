@@ -1,6 +1,6 @@
 """Phones for the case, from the drawing data in ref/iphone/. 1 unit = 1 mm.
 
-A phone is a flat dict the case geometry in blender/case.py reads.
+A phone is a flat dict the case geometry reads.
 ref/iphone/sizes.json names every phone: an entry with `spec` points
 at a full drawing transcription (ref/iphone/17e.json's shape, read by from_spec); the
 rest are one-sheet summaries (from_sizes), and what those sheets leave out is taken
