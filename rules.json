@@ -355,6 +355,7 @@
       "slider": "sheet has no corner profile",
       "cig": "sheet has no corner profile",
       "corner": "sheet has no corner profile",
+      "ribs": "sheet has no corner profile",
       "ribcorner": "sheet has no corner profile"
     },
     "se-2-3": {
@@ -371,6 +372,7 @@
       "slider": "sheet has no corner profile",
       "cig": "sheet has no corner profile",
       "corner": "sheet has no corner profile",
+      "ribs": "sheet has no corner profile",
       "ribcorner": "sheet has no corner profile"
     },
     "12-mini": {
@@ -465,6 +467,7 @@
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
       "corner": "full-width camera plateau, use CAMERA universal",
+      "ribs": "full-width camera plateau, use CAMERA universal",
       "ribcorner": "full-width camera plateau, use CAMERA universal"
     },
     "17-pro": {
@@ -477,6 +480,7 @@
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
       "corner": "full-width camera plateau, use CAMERA universal",
+      "ribs": "full-width camera plateau, use CAMERA universal",
       "ribcorner": "full-width camera plateau, use CAMERA universal"
     },
     "17-pro-max": {
@@ -489,6 +493,7 @@
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
       "corner": "full-width camera plateau, use CAMERA universal",
+      "ribs": "full-width camera plateau, use CAMERA universal",
       "ribcorner": "full-width camera plateau, use CAMERA universal"
     },
     "18-pro": {
@@ -501,6 +506,7 @@
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
       "corner": "full-width camera plateau, use CAMERA universal",
+      "ribs": "full-width camera plateau, use CAMERA universal",
       "ribcorner": "full-width camera plateau, use CAMERA universal"
     },
     "18-pro-max": {
@@ -513,6 +519,7 @@
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
       "corner": "full-width camera plateau, use CAMERA universal",
+      "ribs": "full-width camera plateau, use CAMERA universal",
       "ribcorner": "full-width camera plateau, use CAMERA universal"
     }
   }

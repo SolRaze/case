@@ -30,6 +30,7 @@ styles
 - slider | lens cover for spine, printed flat on its outside face, slides down clear of the lens and flash keepouts
 - cig | snap clip for one unlit cigarette along the right edge of the back; PETG softens near 80 C
 - corner | bottom-right corner only, 45 mm of each edge: squircle corner, USB-C edge and speaker group, a fit test that prints in minutes
+- ribs | full case, ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs
 - ribcorner | the corner coupon with a ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs
 
 knobs
@@ -78,34 +79,34 @@ limits | from the apple accessory design guidelines and the phone sheets, checke
 
 checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass
-- 300 of 420 phone x style build and pass | the rest are in rules.json invalid
+- 323 of 450 phone x style build and pass | the rest are in rules.json invalid
 
 previews | from the back, grid in previews/README.md
 - 5s | none, sheet has no corner profile
 - se-2-3 | none, sheet has no corner profile
-- [12-mini](previews/README.md#12-mini) | 11 styles
-- [12](previews/README.md#12) | 14 styles
-- [12-pro](previews/README.md#12-pro) | 12 styles
-- [12-pro-max](previews/README.md#12-pro-max) | 12 styles
-- [13-mini](previews/README.md#13-mini) | 11 styles
-- [13](previews/README.md#13) | 12 styles
-- [13-pro](previews/README.md#13-pro) | 12 styles
-- [13-pro-max](previews/README.md#13-pro-max) | 12 styles
-- [14](previews/README.md#14) | 12 styles
-- [14-plus](previews/README.md#14-plus) | 12 styles
-- [14-pro](previews/README.md#14-pro) | 12 styles
-- [14-pro-max](previews/README.md#14-pro-max) | 12 styles
-- [15](previews/README.md#15) | 12 styles
-- [15-plus](previews/README.md#15-plus) | 12 styles
-- [15-pro](previews/README.md#15-pro) | 12 styles
-- [15-pro-max](previews/README.md#15-pro-max) | 12 styles
-- [16](previews/README.md#16) | 12 styles
-- [16-plus](previews/README.md#16-plus) | 12 styles
-- [16e](previews/README.md#16e) | 14 styles
-- [16-pro](previews/README.md#16-pro) | 12 styles
-- [16-pro-max](previews/README.md#16-pro-max) | 12 styles
-- [17](previews/README.md#17) | 12 styles
-- [17e](previews/README.md#17e) | 14 styles
+- [12-mini](previews/README.md#12-mini) | 12 styles
+- [12](previews/README.md#12) | 15 styles
+- [12-pro](previews/README.md#12-pro) | 13 styles
+- [12-pro-max](previews/README.md#12-pro-max) | 13 styles
+- [13-mini](previews/README.md#13-mini) | 12 styles
+- [13](previews/README.md#13) | 13 styles
+- [13-pro](previews/README.md#13-pro) | 13 styles
+- [13-pro-max](previews/README.md#13-pro-max) | 13 styles
+- [14](previews/README.md#14) | 13 styles
+- [14-plus](previews/README.md#14-plus) | 13 styles
+- [14-pro](previews/README.md#14-pro) | 13 styles
+- [14-pro-max](previews/README.md#14-pro-max) | 13 styles
+- [15](previews/README.md#15) | 13 styles
+- [15-plus](previews/README.md#15-plus) | 13 styles
+- [15-pro](previews/README.md#15-pro) | 13 styles
+- [15-pro-max](previews/README.md#15-pro-max) | 13 styles
+- [16](previews/README.md#16) | 13 styles
+- [16-plus](previews/README.md#16-plus) | 13 styles
+- [16e](previews/README.md#16e) | 15 styles
+- [16-pro](previews/README.md#16-pro) | 13 styles
+- [16-pro-max](previews/README.md#16-pro-max) | 13 styles
+- [17](previews/README.md#17) | 13 styles
+- [17e](previews/README.md#17e) | 15 styles
 - [air](previews/README.md#air) | 4 styles
 - [17-pro](previews/README.md#17-pro) | 4 styles
 - [17-pro-max](previews/README.md#17-pro-max) | 4 styles

@@ -64,6 +64,11 @@
     "output": "part",
     "about": "bottom-right corner only, 45 mm of each edge: squircle corner, USB-C edge and speaker group, a fit test that prints in minutes"
   },
+  "ribs": {
+    "knobs": {"RIBS": 0.8},
+    "output": "part",
+    "about": "full case, ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs"
+  },
   "ribcorner": {
     "knobs": {"COUPON": 45.0, "RIBS": 0.8},
     "output": "part",
