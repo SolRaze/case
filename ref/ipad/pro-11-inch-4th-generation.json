@@ -1,0 +1,569 @@
+{
+  "product": "iPad Pro 11-inch (4th generation)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-pro-11-inch-4th-generation.pdf",
+    "file": "extract/pdf/ipad-pro-11-inch-4th-generation.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2022-10-26",
+    "sheets": 5
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": null,
+  "notes": {
+    "1": "do not obstruct acoustic openings: side mic, front mic, rear mic, speakers",
+    "2": "do not obstruct rear camera, rear flash and rear IR cameras",
+    "3": "do not obstruct ambient light sensor",
+    "4": "do not obstruct IR camera, flood illuminator, front camera and dot projector",
+    "5": "do not have metal contact with device cover glass"
+  },
+  "frames": {
+    "front": "landscape, viewed from display, front camera on the top long edge | x from the left edge",
+    "back": "portrait, viewed from back, rear camera top-left",
+    "magnets": "sheet 3: x from the vertical centre line, y up from the centre of the middle Smart Connector contact (0.00)"
+  },
+  "body": {
+    "width": 178.52,
+    "height": 247.64,
+    "thickness": 5.953
+  },
+  "display_active_area": {
+    "width": 161.13,
+    "height": 230.25,
+    "border": 8.69
+  },
+  "top_edge": {
+    "frame": "landscape top edge view, x from the left end",
+    "speakers": {
+      "hole_diameter": 1.76,
+      "slot_height": 2.95,
+      "x": [
+        42.43,
+        60.39
+      ],
+      "keepout": "1 mm all around x 45 deg outward angle",
+      "note": 1
+    },
+    "side_mics": {
+      "x": [
+        82.51,
+        96.01
+      ],
+      "height": 2.95,
+      "keepout_diameter": 1.6,
+      "note": 1
+    },
+    "sleep_wake_button": {
+      "from_right": [
+        12.06,
+        12.72
+      ],
+      "height": 2.56,
+      "to_cg": 1.72,
+      "note": 4
+    }
+  },
+  "bottom_edge": {
+    "speakers": {
+      "hole_diameter": 1.76,
+      "slot_height": 2.95,
+      "x": [
+        42.43,
+        60.39
+      ],
+      "note": 1
+    },
+    "rear_camera_protrusion": 1.91
+  },
+  "front_sensors": {
+    "frame": "x from the left edge of the landscape front view",
+    "centre_x": 89.26,
+    "row_offset_from_edge": 4.13,
+    "row_note": "2X 4.13 front camera and mic, 3X 4.22 IR camera, flood illuminator, dot projector",
+    "ir_camera": {
+      "keepout_diameter": 3.84,
+      "zone_angle": 85.0,
+      "note": 4
+    },
+    "flood_illuminator": {
+      "keepout_diameter": 3.78,
+      "zone_angle": 80.0,
+      "note": 4
+    },
+    "front_camera": {
+      "keepout_diameter": 4.82,
+      "zone_angle": 132.15,
+      "note": 4
+    },
+    "dot_projector": {
+      "keepout_diameter": 4.1,
+      "zone_angle": 90.0,
+      "note": 4
+    },
+    "front_mic": {
+      "diameter": 0.8,
+      "keepout_diameter": 1.6,
+      "note": 1
+    },
+    "x_pairs": [
+      82.51,
+      75.76
+    ],
+    "x_pairs_note": "82.51 and 75.76 from each side to the sensor row ends"
+  },
+  "als": {
+    "diameter": 3.39,
+    "count": 2,
+    "from_top_edge": 3.6,
+    "from_right": 43.49,
+    "cone_angle": 120.0,
+    "note": 3
+  },
+  "rear_camera": {
+    "frame": "detail T and AG, back view, x from the left edge, y down from the top edge",
+    "wide": {
+      "diameter": 8.83,
+      "y": 25.14,
+      "zone_angle": 76.9,
+      "keepout_at_surface": 3.77
+    },
+    "ultra_wide": {
+      "diameter": 8.83,
+      "y": 13.12,
+      "zone_angle": 131.0,
+      "keepout_at_surface": 6.22
+    },
+    "flash": {
+      "diameter": 3.75,
+      "y": 11.03,
+      "zone_angles": [
+        78.5,
+        67.5
+      ],
+      "keepout_at_surface_diameter": 4.15,
+      "keepout": [
+        6.13,
+        2.54
+      ]
+    },
+    "rcam_ir_1": {
+      "diameter": 2.22,
+      "y": 21.42,
+      "zone_angle": 78.33,
+      "keepout_at_surface": 2.89
+    },
+    "rcam_ir_2": {
+      "diameter": 2.02,
+      "y": 18.42,
+      "zone_angle": 77.55,
+      "keepout_at_surface": 2.68
+    },
+    "ir_aperture": {
+      "diameter": 7.44,
+      "y": 19.13
+    },
+    "rear_mic": {
+      "keepout_diameter": 2.9,
+      "y": 27.07,
+      "note": 1
+    },
+    "x": {
+      "2X 13.12": "wide and ultra wide",
+      "2X 25.62": "flash column",
+      "2X 25.91": "rear mic and rear flash, and IR 1 and 2 sapphire window aperture"
+    },
+    "turret": {
+      "hsg_edge_to_turret_side_wall": [
+        5.72,
+        32.54
+      ],
+      "turret_edge": 3.95,
+      "outer": 34.31,
+      "corner": {
+        "x": [
+          0.0,
+          0.03,
+          0.89,
+          3.94,
+          7.75,
+          13.41
+        ],
+        "y": [
+          0.0,
+          -0.03,
+          -0.89,
+          -3.94,
+          -7.75,
+          -13.41
+        ]
+      }
+    },
+    "bump_profile": {
+      "detail": "AH",
+      "x": [
+        -1.54,
+        -1.44,
+        -0.78,
+        -0.15,
+        0.0
+      ],
+      "z": [
+        1.77,
+        0.76,
+        0.1,
+        0.0
+      ],
+      "radius": 0.12
+    },
+    "from_bottom": {
+      "flash": 112.79,
+      "ultra_wide": 110.7,
+      "wide": 98.68,
+      "rear_mic": 96.75,
+      "rc_ir_aperture": 104.69,
+      "rcam_ir_2": 105.4,
+      "rcam_ir_1": 102.4
+    },
+    "from_right": {
+      "ultra_wide_and_wide": 76.14,
+      "flash_rear_mic_ir_aperture": 63.35,
+      "rcam_ir": 63.64
+    },
+    "rear_camera_to_cg_surface": 7.86,
+    "sapphire_window_to_cg_surface": 7.49,
+    "sapphire_window_to_hsg_back": 1.54,
+    "camera_window_to_hsg_back": 1.91,
+    "note": 2
+  },
+  "side_mic_3": {
+    "from_bottom": 123.82,
+    "keepout_diameter": 1.6,
+    "from_cg": 3.0,
+    "note": 1
+  },
+  "volume_buttons": {
+    "plus": {
+      "from_top": 19.49,
+      "length": 10.06
+    },
+    "minus": {
+      "from_top": 31.55,
+      "length": 10.06
+    },
+    "gap": 2.0,
+    "width": 2.56
+  },
+  "sim_tray": {
+    "length": 15.83,
+    "lower_end_from_bottom": 20.98,
+    "section_AC": [
+      2.35,
+      1.82,
+      3.0
+    ]
+  },
+  "inductive_charging_window": {
+    "section_AB": [
+      3.0,
+      3.4
+    ]
+  },
+  "smart_connector": {
+    "count": 3,
+    "pitch": 4.97,
+    "pin_diameter": 3.4,
+    "opening_diameter": 3.96,
+    "to_enclosure": 10.02,
+    "centre_from_left": 82.31
+  },
+  "sections": {
+    "AM_speakers": [
+      3.0,
+      1.76
+    ],
+    "Y_mic_exit_to_cg": [
+      3.0,
+      0.8
+    ],
+    "Z_sleep_wake_to_cg": [
+      3.0,
+      2.56
+    ],
+    "AA_volume_to_cg": [
+      3.0,
+      2.56
+    ]
+  },
+  "edge_profile": {
+    "detail": "AE",
+    "x_top": [
+      0.0,
+      0.05,
+      0.43,
+      0.95
+    ],
+    "z_top": [
+      0.0,
+      0.06,
+      0.43,
+      1.12
+    ],
+    "z_bottom": [
+      -4.79,
+      -5.47,
+      -5.85,
+      -5.9
+    ],
+    "x_bottom": [
+      0.0,
+      0.05,
+      0.43,
+      1.12
+    ]
+  },
+  "corner_profile": {
+    "detail": "W",
+    "applies": "all four corners",
+    "x": [
+      0.0,
+      0.1,
+      1.79,
+      6.26,
+      12.38,
+      14.68,
+      18.79
+    ],
+    "y": [
+      18.79,
+      12.38,
+      6.26,
+      1.79,
+      0.1,
+      0.07,
+      0.01,
+      0.0
+    ]
+  },
+  "magnets": {
+    "polarity_frame": "value is pole toward outer surface of enclosure | inside pole is opposite",
+    "polarity_outer": {
+      "BV1-11": "N",
+      "BV1-12": "S",
+      "BV1-21": "S",
+      "BV1-22": "N",
+      "BV1-23": "S",
+      "BV1-31": "N",
+      "BV1-32": "S",
+      "BV1-33": "N",
+      "BV1-41": "N",
+      "BV1-42": "N",
+      "BV1-43": "S",
+      "BV2-11": "N",
+      "BV2-12": "N",
+      "BV2-13": "S",
+      "BV2-21": "S",
+      "BV2-22": "N",
+      "BV2-31": "S",
+      "BV2-32": "S",
+      "BV2-41": "N",
+      "BV2-42": "S",
+      "BV2-43": "N",
+      "BV3-11": "S",
+      "BV3-12": "N",
+      "BV3-21": "N",
+      "BV3-22": "S",
+      "BV3-31": "S",
+      "BV3-32": "N",
+      "BV3-41": "N",
+      "BV3-42": "S",
+      "BV3-51": "S",
+      "BV3-52": "S",
+      "BV3-61": "N",
+      "BV3-62": "N",
+      "BV4-11": "S",
+      "BV4-12": "N",
+      "BV4-21": "S",
+      "BV4-23": "N",
+      "BV4-31": "S",
+      "BV4-32": "N",
+      "BV4-33": "S",
+      "BV4-41": "N",
+      "BV4-42": "S",
+      "BV4-43": "S",
+      "BV4-51": "S",
+      "BV4-52": "N",
+      "BV4-53": "N",
+      "CV1": "S",
+      "CV2": "N",
+      "CV3": "N",
+      "CV4": "S",
+      "OR1": "S",
+      "OR2": "N",
+      "OR3": "N",
+      "OR4": "S",
+      "HE1": "N",
+      "PM-FH-1": "S",
+      "PM-CH-1": "S",
+      "SP-CH-1-S": "S",
+      "SP-CH-1-B": "N",
+      "SP-CH-2-S": "N",
+      "SP-CH-2-B": "S",
+      "SP-FH-1-S": "N",
+      "SP-FH-1-B": "S",
+      "SP-FH-2-S": "S",
+      "SP-FH-2-B": "N",
+      "A1": "S",
+      "A2": "N",
+      "A3": "S",
+      "CG1": "N",
+      "CG2": "S",
+      "CG3": "S",
+      "CG4": "N"
+    },
+    "left_y": {
+      "217.86": null,
+      "217.56": null,
+      "216.46": null,
+      "212.86": null,
+      "209.26": null,
+      "208.16": "4X",
+      "SP-FH-2": 203.19,
+      "CV4": 187.37,
+      "SP-FH-1": 186.73,
+      "CV3": 177.87,
+      "HES1": 177.35,
+      "CV2": 168.01,
+      "HE1": 167.0,
+      "CV1": 158.51,
+      "compass": 77.57,
+      "SP-CH-2": 42.59,
+      "SP-CH-1": 24.38,
+      "lower": [
+        15.48,
+        15.11,
+        14.78,
+        10.78,
+        7.58,
+        6.46,
+        6.08
+      ]
+    },
+    "right_y": {
+      "top": [
+        220.85,
+        219.51,
+        209.47,
+        206.02,
+        205.76
+      ],
+      "CG1": 212.69,
+      "HES2": 211.44,
+      "CG2": 200.14,
+      "C3 shunt": 198.56,
+      "PM-FH-1": 132.45,
+      "PM-CH-1": 85.7,
+      "CG3": 24.95,
+      "C2 shunt": 17.15,
+      "lower": [
+        15.23,
+        15.02,
+        14.73,
+        12.4,
+        10.03,
+        5.04,
+        5.15,
+        4.83,
+        -1.71
+      ],
+      "CG4": 12.4
+    },
+    "x_top": {
+      "left": [
+        -83.29,
+        -70.52,
+        -61.47,
+        -30.13,
+        -25.68,
+        -20.98,
+        -16.28
+      ],
+      "right": [
+        27.92,
+        31.13,
+        32.82,
+        36.61,
+        37.32,
+        42.02,
+        42.08,
+        46.72,
+        47.56,
+        51.77,
+        52.74,
+        69.3,
+        71.19,
+        85.24
+      ],
+      "HES1_x": -70.52,
+      "HES2_x": 69.3,
+      "C3_shunt_x": 71.19
+    },
+    "x_bottom": [
+      -87.4,
+      -61.48,
+      -25.68,
+      -20.98,
+      -17.78,
+      -15.28,
+      0.0,
+      13.92,
+      18.42,
+      27.92,
+      32.27,
+      57.62,
+      62.02,
+      70.48,
+      74.68,
+      78.08
+    ],
+    "compass_x": -87.4,
+    "shunt_detail_AN": {
+      "height": 13.49,
+      "width": 11.77,
+      "y": 17.15,
+      "x": 78.88
+    },
+    "hall_effect_depth": {
+      "HES2_bottom_to_housing": 1.45,
+      "HES1_bottom_to_housing": 2.66
+    }
+  },
+  "antenna_keepout": {
+    "rule": "do not obstruct with metal",
+    "band_from_housing_outside": 8.0,
+    "band_from_housing_inside": 11.88,
+    "band_ends_y": [
+      101.14,
+      -101.14
+    ],
+    "side": {
+      "upper_y": [
+        34.18,
+        82.66
+      ],
+      "lower_y": [
+        -31.88,
+        -84.65
+      ],
+      "widths": [
+        16.18,
+        13.92
+      ],
+      "frame": "y from the horizontal centre line"
+    }
+  },
+  "unverified": [
+    "no text layer | values read from renders at 1.6x, magnet ordinates not individually zoomed",
+    "magnet ordinates stored as grouped lists; assignment of each ordinate to a magnet is by leader and not resolved for every label",
+    "rear camera y assignments read from detail T leaders"
+  ]
+}
