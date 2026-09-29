@@ -1,0 +1,110 @@
+{
+  "product": "Apple Vision Pro Audio Strap",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-vision-pro-audio-strap.pdf",
+    "file": "extract/pdf/apple-vision-pro-audio-strap.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2024-05-13",
+    "sheets": 1
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": null,
+  "notes": {
+    "1": "dimensions refer to the left audio strap | right audio strap is mirrored unless otherwise specified",
+    "2": "do not obstruct ports (speaker)",
+    "3": "no metal contact with elastomer portion of audio strap",
+    "4": "material contact with connector and face plate max hardness: 320 HV",
+    "5": "maximum normal pull force on connector: 350 N"
+  },
+  "face_plate": {
+    "diameter": 16.2,
+    "strap_width": 27.04,
+    "centre_from_end": 10.05,
+    "connector_from_end": 6.59,
+    "note": 4
+  },
+  "connector": {
+    "height_from_face_plate": 3.83,
+    "height_callouts": [
+      1.25,
+      1.1,
+      1.48
+    ],
+    "width": 6.03,
+    "width_callouts": [
+      0.65
+    ],
+    "length": 13.82,
+    "angle_to_face_plate": 90.0,
+    "lead_in_chamfer": "0.10 x 45",
+    "side_view": [
+      8.17,
+      2.32
+    ],
+    "corner_profile": {
+      "detail": "A",
+      "applies": "all 4 corners",
+      "x": [
+        0.0,
+        0.01,
+        0.18,
+        0.73,
+        1.73,
+        3.02
+      ],
+      "y": [
+        0.0,
+        -0.3,
+        -1.09,
+        -2.13,
+        -3.21,
+        -4.6
+      ]
+    },
+    "max_pull_force_N": 350,
+    "max_contact_hardness_HV": 320,
+    "notes": [
+      4,
+      5
+    ]
+  },
+  "printed_values_in_stream_order": {
+    "sheet 1": [
+      3.83,
+      1.1,
+      1.25,
+      6.03,
+      90.0,
+      9.17,
+      27.04,
+      2.32,
+      0.65,
+      1.48,
+      10.05,
+      6.59,
+      3.0,
+      6.03,
+      90.0,
+      13.82,
+      16.2,
+      0.0,
+      -0.3,
+      -1.09,
+      -2.13,
+      -3.21,
+      -4.6,
+      0.0,
+      0.01,
+      0.18,
+      0.73,
+      1.73,
+      3.02,
+      1.0,
+      0.1
+    ]
+  },
+  "unverified": [
+    "connector height callouts 1.25 / 1.10 / 1.48 stacked in detail B, their references not traced"
+  ]
+}
