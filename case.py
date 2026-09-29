@@ -103,7 +103,7 @@ MS_T = 0.55            # magnet thickness (ADG fig 42-3)
 MS_CLR = 0.1           # magnet pocket, each side
 MS_OPEN_D = 60.0       # "open" hole, a MagSafe charger puck seats on the phone
 RIB_W = 1.2            # RIBS: rib across the back, and the solid rim round every pocket
-RIB_PITCH = 10.0       # RIBS: rib centre to centre, both ways
+RIB_PITCH = 10.0       # RIBS: rib centre to centre, both ways, stretched to divide each side evenly
 CIG_D = 8.0            # king size 7.9-8.0, slim 5.4
 CIG_WALL = 1.4
 CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
@@ -500,12 +500,13 @@ def build(name="17e", style="case", **knobs):
                 keep += prism(offset(hole, -(WINDOW_FLARE + RIB_W)), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
         else:
             keep += top_band(UNI_L + RING_W + RIB_W)
-        n = int(max(W, L) / RIB_PITCH) + 2
-        for i in range(n):
-            keep += span(W / 2 + (i - n / 2) * RIB_PITCH - RIB_W / 2, W / 2 + (i - n / 2) * RIB_PITCH + RIB_W / 2,
-                         10, -L - 10, Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
-            keep += span(-10, W + 10, -L / 2 + (i - n / 2) * RIB_PITCH - RIB_W / 2,
-                         -L / 2 + (i - n / 2) * RIB_PITCH + RIB_W / 2, Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
+        # Pitch stretched so each side divides evenly: the end ribs land on the rim, no sliver cells.
+        for size, along_x in ((W, True), (L, False)):
+            n = max(1, round((size - RIB_W) / RIB_PITCH))
+            for i in range(1, n):
+                c = RIB_W / 2 + i * (size - RIB_W) / n
+                keep += (span(c - RIB_W / 2, c + RIB_W / 2, 10, -L - 10, Z_CASE_BACK - 1, Z_CASE_BACK + RIBS) if along_x
+                         else span(-10, W + 10, -c + RIB_W / 2, -c - RIB_W / 2, Z_CASE_BACK - 1, Z_CASE_BACK + RIBS))
         part -= prism(offset(ring, RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS) - keep
 
     # Cigarette clip along the right edge of the back.
