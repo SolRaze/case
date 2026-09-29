@@ -14,6 +14,7 @@ run
 - `./build --check` no output files | `--no-png` stl only
 - `python extract/rules.py` phone x style table | `--write` refresh the invalid table | `--verify`
 - `python extract/fetch.py` drawings and guidelines into extract/pdf/, not committed
+- `python extract/readme.py` rewrite the readmes from styles, rules, refs and previews
 
 styles
 - case | full case: a window per button, fitted camera ring, full back
@@ -70,37 +71,37 @@ checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass
 - 277 of 390 phone x style build and pass | the rest are in ref/rules.json invalid
 
-previews | from the back, one row per phone
-- 5s | sheet has no corner profile
-- se-2-3 | sheet has no corner profile
-- 12-mini | ![case](previews/12-mini/case.png) ![slot](previews/12-mini/slot.png) ![magsafe](previews/12-mini/magsafe.png) ![sides](previews/12-mini/sides.png) ![corners](previews/12-mini/corners.png) ![frame](previews/12-mini/frame.png) ![backless](previews/12-mini/backless.png) ![plateframe](previews/12-mini/plateframe.png) ![plate](previews/12-mini/plate.png) ![corner](previews/12-mini/corner.png)
-- 12 | ![case](previews/12/case.png) ![slot](previews/12/slot.png) ![magsafe](previews/12/magsafe.png) ![sides](previews/12/sides.png) ![corners](previews/12/corners.png) ![frame](previews/12/frame.png) ![backless](previews/12/backless.png) ![plateframe](previews/12/plateframe.png) ![plate](previews/12/plate.png) ![spine](previews/12/spine.png) ![slider](previews/12/slider.png) ![cig](previews/12/cig.png) ![corner](previews/12/corner.png)
-- 12-pro | ![case](previews/12-pro/case.png) ![slot](previews/12-pro/slot.png) ![magsafe](previews/12-pro/magsafe.png) ![sides](previews/12-pro/sides.png) ![corners](previews/12-pro/corners.png) ![frame](previews/12-pro/frame.png) ![backless](previews/12-pro/backless.png) ![plateframe](previews/12-pro/plateframe.png) ![plate](previews/12-pro/plate.png) ![cig](previews/12-pro/cig.png) ![corner](previews/12-pro/corner.png)
-- 12-pro-max | ![case](previews/12-pro-max/case.png) ![slot](previews/12-pro-max/slot.png) ![magsafe](previews/12-pro-max/magsafe.png) ![sides](previews/12-pro-max/sides.png) ![corners](previews/12-pro-max/corners.png) ![frame](previews/12-pro-max/frame.png) ![backless](previews/12-pro-max/backless.png) ![plateframe](previews/12-pro-max/plateframe.png) ![plate](previews/12-pro-max/plate.png) ![cig](previews/12-pro-max/cig.png) ![corner](previews/12-pro-max/corner.png)
-- 13-mini | ![case](previews/13-mini/case.png) ![slot](previews/13-mini/slot.png) ![magsafe](previews/13-mini/magsafe.png) ![sides](previews/13-mini/sides.png) ![corners](previews/13-mini/corners.png) ![frame](previews/13-mini/frame.png) ![backless](previews/13-mini/backless.png) ![plateframe](previews/13-mini/plateframe.png) ![plate](previews/13-mini/plate.png) ![corner](previews/13-mini/corner.png)
-- 13 | ![case](previews/13/case.png) ![slot](previews/13/slot.png) ![magsafe](previews/13/magsafe.png) ![sides](previews/13/sides.png) ![corners](previews/13/corners.png) ![frame](previews/13/frame.png) ![backless](previews/13/backless.png) ![plateframe](previews/13/plateframe.png) ![plate](previews/13/plate.png) ![cig](previews/13/cig.png) ![corner](previews/13/corner.png)
-- 13-pro | ![case](previews/13-pro/case.png) ![slot](previews/13-pro/slot.png) ![magsafe](previews/13-pro/magsafe.png) ![sides](previews/13-pro/sides.png) ![corners](previews/13-pro/corners.png) ![frame](previews/13-pro/frame.png) ![backless](previews/13-pro/backless.png) ![plateframe](previews/13-pro/plateframe.png) ![plate](previews/13-pro/plate.png) ![cig](previews/13-pro/cig.png) ![corner](previews/13-pro/corner.png)
-- 13-pro-max | ![case](previews/13-pro-max/case.png) ![slot](previews/13-pro-max/slot.png) ![magsafe](previews/13-pro-max/magsafe.png) ![sides](previews/13-pro-max/sides.png) ![corners](previews/13-pro-max/corners.png) ![frame](previews/13-pro-max/frame.png) ![backless](previews/13-pro-max/backless.png) ![plateframe](previews/13-pro-max/plateframe.png) ![plate](previews/13-pro-max/plate.png) ![cig](previews/13-pro-max/cig.png) ![corner](previews/13-pro-max/corner.png)
-- 14 | ![case](previews/14/case.png) ![slot](previews/14/slot.png) ![magsafe](previews/14/magsafe.png) ![sides](previews/14/sides.png) ![corners](previews/14/corners.png) ![frame](previews/14/frame.png) ![backless](previews/14/backless.png) ![plateframe](previews/14/plateframe.png) ![plate](previews/14/plate.png) ![cig](previews/14/cig.png) ![corner](previews/14/corner.png)
-- 14-plus | ![case](previews/14-plus/case.png) ![slot](previews/14-plus/slot.png) ![magsafe](previews/14-plus/magsafe.png) ![sides](previews/14-plus/sides.png) ![corners](previews/14-plus/corners.png) ![frame](previews/14-plus/frame.png) ![backless](previews/14-plus/backless.png) ![plateframe](previews/14-plus/plateframe.png) ![plate](previews/14-plus/plate.png) ![cig](previews/14-plus/cig.png) ![corner](previews/14-plus/corner.png)
-- 14-pro | ![case](previews/14-pro/case.png) ![slot](previews/14-pro/slot.png) ![magsafe](previews/14-pro/magsafe.png) ![sides](previews/14-pro/sides.png) ![corners](previews/14-pro/corners.png) ![frame](previews/14-pro/frame.png) ![backless](previews/14-pro/backless.png) ![plateframe](previews/14-pro/plateframe.png) ![plate](previews/14-pro/plate.png) ![cig](previews/14-pro/cig.png) ![corner](previews/14-pro/corner.png)
-- 14-pro-max | ![case](previews/14-pro-max/case.png) ![slot](previews/14-pro-max/slot.png) ![magsafe](previews/14-pro-max/magsafe.png) ![sides](previews/14-pro-max/sides.png) ![corners](previews/14-pro-max/corners.png) ![frame](previews/14-pro-max/frame.png) ![backless](previews/14-pro-max/backless.png) ![plateframe](previews/14-pro-max/plateframe.png) ![plate](previews/14-pro-max/plate.png) ![cig](previews/14-pro-max/cig.png) ![corner](previews/14-pro-max/corner.png)
-- 15 | ![case](previews/15/case.png) ![slot](previews/15/slot.png) ![magsafe](previews/15/magsafe.png) ![sides](previews/15/sides.png) ![corners](previews/15/corners.png) ![frame](previews/15/frame.png) ![backless](previews/15/backless.png) ![plateframe](previews/15/plateframe.png) ![plate](previews/15/plate.png) ![cig](previews/15/cig.png) ![corner](previews/15/corner.png)
-- 15-plus | ![case](previews/15-plus/case.png) ![slot](previews/15-plus/slot.png) ![magsafe](previews/15-plus/magsafe.png) ![sides](previews/15-plus/sides.png) ![corners](previews/15-plus/corners.png) ![frame](previews/15-plus/frame.png) ![backless](previews/15-plus/backless.png) ![plateframe](previews/15-plus/plateframe.png) ![plate](previews/15-plus/plate.png) ![cig](previews/15-plus/cig.png) ![corner](previews/15-plus/corner.png)
-- 15-pro | ![case](previews/15-pro/case.png) ![slot](previews/15-pro/slot.png) ![magsafe](previews/15-pro/magsafe.png) ![sides](previews/15-pro/sides.png) ![corners](previews/15-pro/corners.png) ![frame](previews/15-pro/frame.png) ![backless](previews/15-pro/backless.png) ![plateframe](previews/15-pro/plateframe.png) ![plate](previews/15-pro/plate.png) ![cig](previews/15-pro/cig.png) ![corner](previews/15-pro/corner.png)
-- 15-pro-max | ![case](previews/15-pro-max/case.png) ![slot](previews/15-pro-max/slot.png) ![magsafe](previews/15-pro-max/magsafe.png) ![sides](previews/15-pro-max/sides.png) ![corners](previews/15-pro-max/corners.png) ![frame](previews/15-pro-max/frame.png) ![backless](previews/15-pro-max/backless.png) ![plateframe](previews/15-pro-max/plateframe.png) ![plate](previews/15-pro-max/plate.png) ![cig](previews/15-pro-max/cig.png) ![corner](previews/15-pro-max/corner.png)
-- 16 | ![case](previews/16/case.png) ![slot](previews/16/slot.png) ![magsafe](previews/16/magsafe.png) ![sides](previews/16/sides.png) ![corners](previews/16/corners.png) ![frame](previews/16/frame.png) ![backless](previews/16/backless.png) ![plateframe](previews/16/plateframe.png) ![plate](previews/16/plate.png) ![cig](previews/16/cig.png) ![corner](previews/16/corner.png)
-- 16-plus | ![case](previews/16-plus/case.png) ![slot](previews/16-plus/slot.png) ![magsafe](previews/16-plus/magsafe.png) ![sides](previews/16-plus/sides.png) ![corners](previews/16-plus/corners.png) ![frame](previews/16-plus/frame.png) ![backless](previews/16-plus/backless.png) ![plateframe](previews/16-plus/plateframe.png) ![plate](previews/16-plus/plate.png) ![cig](previews/16-plus/cig.png) ![corner](previews/16-plus/corner.png)
-- 16e | ![case](previews/16e/case.png) ![slot](previews/16e/slot.png) ![magsafe](previews/16e/magsafe.png) ![sides](previews/16e/sides.png) ![corners](previews/16e/corners.png) ![frame](previews/16e/frame.png) ![backless](previews/16e/backless.png) ![plateframe](previews/16e/plateframe.png) ![plate](previews/16e/plate.png) ![spine](previews/16e/spine.png) ![slider](previews/16e/slider.png) ![cig](previews/16e/cig.png) ![corner](previews/16e/corner.png)
-- 16-pro | ![case](previews/16-pro/case.png) ![slot](previews/16-pro/slot.png) ![magsafe](previews/16-pro/magsafe.png) ![sides](previews/16-pro/sides.png) ![corners](previews/16-pro/corners.png) ![frame](previews/16-pro/frame.png) ![backless](previews/16-pro/backless.png) ![plateframe](previews/16-pro/plateframe.png) ![plate](previews/16-pro/plate.png) ![cig](previews/16-pro/cig.png) ![corner](previews/16-pro/corner.png)
-- 16-pro-max | ![case](previews/16-pro-max/case.png) ![slot](previews/16-pro-max/slot.png) ![magsafe](previews/16-pro-max/magsafe.png) ![sides](previews/16-pro-max/sides.png) ![corners](previews/16-pro-max/corners.png) ![frame](previews/16-pro-max/frame.png) ![backless](previews/16-pro-max/backless.png) ![plateframe](previews/16-pro-max/plateframe.png) ![plate](previews/16-pro-max/plate.png) ![cig](previews/16-pro-max/cig.png) ![corner](previews/16-pro-max/corner.png)
-- 17 | ![case](previews/17/case.png) ![slot](previews/17/slot.png) ![magsafe](previews/17/magsafe.png) ![sides](previews/17/sides.png) ![corners](previews/17/corners.png) ![frame](previews/17/frame.png) ![backless](previews/17/backless.png) ![plateframe](previews/17/plateframe.png) ![plate](previews/17/plate.png) ![cig](previews/17/cig.png) ![corner](previews/17/corner.png)
-- 17e | ![case](previews/17e/case.png) ![slot](previews/17e/slot.png) ![magsafe](previews/17e/magsafe.png) ![sides](previews/17e/sides.png) ![corners](previews/17e/corners.png) ![frame](previews/17e/frame.png) ![backless](previews/17e/backless.png) ![plateframe](previews/17e/plateframe.png) ![plate](previews/17e/plate.png) ![spine](previews/17e/spine.png) ![slider](previews/17e/slider.png) ![cig](previews/17e/cig.png) ![corner](previews/17e/corner.png)
-- air | ![frame](previews/air/frame.png) ![backless](previews/air/backless.png) ![plateframe](previews/air/plateframe.png) ![plate](previews/air/plate.png)
-- 17-pro | ![frame](previews/17-pro/frame.png) ![backless](previews/17-pro/backless.png) ![plateframe](previews/17-pro/plateframe.png) ![plate](previews/17-pro/plate.png)
-- 17-pro-max | ![frame](previews/17-pro-max/frame.png) ![backless](previews/17-pro-max/backless.png) ![plateframe](previews/17-pro-max/plateframe.png) ![plate](previews/17-pro-max/plate.png)
-- 18-pro | ![frame](previews/18-pro/frame.png) ![backless](previews/18-pro/backless.png) ![plateframe](previews/18-pro/plateframe.png) ![plate](previews/18-pro/plate.png)
-- 18-pro-max | ![frame](previews/18-pro-max/frame.png) ![backless](previews/18-pro-max/backless.png) ![plateframe](previews/18-pro-max/plateframe.png) ![plate](previews/18-pro-max/plate.png)
+previews | from the back, grid in previews/README.md
+- 5s | none, sheet has no corner profile
+- se-2-3 | none, sheet has no corner profile
+- [12-mini](previews/README.md#12-mini) | 10 styles
+- [12](previews/README.md#12) | 13 styles
+- [12-pro](previews/README.md#12-pro) | 11 styles
+- [12-pro-max](previews/README.md#12-pro-max) | 11 styles
+- [13-mini](previews/README.md#13-mini) | 10 styles
+- [13](previews/README.md#13) | 11 styles
+- [13-pro](previews/README.md#13-pro) | 11 styles
+- [13-pro-max](previews/README.md#13-pro-max) | 11 styles
+- [14](previews/README.md#14) | 11 styles
+- [14-plus](previews/README.md#14-plus) | 11 styles
+- [14-pro](previews/README.md#14-pro) | 11 styles
+- [14-pro-max](previews/README.md#14-pro-max) | 11 styles
+- [15](previews/README.md#15) | 11 styles
+- [15-plus](previews/README.md#15-plus) | 11 styles
+- [15-pro](previews/README.md#15-pro) | 11 styles
+- [15-pro-max](previews/README.md#15-pro-max) | 11 styles
+- [16](previews/README.md#16) | 11 styles
+- [16-plus](previews/README.md#16-plus) | 11 styles
+- [16e](previews/README.md#16e) | 13 styles
+- [16-pro](previews/README.md#16-pro) | 11 styles
+- [16-pro-max](previews/README.md#16-pro-max) | 11 styles
+- [17](previews/README.md#17) | 11 styles
+- [17e](previews/README.md#17e) | 13 styles
+- [air](previews/README.md#air) | 4 styles
+- [17-pro](previews/README.md#17-pro) | 4 styles
+- [17-pro-max](previews/README.md#17-pro-max) | 4 styles
+- [18-pro](previews/README.md#18-pro) | 4 styles
+- [18-pro-max](previews/README.md#18-pro-max) | 4 styles
 
 requirements
 - `pip install -r requirements.txt` | numpy, pymupdf and the python module of the modelling tool | libegl for headless previews
