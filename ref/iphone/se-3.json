@@ -1,0 +1,393 @@
+{
+  "product": "iPhone SE (3rd generation)",
+  "covers": "title block lists iPhone SE (3rd generation) and iPhone SE (2nd generation)",
+  "source": {
+    "file": "extract/pdf/iphone-se-3rd-generation.pdf",
+    "title": "iPhone SE (3rd generation) Dimensional Drawings",
+    "publisher": "Apple Inc.",
+    "sheet_date": "2022-04-26",
+    "sheets": 1,
+    "extracted_by": "vector outlines with no font, read off pdf-crop renders",
+    "extracted_on": "2026-09-29",
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/iphone-se-3rd-generation.pdf"
+  },
+  "units": "mm",
+  "angle_units": "degrees",
+  "general_tolerance": null,
+  "datum": {
+    "origin": "top-left corner of the product outline, viewed from the front",
+    "x": "+X toward the right edge; product spans x 0 .. 67.27",
+    "y": "-Y down the length; product spans y 0 .. -138.44",
+    "z": "z 0 at the front cover-glass plane; -Z into the body. Back face at z = -7.31"
+  },
+  "body": {
+    "width": 67.27,
+    "length": 138.44,
+    "thickness": 7.31,
+    "edge_profile": {
+      "label": "detail E, PROFILE (ALL SIDES)",
+      "symmetric_about_midplane": true,
+      "z_ordinates": [
+        3.655,
+        3.45,
+        2.6,
+        1.76,
+        0.0,
+        -1.76,
+        -2.6,
+        -3.45,
+        -3.655
+      ],
+      "x_offsets": {
+        "1X": 0.0,
+        "2X": [
+          0.41,
+          1.02,
+          2.46,
+          4.5
+        ]
+      },
+      "half_thickness": 3.655
+    },
+    "corner": {
+      "type": "blend",
+      "source": "detail A, PROFILE (ALL FOUR CORNERS)",
+      "dimensioned_points": [
+        [
+          0.0,
+          -14.62
+        ],
+        [
+          0.18,
+          -9.1
+        ],
+        [
+          3.0,
+          -3.0
+        ],
+        [
+          9.1,
+          -0.18
+        ],
+        [
+          14.61,
+          0.0
+        ]
+      ],
+      "dimensioned_points_note": "x row 0.00 0.18 3.00 9.10 14.61, y column 0.00 0.18 3.00 9.10 14.62; paired smallest x with largest y",
+      "polyline": null,
+      "applies_to": "all four corners, mirrored"
+    }
+  },
+  "glass": {
+    "front_glass_width": 63.81,
+    "front_glass_length": 134.97,
+    "rear_camera_turret_height": 0.87
+  },
+  "display": {
+    "active_area_width": 58.5,
+    "active_area_length": 104.05,
+    "top_to_active_area": 17.19,
+    "side_to_active_area": 4.38
+  },
+  "home_button": {
+    "diameter": 10.9,
+    "center": [
+      33.63,
+      -129.19
+    ],
+    "from_bottom": 9.25,
+    "keepout_cone_angle": 100.0,
+    "keepout_width": 14.6,
+    "cone_to_coverglass": 12.46,
+    "note": 5
+  },
+  "buttons": [
+    {
+      "name": "ring_silent_switch",
+      "side": "left",
+      "center_y": -17.56,
+      "length": null,
+      "protrusion": 0.42
+    },
+    {
+      "name": "volume_up",
+      "side": "left",
+      "center_y": -34.56,
+      "length": 10.62,
+      "length_source": "2X 5.31",
+      "protrusion": 0.4
+    },
+    {
+      "name": "volume_down",
+      "side": "left",
+      "center_y": -47.17,
+      "length": 10.62,
+      "length_source": "2X 5.31",
+      "protrusion": 0.4
+    },
+    {
+      "name": "side_power",
+      "side": "right",
+      "center_y": -34.64,
+      "length": 10.62,
+      "length_source": "2X 5.31",
+      "protrusion": 0.4
+    }
+  ],
+  "button_cross_section": {
+    "width_across_thickness": 2.48,
+    "centre_from_front_glass": 3.55,
+    "centre_z": -3.55,
+    "switch": {
+      "pocket_width": 2.24,
+      "centre_from_front": 4.21,
+      "slot_callout": 5.61
+    },
+    "right_side": {
+      "width": 2.48,
+      "sim_width": 2.41,
+      "centre": 3.66
+    }
+  },
+  "sim_tray": {
+    "side": "right",
+    "center_y": -52.72,
+    "length": 15.67,
+    "width": 2.3
+  },
+  "bottom_edge": {
+    "frame": "x from the left edge, bottom view",
+    "ordinates": [
+      10.26,
+      22.26,
+      22.98,
+      27.24,
+      29.28,
+      37.98,
+      40.03,
+      44.29,
+      45.01,
+      57.01
+    ],
+    "ports": {
+      "diameter": 1.45,
+      "left_group": {
+        "x_span": [
+          10.26,
+          22.26
+        ]
+      },
+      "bottom_mic_1_x": 22.98,
+      "bottom_mic_2_x": 44.29,
+      "speaker": {
+        "count": 10,
+        "x_span": [
+          45.01,
+          57.01
+        ]
+      },
+      "centre_z": -3.66
+    },
+    "screws": {
+      "diameter": 1.6,
+      "count": 2,
+      "x": [
+        27.24,
+        40.03
+      ]
+    },
+    "lightning": {
+      "opening_x": [
+        29.28,
+        37.98
+      ],
+      "recommended_connector_keepout": {
+        "width": 13.65,
+        "height": 6.85,
+        "corner_radius": 3.4,
+        "inner_height": 2.95,
+        "center_x": 33.63,
+        "center_z_from_front": 3.66,
+        "requirement": "mating connector keepout area flush to product surface required outward 14.0 mm"
+      }
+    }
+  },
+  "top_edge": {
+    "receiver_slot": {
+      "width": 11.87,
+      "height": 1.2,
+      "center_x": 33.63,
+      "label": "PORTS, RECEIVER, FRONT MIC"
+    }
+  },
+  "front_sensors": {
+    "frame": "detail A x from the left edge, y down from the top",
+    "x_ordinates": [
+      22.99,
+      33.63,
+      37.32
+    ],
+    "y_ordinates": [
+      4.84,
+      9.16
+    ],
+    "front_camera": {
+      "keepout_at_surface": 3.21,
+      "cone_angle": 77.0,
+      "cone_to_coverglass": 2.02,
+      "housing_to_coverglass": 0.94
+    },
+    "proximity": {
+      "keepout_at_surface": 4.35,
+      "cone_angle": 120.0,
+      "cone_to_coverglass": 1.26
+    },
+    "als": {
+      "keepout_at_surface": 6.4,
+      "cone_angle": 140.0,
+      "cone_to_coverglass": 1.16
+    },
+    "notes": [
+      3,
+      4
+    ]
+  },
+  "rear_camera": {
+    "label": "back view, x from the back-left edge",
+    "lenses": [
+      {
+        "center": [
+          56.83,
+          -10.24
+        ],
+        "diameter": 8.57,
+        "x_back": 10.44,
+        "name": "rear_camera_1"
+      }
+    ],
+    "rear_mic": {
+      "center": [
+        49.14,
+        -10.24
+      ],
+      "diameter": 1.5,
+      "x_back": 18.13
+    },
+    "flash": {
+      "center": [
+        44.43,
+        -10.24
+      ],
+      "diameter": 3.75,
+      "x_back": 22.84
+    },
+    "turret": {
+      "outer_diameter": 12.14,
+      "keepout_diameter": 9.7,
+      "keepout_length": 12.4,
+      "keepout_height_above_housing": 1.4,
+      "turret_height": 0.87
+    },
+    "keepout_cones": {
+      "rear_camera_1": {
+        "angle": 76.7,
+        "keepout_at_surface": 4.54,
+        "cone_to_back_glass": 2.0
+      },
+      "flash": {
+        "inner_angle": 114.0,
+        "inner_below": 1.44,
+        "outer_angle": 158.0,
+        "keepout_at_surface": 4.16,
+        "cone_to_back_glass": 1.35
+      }
+    }
+  },
+  "compass": {
+    "x_back": 51.43,
+    "center": [
+      15.84,
+      -10.24
+    ]
+  },
+  "antenna_keepouts": {
+    "rule": "do not obstruct with metal, full product volume",
+    "regions": [
+      {
+        "name": "top_band",
+        "y": [
+          0.0,
+          -15.4
+        ]
+      },
+      {
+        "name": "bottom_band",
+        "y": [
+          -124.93,
+          -138.44
+        ]
+      }
+    ]
+  },
+  "wireless_charging": {
+    "diameter": 57.42,
+    "center_x": 33.63,
+    "center_from_bottom": 69.22,
+    "rule": "do not obstruct this area with metal or other conductive material",
+    "from_bottom_top_of_zone": 119.92
+  },
+  "design_notes": [
+    {
+      "n": 1,
+      "text": "No metal contact with iPhone."
+    },
+    {
+      "n": 2,
+      "text": "Do not obstruct the acoustic openings: front mic, rear mic, bottom mic1, bottom mic2, receiver, and speaker."
+    },
+    {
+      "n": 3,
+      "text": "Do not obstruct the imaging features: front camera, rear camera, rear flash."
+    },
+    {
+      "n": 4,
+      "text": "Do not obstruct the proximity sensor or ambient light sensor (ALS)."
+    },
+    {
+      "n": 5,
+      "text": "Do not obstruct the home/Touch ID sensor."
+    },
+    {
+      "n": 6,
+      "text": "Do not touch glass."
+    },
+    {
+      "n": 7,
+      "text": "Do not obstruct ports."
+    },
+    {
+      "n": 8,
+      "text": "No high powered magnets."
+    },
+    {
+      "n": 9,
+      "text": "Relative magnetic permeability of any metal used on case: 1.05 max."
+    },
+    {
+      "n": 10,
+      "text": "Case thickness on backside of product: 5.0 mm max to ensure full functionality."
+    }
+  ],
+  "case_hard_limits": {
+    "max_backside_thickness": 5.0,
+    "max_relative_permeability": 1.05,
+    "connector_clearance_outward": 14.0
+  },
+  "magsafe": null,
+  "unverified": [
+    "no text layer | values read from renders",
+    "front sensor x/y ordinates in detail A not assigned to sensors",
+    "bottom ordinate roles assigned by order"
+  ]
+}
