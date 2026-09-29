@@ -1,0 +1,417 @@
+{
+  "product": "iPad mini (A17 Pro)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-mini-a17-pro.pdf",
+    "file": "extract/pdf/ipad-mini-a17-pro.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2024-10-21"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 6,
+  "general_tolerance": {
+    "x.x": 0.2,
+    "x.xx": 0.1,
+    "x.xxx": 0.05,
+    "angles": 0.5
+  },
+  "notes": {
+    "1": "do not obstruct acoustic openings: rear mic, speakers (SPKR)",
+    "2": "do not obstruct front camera (FCAM), rear camera (RCAM), rear flash",
+    "3": "do not obstruct ambient light sensor (ALS)",
+    "4": "do not obstruct sleep/wake button",
+    "5": "accessory shall not damage coatings on display in any operating condition | abrasive surfaces and sharp edges of hard plastic, metal or glass shall not contact the display within the active area"
+  },
+  "frames": {
+    "front": "portrait, viewed from display | x from left edge | y from top or bottom edge as dimensioned",
+    "back": "viewed from back | rear camera top-left | y up from the bottom edge",
+    "magnets": "sheet 3, system/enclosure side, viewed from back | x from the left edge of that view, y up from the bottom edge"
+  },
+  "body": {
+    "width": 134.75,
+    "height": 195.43,
+    "thickness": 6.32,
+    "thickness_label": "system thickness"
+  },
+  "display_active_area": {
+    "width": 117.06,
+    "height": 177.75,
+    "border": 8.84
+  },
+  "front_camera": {
+    "x": 67.37,
+    "keepout_zone_angle": 132.15,
+    "keepout_at_surface_diameter": 5.18,
+    "note": 2
+  },
+  "als": {
+    "aperture_diameter": 2.5,
+    "count": 3,
+    "keepout_zone_angle": 120.0,
+    "keepout_at_surface": 3.27,
+    "top_right": {
+      "from_right": 23.99,
+      "from_top": 4.38,
+      "variant": "cell only"
+    },
+    "right_edge_upper": {
+      "from_top": 16.61,
+      "from_right": 3.43,
+      "variant": "wi-fi only"
+    },
+    "right_edge_lower": {
+      "from_bottom": 40.24,
+      "from_right": 3.43
+    },
+    "note": 3
+  },
+  "top_edge": {
+    "frame": "top edge view, x from left edge",
+    "sleep_wake_button": {
+      "x": [
+        12.69,
+        17.12
+      ],
+      "width_across_thickness": 3.45,
+      "keepout_zone_angle": 120.0,
+      "keepout_at_surface": 20.12,
+      "keepout_to_cover_glass": 0.0,
+      "keepout_to_housing_backside": 0.0,
+      "note": 4
+    },
+    "speakers": {
+      "left_group": {
+        "x_start": 17.96,
+        "x_end": 32.74
+      },
+      "right_group": {
+        "from_right": [
+          37.87,
+          12.82
+        ],
+        "note_text": "12.82 SPKR measured to the group's first hole from the 37.87 ordinate"
+      },
+      "centre_z": 3.14,
+      "keepout": "1 mm all around at 45 deg outward angle",
+      "note": 1
+    },
+    "note": "top edge also carries the volume buttons, from the right"
+  },
+  "volume_buttons": {
+    "frame": "top edge, from the right edge",
+    "length": 10.06,
+    "count": 2,
+    "up_from_right": 24.88,
+    "down_from_right": 12.82,
+    "width_across_thickness": 2.46,
+    "centre_z": 3.14,
+    "centre_z_note": "3X 3.14 BTNS: sleep/wake and both volume buttons centred 3.14 from the cover glass"
+  },
+  "bottom_edge": {
+    "usb_c": {
+      "x": [
+        63.11,
+        71.64
+      ],
+      "centre_z": 3.14,
+      "recommended_keepout": [
+        12.45,
+        6.6
+      ],
+      "mating_connector_keepout": "flush to product surface | 14.0 outward required"
+    },
+    "speakers": {
+      "hole_diameter": 1.76,
+      "centre_z": 3.14,
+      "right_group_from_right": [
+        23.08,
+        27.61
+      ],
+      "keepout": "1 mm all around at 45 deg outward angle",
+      "note": 1
+    }
+  },
+  "front_camera_detail": "detail A: 132.15 keepout zone, 5.18 at surface",
+  "rear_camera": {
+    "from_right": 109.36,
+    "from_right_note": "3X 109.36: rear camera, rear mic and strobe on one column, measured from the right edge of the back view",
+    "lens_diameter": 9.89,
+    "trim_side_wall_diameter": 10.54,
+    "turret_side_wall_diameter": 11.89,
+    "ring_diameter": 15.44,
+    "keepout_at_surface_diameter": 3.73,
+    "keepout_zone_angle": 76.9,
+    "window_to_housing_backside": 1.74,
+    "window_to_cover_glass_side": 8.07,
+    "note": 2,
+    "y_dim": 170.04,
+    "y_datum": null
+  },
+  "rear_mic": {
+    "through_hole_diameter": 0.8,
+    "keepout_diameter": 1.6,
+    "note": 1,
+    "y_dim": 75.33,
+    "y_datum": null
+  },
+  "flash": {
+    "name": "strobe",
+    "window_diameter": 3.75,
+    "keepout_at_surface_diameter": 4.15,
+    "keepout_depth": 2.6,
+    "keepout_zone_angles": [
+      135.0,
+      157.0
+    ],
+    "note": 2,
+    "y_dim": 70.1,
+    "y_datum": null
+  },
+  "camera_bump_profile": {
+    "detail": "F",
+    "applies": "profile all around",
+    "z": [
+      1.77,
+      0.9,
+      0.23,
+      0.05,
+      0.0
+    ],
+    "x": [
+      -1.54,
+      -1.08,
+      -0.67,
+      -0.15,
+      0.0
+    ]
+  },
+  "inductive_charging_window": {
+    "rule": "keep-out, no metal allowable in this area",
+    "y_from_bottom": [
+      84.95,
+      110.48
+    ],
+    "depth": 2.93
+  },
+  "side_section": {
+    "thickness": 6.32,
+    "button_centre_z": 3.14
+  },
+  "magnets": {
+    "polarity_frame": "pole toward the surface of the enclosure",
+    "polarity_outer": {
+      "PM-FH-3": "N",
+      "PM-FH-1": "S",
+      "PM-CH-1": "S",
+      "PM-CH-3": "N",
+      "BVA-11": "N",
+      "BVA-12": "N",
+      "BVA-13": "S",
+      "BVA-14": "N",
+      "BVA-15": "S",
+      "BVA-21": "S",
+      "BVA-22": "N",
+      "BVB-11": "N",
+      "BVB-12": "S",
+      "BVB-13": "N",
+      "BVC-11": "S",
+      "BVC-12": "N",
+      "BVC-13": "S",
+      "BVE-11": "S",
+      "BVE-12": "N",
+      "BVE-13": "S",
+      "BVE-14": "N",
+      "BVE-15": "S",
+      "BVE-21": "S",
+      "BVE-22": "N",
+      "BVF-11": "N",
+      "BVF-12": "S",
+      "BVF-13": "N"
+    },
+    "left_edge_from_bottom": {
+      "BVE-15": 173.56,
+      "BVE-22": 173.56,
+      "BVE-14": 169.98,
+      "BVE-21": 169.98,
+      "BVE-13": 164.42,
+      "BVE-12": 159.52,
+      "BVE-11": 154.62,
+      "BVF-13": 97.72,
+      "BVF-12": 85.03,
+      "BVF-11": 80.13,
+      "BVA-15": 53.84,
+      "BVA-14": 48.94,
+      "BVA-13": 38.55,
+      "BVA-12": 33.65,
+      "BVA-22": 27.04,
+      "BVA-11": 21.87,
+      "BVA-21": 21.87
+    },
+    "left_edge_x": {
+      "outer_column": 5.34,
+      "outer_column_count": 12,
+      "outer_column_top": 5.8,
+      "inner_column": [
+        9.77,
+        11.92,
+        12.48
+      ]
+    },
+    "right_edge_from_bottom": {
+      "BVC-13": 138.46,
+      "BVC shunt": 134.66,
+      "BVC-12": 134.26,
+      "BVC-11": 130.45,
+      "BVB-13": 64.1,
+      "BVB-12": 55.21,
+      "BVB shunt": 54.21,
+      "BVB-11": 45.25,
+      "PM-FH-4": 135.42,
+      "PM-FH-3": 132.06,
+      "PM-FH-2": 128.34,
+      "PM-FH-1": 125.15,
+      "PM-CH-1": 70.28,
+      "PM-CH-2": 67.09,
+      "PM-CH-3": 63.37,
+      "PM-CH-4": 60.02
+    },
+    "right_edge_x": {
+      "bv_column": 129.81,
+      "bv_column_lower": 129.28,
+      "pm_column": 133.08,
+      "pm_column_count": 8,
+      "keepout_block": [
+        117.48,
+        130.96
+      ],
+      "flux_line": 138.45
+    },
+    "right_edge_keepouts_from_bottom": {
+      "flux_upper": [
+        129.22,
+        132.02
+      ],
+      "keepout_block": [
+        77.72,
+        89.22,
+        106.22,
+        117.72
+      ],
+      "flux_lower": [
+        63.42,
+        66.22
+      ]
+    },
+    "magnet_keepout_zone": "extends above and below product thickness",
+    "magnetic_flux_keepout": "3 mm thick centred in product thickness | max 0.25 mT in cross-hatched region",
+    "flux_line_limit": "max 1.3 mT anywhere along line",
+    "flux_keepout_to_housing_outside": 3.14,
+    "shunts": {
+      "C3": {
+        "x": 111.78,
+        "y": 148.31
+      },
+      "C2": {
+        "x": 111.87,
+        "y": 21.21
+      }
+    },
+    "hall_effect": {
+      "HES1": {
+        "x": 12.54,
+        "y": 45.62,
+        "depth": 2.51,
+        "depth_label": "bottom of HES 1 to outside of housing"
+      },
+      "HES2": {
+        "x": 116.59,
+        "y": 40.35,
+        "depth": 1.42,
+        "depth_label": "bottom of HES 2 to outside of housing"
+      }
+    },
+    "compass": {
+      "x": 85.37,
+      "y": 173.36,
+      "depth": 0.54,
+      "depth_label": "bottom of compass to outside of housing"
+    }
+  },
+  "unverified": [
+    "no text layer | values read from renders",
+    "rear camera 170.04, rear mic 75.33, strobe 70.10: extension lines end on the back view's horizontal centreline, but 170.04 exceeds half the height, so the datum is not resolved; stored as printed with y_datum null",
+    "volume and speaker ordinates on the top edge read from the right edge of the view",
+    "antenna frame: y from the horizontal centreline (0.00), side keepout x from the right edge"
+  ],
+  "top_module_magnets": {
+    "label": "top module magnets, polarity at surface of cover glass indicated",
+    "frame": "front view, y up from the bottom edge, x from the left edge",
+    "x": [
+      130.09,
+      130.75,
+      130.67
+    ],
+    "x_note": "130.09 upper pair, 2X 130.75 middle pair, 130.67 lowest",
+    "from_bottom": {
+      "135.68": "N",
+      "130.18": "S",
+      "116.84": "N",
+      "77.46": "N",
+      "50.87": "S"
+    }
+  },
+  "corner_profile": {
+    "detail": "K",
+    "applies": "4x corner profile",
+    "x": [
+      0.0,
+      0.01,
+      0.07,
+      1.53,
+      6.76,
+      13.15,
+      18.79
+    ],
+    "y": [
+      18.79,
+      14.68,
+      12.88,
+      6.76,
+      1.53,
+      0.05,
+      0.0
+    ],
+    "note": "x row reads 0.00, 0.01, 0.07, 1.53, 6.76, 13.15, 18.79 along the bottom edge; y column 18.79, 14.68, 12.88, 6.76, 1.53, 0.05, 0.00 up the side"
+  },
+  "edge_profile": {
+    "detail": "J",
+    "applies": "2x profile all around product, front and back",
+    "x": [
+      0.0,
+      0.06,
+      0.43,
+      1.12
+    ],
+    "z": [
+      1.12,
+      0.43,
+      0.05,
+      0.0
+    ]
+  },
+  "antenna_keepout": {
+    "rule": "do not obstruct with metal",
+    "band_from_housing_outside": 8.0,
+    "band_from_housing_inside": 11.89,
+    "band_note": "2X 8.00 all around housing outside, 2X 11.89 all around housing inside, top and bottom bands",
+    "band_inner_edge_from_centreline": 75.04,
+    "side": {
+      "edge": "right, front view",
+      "y_from_centreline": [
+        36.95,
+        85.44
+      ],
+      "width_from_right_edge": 13.47
+    }
+  }
+}
