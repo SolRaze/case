@@ -286,5 +286,174 @@
       "case": "LIP 0.5, and LIP > CLEAR so the phone is retained",
       "checked": "assert CLEAR < LIP < 1.05"
     }
-  ]
+  ],
+  "invalid": {
+    "5s": {
+      "case": "sheet has no corner profile",
+      "slot": "sheet has no corner profile",
+      "magsafe": "sheet has no corner profile",
+      "sides": "sheet has no corner profile",
+      "corners": "sheet has no corner profile",
+      "frame": "sheet has no corner profile",
+      "backless": "sheet has no corner profile",
+      "plateframe": "sheet has no corner profile",
+      "plate": "sheet has no corner profile",
+      "spine": "sheet has no corner profile",
+      "slider": "sheet has no corner profile",
+      "cig": "sheet has no corner profile",
+      "corner": "sheet has no corner profile"
+    },
+    "se-2-3": {
+      "case": "sheet has no corner profile",
+      "slot": "sheet has no corner profile",
+      "magsafe": "sheet has no corner profile",
+      "sides": "sheet has no corner profile",
+      "corners": "sheet has no corner profile",
+      "frame": "sheet has no corner profile",
+      "backless": "sheet has no corner profile",
+      "plateframe": "sheet has no corner profile",
+      "plate": "sheet has no corner profile",
+      "spine": "sheet has no corner profile",
+      "slider": "sheet has no corner profile",
+      "cig": "sheet has no corner profile",
+      "corner": "sheet has no corner profile"
+    },
+    "12-mini": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case",
+      "cig": "cigarette clip runs off the bottom"
+    },
+    "12-pro": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "12-pro-max": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "13-mini": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case",
+      "cig": "cigarette clip runs off the bottom"
+    },
+    "13": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "13-pro": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "13-pro-max": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "14": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "14-plus": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "14-pro": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "14-pro-max": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "15": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "15-plus": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "15-pro": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "15-pro-max": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "16": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "16-plus": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "16-pro": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "16-pro-max": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "17": {
+      "spine": "right rail falls off the case",
+      "slider": "right rail falls off the case"
+    },
+    "air": {
+      "case": "full-width camera plateau, use CAMERA universal",
+      "slot": "full-width camera plateau, use CAMERA universal",
+      "magsafe": "full-width camera plateau, use CAMERA universal",
+      "sides": "full-width camera plateau, use CAMERA universal",
+      "corners": "full-width camera plateau, use CAMERA universal",
+      "spine": "full-width camera plateau, use CAMERA universal",
+      "slider": "full-width camera plateau, use CAMERA universal",
+      "cig": "full-width camera plateau, use CAMERA universal",
+      "corner": "full-width camera plateau, use CAMERA universal"
+    },
+    "17-pro": {
+      "case": "full-width camera plateau, use CAMERA universal",
+      "slot": "full-width camera plateau, use CAMERA universal",
+      "magsafe": "full-width camera plateau, use CAMERA universal",
+      "sides": "full-width camera plateau, use CAMERA universal",
+      "corners": "full-width camera plateau, use CAMERA universal",
+      "spine": "full-width camera plateau, use CAMERA universal",
+      "slider": "full-width camera plateau, use CAMERA universal",
+      "cig": "full-width camera plateau, use CAMERA universal",
+      "corner": "full-width camera plateau, use CAMERA universal"
+    },
+    "17-pro-max": {
+      "case": "full-width camera plateau, use CAMERA universal",
+      "slot": "full-width camera plateau, use CAMERA universal",
+      "magsafe": "full-width camera plateau, use CAMERA universal",
+      "sides": "full-width camera plateau, use CAMERA universal",
+      "corners": "full-width camera plateau, use CAMERA universal",
+      "spine": "full-width camera plateau, use CAMERA universal",
+      "slider": "full-width camera plateau, use CAMERA universal",
+      "cig": "full-width camera plateau, use CAMERA universal",
+      "corner": "full-width camera plateau, use CAMERA universal"
+    },
+    "18-pro": {
+      "case": "full-width camera plateau, use CAMERA universal",
+      "slot": "full-width camera plateau, use CAMERA universal",
+      "magsafe": "full-width camera plateau, use CAMERA universal",
+      "sides": "full-width camera plateau, use CAMERA universal",
+      "corners": "full-width camera plateau, use CAMERA universal",
+      "spine": "full-width camera plateau, use CAMERA universal",
+      "slider": "full-width camera plateau, use CAMERA universal",
+      "cig": "full-width camera plateau, use CAMERA universal",
+      "corner": "full-width camera plateau, use CAMERA universal"
+    },
+    "18-pro-max": {
+      "case": "full-width camera plateau, use CAMERA universal",
+      "slot": "full-width camera plateau, use CAMERA universal",
+      "magsafe": "full-width camera plateau, use CAMERA universal",
+      "sides": "full-width camera plateau, use CAMERA universal",
+      "corners": "full-width camera plateau, use CAMERA universal",
+      "spine": "full-width camera plateau, use CAMERA universal",
+      "slider": "full-width camera plateau, use CAMERA universal",
+      "cig": "full-width camera plateau, use CAMERA universal",
+      "corner": "full-width camera plateau, use CAMERA universal"
+    }
+  }
 }

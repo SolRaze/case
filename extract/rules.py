@@ -5,7 +5,8 @@
     knob_defaults()             {knob: default}
 
     python extract/rules.py            table of every phone x style, x where ruled out
-    python extract/rules.py --verify   the sizes.json-derived phone lists still match
+    python extract/rules.py --write    store the phone x style table as "invalid"
+    python extract/rules.py --verify   the sizes.json-derived phone lists and the table still match
 """
 
 import json
@@ -63,9 +64,31 @@ def verify():
     print("ok")
 
 
+def invalid_table():
+    """{phone: {style: why}} for every ruled-out pair."""
+    names = list(json.loads((ROOT / "ref/iphone/sizes.json").read_text())["phones"])
+    out = {}
+    for n in names:
+        row = {s: why_invalid(n, s) for s in STYLES if why_invalid(n, s)}
+        if row:
+            out[n] = row
+    return out
+
+
+def write_table():
+    """Store the table in ref/rules.json under "invalid", generated from the rules above."""
+    path = ROOT / "ref/rules.json"
+    data = json.loads(path.read_text())
+    data["invalid"] = invalid_table()
+    path.write_text(json.dumps(data, indent=2) + "\n")
+
+
 if __name__ == "__main__":
     if "--verify" in sys.argv:
         verify()
+        assert RULES.get("invalid") == invalid_table(), "invalid table stale, run --write"
+    elif "--write" in sys.argv:
+        write_table()
     else:
         names = list(json.loads((ROOT / "ref/iphone/sizes.json").read_text())["phones"])
         print("phone".ljust(12) + " ".join(s[:5].ljust(5) for s in STYLES))
