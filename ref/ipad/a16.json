@@ -1,0 +1,402 @@
+{
+  "product": "iPad (A16)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/ipad-a16.pdf",
+    "file": "~/Reference/apple/ipad-a16.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 5,
+  "sheet_date": "2025-03-17",
+  "general_tolerance": {
+    "X.X": 0.2,
+    "X.XX": 0.1,
+    "X.XXX": 0.05,
+    "angles": 0.5
+  },
+  "covers": "title block lists iPad (A16) and iPad (10th generation); sheet 4 magnet detail is 10th generation only, sheet 5 is A16",
+  "extracted_by": "every sheet is vector outlines with no font; read off pdf-crop renders",
+  "notes": {
+    "1": "do not obstruct acoustic openings: front mic, rear mic, speakers",
+    "2": "do not obstruct front camera, rear camera",
+    "3": "do not obstruct ambient light sensor (ALS)",
+    "4": "do not obstruct sleep/wake button",
+    "5": "accessory shall not damage coatings on display in any operating condition | backpack carry, closed mode, storage mode, use with stylus | abrasive surfaces and sharp edges of hard plastic, metal or glass shall not contact the display active area"
+  },
+  "frames": {
+    "front": "portrait, viewed from display | camera, mic and ALS on the right long edge",
+    "back": "viewed from back | rear camera top-left",
+    "sensors_and_magnets": "sheets 3-5: x from vertical centre line, y from the horizontal line through the front camera (Y datum), +y toward the top"
+  },
+  "body": {
+    "width": 179.51,
+    "height": 248.63,
+    "thickness": 7.03
+  },
+  "display_active_area": {
+    "width": 158.94,
+    "height": 228.06,
+    "border": 10.28
+  },
+  "edge_views": {
+    "top": {
+      "speaker_hole_diameter": 1.89,
+      "speaker_slot_height": 3.49,
+      "left_group_from_left": [
+        29.44,
+        57.66
+      ],
+      "right_group_from_right": [
+        37.14,
+        58.6
+      ],
+      "speaker_rule": "1 mm keepout all around x 45 outward angle"
+    },
+    "bottom": {
+      "speaker_hole_diameter": 1.89,
+      "speaker_slot_height": 3.49,
+      "groups_from_each_end": [
+        29.44,
+        57.66
+      ],
+      "rear_camera_protrusion": 2.08
+    },
+    "note": "top view lists 2X 1.89 and 2X 3.49; bottom view 4X 1.89, 2X 3.49, 2X 29.44, 2X 57.66"
+  },
+  "sleep_wake_button": {
+    "edge": "top",
+    "from_right_end": [
+      15.15,
+      17.12
+    ],
+    "button_length": 17.12,
+    "end_offset": 15.15,
+    "height": 4.0,
+    "to_cg": 1.54,
+    "keepout_at_surface": 20.12,
+    "keepout_zone_angle": 120.0,
+    "keepout_to_housing": 0.0,
+    "keepout_to_cg": 0.0,
+    "detail": "P",
+    "note": 4
+  },
+  "front_camera": {
+    "from_bottom": 124.31,
+    "from_right_edge": 5.24,
+    "keepout_diameter": 5.18,
+    "keepout_at_surface_diameter": 5.18,
+    "keepout_zone_angle": 132.15,
+    "detail": "AU",
+    "note": 2
+  },
+  "front_mic": {
+    "from_bottom": 117.56,
+    "from_right_edge": 5.24,
+    "diameter": 0.8,
+    "keepout_diameter": 1.8,
+    "note": 1
+  },
+  "als": {
+    "right": {
+      "from_bottom": 111.15,
+      "from_right_edge": 5.24,
+      "keepout_diameter": 3.57,
+      "keepout_at_surface_diameter": 3.57,
+      "cone_angle": 120.0,
+      "detail": "AV"
+    },
+    "top_right": {
+      "from_top": 35.02,
+      "from_right_edge": 4.53,
+      "diameter": 3.0,
+      "keepout_at_surface_diameter": 3.0,
+      "cone_angle": 120.0,
+      "detail": "BG"
+    },
+    "note": 3
+  },
+  "usb_c": {
+    "recommended_keepout": [
+      10.25,
+      5.54
+    ],
+    "connector_keepout": 3.54,
+    "mating_connector_keepout": "flush to product surface | 14.0 outward required",
+    "detail": "BH"
+  },
+  "rear_camera": {
+    "lens_diameter": 9.89,
+    "side_wall_diameter": 11.89,
+    "ring_diameter": 16.92,
+    "x": 14.9,
+    "y": 14.9,
+    "from_center_x": 74.85,
+    "from_center_y": 109.41,
+    "protrusion_to_cg_surface": 8.95,
+    "window_to_housing_back": 1.93,
+    "min_keepout": 3.21,
+    "keepout_zone_angle": 77,
+    "bump_profile": {
+      "detail": "AR",
+      "x": [
+        -1.78,
+        -1.53,
+        -1.08,
+        -0.53,
+        0.0
+      ],
+      "z": [
+        2.52,
+        0.72,
+        0.26,
+        0.04,
+        0.0
+      ],
+      "radius": 0.12
+    },
+    "note": 2
+  },
+  "rear_mic": {
+    "keepout_diameter": 2.9,
+    "x": 14.9,
+    "y": 29.82,
+    "from_center_y": 94.49,
+    "note": 1
+  },
+  "volume_buttons": {
+    "plus": {
+      "from_top": 22.72,
+      "length": 10.06
+    },
+    "minus": {
+      "from_top": 34.78,
+      "length": 10.06
+    },
+    "gap": 2.0,
+    "width": 2.56,
+    "note": "from_top is the button's upper end; plus ends 32.78, gap 2.00, minus starts 34.78"
+  },
+  "sim_tray": {
+    "length": 16.41,
+    "lower_end_from_bottom": 26.49
+  },
+  "smart_connector": {
+    "edge": "left long edge, viewed from back",
+    "center_from_top": 124.31,
+    "count": 3,
+    "pitch": 4.65,
+    "pin_diameter": 3.2,
+    "opening_diameter": 3.75,
+    "pin_center_to_cg": 3.54,
+    "detail": "AS"
+  },
+  "sensors": {
+    "hall_effect": {
+      "HES1": {
+        "x": 66.98,
+        "y": -69.8,
+        "bottom_to_housing_outside": 1.34,
+        "cg_to_sensor": 5.42,
+        "triggering_mT": [
+          2.3,
+          3.7
+        ],
+        "release_mT": [
+          1.5,
+          2.9
+        ]
+      },
+      "HES2": {
+        "x": -76.23,
+        "y": -103.49,
+        "bottom_to_housing_outside": 2.38,
+        "cg_to_sensor": 4.45,
+        "triggering_mT": [
+          7.4,
+          11.6
+        ],
+        "release_mT": [
+          6.5,
+          10.7
+        ]
+      },
+      "triggering_direction": "points south-north"
+    },
+    "compass": {
+      "x": -85.27,
+      "y": 0.0,
+      "bottom_to_housing_outside": 1.07,
+      "cg_to_sensor": 5.65
+    }
+  },
+  "magnets": {
+    "sheet": "5, MAGNET DETAIL (A16)",
+    "coordinates": "magnet centre positions",
+    "right_edge": {
+      "x": {
+        "CG": 85.34,
+        "PM": 87.37
+      },
+      "y": {
+        "CG-FH-1": 99.26,
+        "CG-FH-2": 81.77,
+        "CG-FH-3": 73.9,
+        "PM-FH-1": 30.12,
+        "PM-FH-2": 24.75,
+        "PM-FH-3": 19.38,
+        "PM-CH-1": -19.38,
+        "PM-CH-2": -24.75,
+        "PM-CH-3": -30.12,
+        "CG-CH-1": -85.07,
+        "CG-CH-2": -97.58
+      },
+      "pm_notes": "PM-FH-2 north pole toward PM-FH-3 | PM-CH-2 north pole toward PM-CH-1"
+    },
+    "left_edge": {
+      "x": {
+        "L": -83.49
+      },
+      "y": {
+        "L-FH-1": 75.49,
+        "L-FH-2": 69.89,
+        "L-FH-3": 38.13,
+        "L-FH-4": 32.73,
+        "L-CH-1": -40.41,
+        "L-CH-2": -45.81,
+        "L-CH-3": -74.32,
+        "L-CH-4": -79.92
+      }
+    },
+    "section_ba": {
+      "SP-FH-1": 97.05,
+      "SP-FH-2": 91.58,
+      "SP-FH-3": 76.21,
+      "SP-FH-4": 69.72,
+      "SP-FH-5": 60.12,
+      "SP-FH-6": 54.0,
+      "SP-FH-7": 42.14,
+      "SP-FH-8": 38.52,
+      "SP-FH-9": -80.75,
+      "SP-FH-10": -87.01,
+      "SP-FH-11": -92.78,
+      "SP-CH-1": -29.48,
+      "SP-CH-2": -33.73,
+      "SP-CH-3": -38.53,
+      "SP-CH-4": -45.73,
+      "SP-CH-5": -52.83,
+      "SP-CH-6": -69.73,
+      "SP-CH-7": -76.93,
+      "SP-CH-8": -81.73,
+      "SP-CH-9": -201.0,
+      "SP-CH-10": -204.72
+    },
+    "top": {
+      "C3": {
+        "x": {
+          "C3-1": 49.27,
+          "C3-2": 41.87,
+          "C3-3": 34.47,
+          "C3-6": 49.27,
+          "C3-5": 41.87,
+          "C3-4": 34.47
+        },
+        "y": {
+          "C3-1..3": 101.56,
+          "C3-4..6": 96.16
+        }
+      }
+    },
+    "bottom": {
+      "C1": {
+        "x": [
+          -20.54,
+          -15.34
+        ],
+        "y": -107.09
+      },
+      "C2": {
+        "x": {
+          "C2-1": 42.8,
+          "C2-2": 48.2,
+          "C2-3": 53.6,
+          "C2-4": 59.0,
+          "C2-5": 70.76,
+          "C2-6": 76.38
+        },
+        "y": {
+          "C2-1..2": -103.87,
+          "other": [
+            -104.0,
+            -105.83
+          ]
+        }
+      }
+    },
+    "polarity_inside": {
+      "PM-FH-1": "N",
+      "PM-FH-2": "see detail",
+      "PM-FH-3": "S",
+      "PM-CH-1": "S",
+      "PM-CH-2": "see detail",
+      "PM-CH-3": "N",
+      "CG-FH-1": "S",
+      "CG-FH-2": "S",
+      "CG-FH-3": "N",
+      "CG-CH-1": "N",
+      "CG-CH-2": "S",
+      "SP-FH-1": "N",
+      "SP-FH-2": "S",
+      "SP-FH-3": "N",
+      "SP-FH-4": "S",
+      "SP-FH-5": "N",
+      "SP-FH-6": "S",
+      "SP-FH-7": "N",
+      "SP-FH-8": "S",
+      "SP-FH-9": "N",
+      "SP-FH-10": "S",
+      "SP-FH-11": "N",
+      "SP-CH-1": "S",
+      "SP-CH-2": "N",
+      "SP-CH-3": "S",
+      "SP-CH-4": "N",
+      "SP-CH-5": "S",
+      "SP-CH-6": "S",
+      "SP-CH-7": "N",
+      "SP-CH-8": "S",
+      "SP-CH-9": "N",
+      "SP-CH-10": "S",
+      "L-FH-1": "N",
+      "L-FH-2": "S",
+      "L-FH-3": "N",
+      "L-FH-4": "S",
+      "L-CH-1": "S",
+      "L-CH-2": "N",
+      "L-CH-3": "S",
+      "L-CH-4": "N",
+      "C1-1": "N",
+      "C1-2": "S",
+      "C2-1": "S",
+      "C2-2": "N",
+      "C2-3": "S",
+      "C2-4": "N",
+      "C2-5": "S",
+      "C2-6": "N",
+      "C3-1": "N",
+      "C3-2": "S",
+      "C3-3": "N",
+      "C3-4": "S",
+      "C3-5": "N",
+      "C3-6": "S"
+    },
+    "polarity_note": "table lists the pole toward the inside of the enclosure; the outside pole is the opposite in every row",
+    "differs_from_10th_generation": "10th generation sheet adds a C3 shunt (1010 steel, z 6.444 from CG top surface, 0.15 x 6.84 x 21.47, y 80.49) and puts the PM column at 6X 86.57"
+  },
+  "unverified": [
+    "all values read off renders, no text layer to cross-check",
+    "section BA-BA SP-FH-9..11 and SP-CH-9..10 ordinates printed as shown; they do not follow the monotonic run of their neighbours",
+    "C2-5/C2-6 y assignment between 2X -104.00 and 2X -105.83",
+    "top-edge speaker ordinates: which end each view measures from",
+    "sleep/wake 15.15 and 17.12 read as end offset and button length"
+  ]
+}
