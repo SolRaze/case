@@ -1,10 +1,10 @@
 """iPhone 17e case. Geometry comes from the drawing JSON, not from measurement.
 
-Sources, both under ~/Reference/apple:
-- 17e/iphone-17e.json, every value of 17e/iphone-17e.pdf (Apple's dimensional
+Sources:
+- ref/iphone/17e.json, every value of the iPhone 17e PDF (Apple's dimensional
   drawing) transcribed and checked against the drawn paths. The 16e drawing is
   the same body, so every style fits it too.
-- Accessory-Design-Guidelines.pdf: chapter 5 "Cases" (pages 32-46) and 42.1
+- Accessory Design Guidelines (Apple, not committed): chapter 5 "Cases" (pages 32-46) and 42.1
   "MagSafe Case Magnet Array" (pages 269-272), cited below as ADG.
 
 Drawing frame, kept throughout: x 0..71.52 across the width, y 0..-146.71 down
@@ -48,8 +48,9 @@ from build123d import (
     make_face,
 )
 
-SPEC = Path.home() / "Reference/apple/17e/iphone-17e.json"
-OUTLINE = Path.home() / "Projects/Assets/cad/extract/phone-body.py"
+ROOT = Path(__file__).resolve().parents[1]
+SPEC = ROOT / "ref/iphone/17e.json"
+OUTLINE = ROOT / "extract/phone-body.py"
 
 CLEAR = 0.25   # phone to inner wall, all round
 WALL = 1.55    # side wall. CLEAR + WALL is the bottom, 1.8 max for docks (ADG 5.1.3)

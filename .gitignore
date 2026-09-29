@@ -3,3 +3,6 @@ out/
 __pycache__/
 .DS_Store
 extract/pdf-crop
+*.blend
+*.blend1
+*.pdf

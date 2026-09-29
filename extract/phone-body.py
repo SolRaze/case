@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Body solid from an Apple dimensional-drawing JSON (see ~/Reference/apple/).
+"""Body solid from an Apple dimensional-drawing JSON (see ref/).
 
 Sweeps the plan outline - the detail-A corner polyline mirrored into four corners -
 through the detail-B edge profile and writes a binary STL in drawing coordinates:
@@ -144,7 +144,7 @@ def test(spec_path):
 
 
 if __name__ == "__main__":
-    default = Path.home() / "Reference/apple/17e/iphone-17e.json"
+    default = Path(__file__).resolve().parents[1] / "ref/iphone/17e.json"
     if "--test" in sys.argv:
         test(default)
     else:

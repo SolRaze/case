@@ -143,7 +143,7 @@ class Report:
 
 def main():
     spec_path = Path(sys.argv[1]) if len(sys.argv) > 1 else \
-        Path.home() / "Reference/apple/17e/iphone-17e.json"
+        Path(__file__).resolve().parents[1] / "ref/iphone/17e.json"
     spec = json.loads(spec_path.read_text())
     pdf = Path(sys.argv[2]) if len(sys.argv) > 2 else spec_path.with_suffix(".pdf")
 

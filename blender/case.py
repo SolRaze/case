@@ -1,5 +1,5 @@
-"""Parametric phone case in Blender: the geometry of cad/parts/case-17e.py for any
-phone in ~/Reference/apple/iphone-sizes.json. 1 unit = 1 mm.
+"""Parametric phone case in Blender: the geometry of parts/case-17e.py for any
+phone in ref/iphone/sizes.json. 1 unit = 1 mm.
 
 build123d stays the print source. This file reads the dimension constants and knob
 defaults out of case-17e.py, and the preset knob sets out of the case-17e-* part
@@ -9,10 +9,10 @@ case-17e.py block by block; change the two together.
 Frame as case-17e.py: x 0..W across the front, y 0..-L down, z 0 at the front glass.
 
 Live, cad profile, bl py:
-    ns = runpy.run_path(str(Path.home() / "Projects/Assets/blend/case/case.py"))
+    ns = runpy.run_path(str(Path.home() / "Projects/Assets/case/blender/case.py"))
     ns["build"]("16", "magsafe", WALLS="sides")      # phone, preset, knob overrides
     ns["check"](obj, ...)                             # manifold, one solid, glass gap
-Headless, writes case.blend beside this file:
+Headless, writes case.blend beside this file (gitignored):
     Blender --background --factory-startup --python case.py -- [phone ...] [preset ...] [--all]
 """
 
@@ -27,12 +27,12 @@ import bmesh
 import bpy
 import numpy as np
 
-CAD = Path.home() / "Projects/Assets/cad"
-SOURCE = CAD / "parts/case-17e.py"
-OUTLINE = CAD / "extract/phone-body.py"
-APPLE = Path.home() / "Reference/apple"
-SIZES = APPLE / "iphone-sizes.json"
-REF_SPEC = APPLE / "17e/iphone-17e.json"
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE = ROOT / "parts/case-17e.py"
+OUTLINE = ROOT / "extract/phone-body.py"
+APPLE = ROOT / "ref/iphone"
+SIZES = APPLE / "sizes.json"
+REF_SPEC = APPLE / "17e.json"
 BLEND = Path(__file__).resolve().parent / "case.blend"
 SOLVER = "MANIFOLD"   # every operand is a closed loft, which is all this solver needs
 SEG = 64              # segments per full circle
