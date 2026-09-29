@@ -1,0 +1,283 @@
+{
+  "product": "Apple Watch Series 8, 45 mm",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-watch-series-8-45mm.pdf",
+    "file": "extract/pdf/apple-watch-series-8-45mm.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2022-09-21",
+    "sheets": 1
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": null,
+  "tolerance_note": "all dimensions for reference only",
+  "notes": {
+    "1": "case does not interfere with click or rotation of digital crown | no force on crown | does not obstruct crown face",
+    "2": "case does not obstruct acoustic openings and altimeter | must not degrade acoustic or water ejection performance",
+    "3": "no metal cases | antenna function",
+    "4": "case does not obstruct charging interface",
+    "5": "case does not obstruct optical sensors",
+    "6": "case does not extend beyond sensor windows",
+    "7": "case does not contact cover glass",
+    "8": "case does not contact electrical sensors",
+    "9": "case does not interfere with click function of button",
+    "10": "case does not contain ferromagnetic material"
+  },
+  "frames": {
+    "plan": "front view, case centre at 0,0 | y up toward 12 o'clock",
+    "crown_side": "crown side view | y from the case centreline (0.00 at the crown axis row) | z from the display glass",
+    "corner_table": "detail B corner profile, one quadrant mirrored to all four corners | x from the side edge, y from the bottom edge",
+    "profile_table": "detail C edge profile, all sides | x across the thickness, z up from the back datum"
+  },
+  "body": {
+    "width": 38.22,
+    "height": 45.08,
+    "apex_of_dome_to_display_glass": 13.14,
+    "flat_of_back_to_display_glass": 11.54,
+    "display_width": 34.59,
+    "display_height": 41.45
+  },
+  "display_active_area": {
+    "width": 31.2,
+    "height": 38.06,
+    "note": "when viewed from top"
+  },
+  "cover_glass": {
+    "no_contact_band": 1.45,
+    "note": 7
+  },
+  "digital_crown": {
+    "dial_diameter": 7.5,
+    "dial_keepout_diameter": 9.5,
+    "center_y": 8.63,
+    "center_z": 5.03,
+    "keepout_width": 9.41,
+    "access_angle": 31.0,
+    "keepout_rule": "no thickness in shown area",
+    "notes": [
+      1
+    ]
+  },
+  "mic": {
+    "port_keepout_diameter": 3.0,
+    "port_center_y": 0.0,
+    "port_center_z": 1.6,
+    "section_Z": {
+      "angle": 60.0,
+      "offset": 0.98,
+      "all_around": 1.01,
+      "rule": "do not seal or protrude object into hole"
+    },
+    "note": 2
+  },
+  "side_button": {
+    "top_y": -1.47,
+    "center_y": -6.97,
+    "bottom_y": -12.47,
+    "z": [
+      3.15,
+      7.15
+    ],
+    "side_width": 10.65,
+    "note": 9
+  },
+  "speaker_altimeter": {
+    "y": [
+      7.06,
+      -7.06
+    ],
+    "keepout_all_around": 1.0,
+    "rule": "no thickness in shown area",
+    "section_K": {
+      "angles": [
+        16.53,
+        60.0
+      ],
+      "all_around": 1.0,
+      "depth": 0.76
+    },
+    "note": 2
+  },
+  "back": {
+    "dome_diameter": 26.6,
+    "electrical_sensor_keepout": 1.0,
+    "band_release_buttons_y": [
+      17.72,
+      -17.72
+    ],
+    "note": 8
+  },
+  "charging": {
+    "max_offset_from_puck_center": 0.86,
+    "note": 4
+  },
+  "optical_sensor_keepout": {
+    "offsets": [
+      1.0,
+      1.0
+    ],
+    "height": 0.84,
+    "rule": "no thickness below this line, all around",
+    "note": 6
+  },
+  "corner_profile": {
+    "detail": "B",
+    "x": [
+      0.0,
+      0.01,
+      0.03,
+      0.07,
+      0.15,
+      0.31,
+      0.59,
+      1.03,
+      1.65,
+      2.45,
+      3.42,
+      4.52,
+      5.73,
+      7.03,
+      8.38,
+      9.74,
+      11.12,
+      12.5,
+      13.88,
+      15.26
+    ],
+    "y": [
+      15.46,
+      14.08,
+      12.7,
+      11.32,
+      9.94,
+      8.57,
+      7.22,
+      5.92,
+      4.69,
+      3.57,
+      2.58,
+      1.76,
+      1.11,
+      0.64,
+      0.34,
+      0.17,
+      0.07,
+      0.03,
+      0.01,
+      0.0
+    ]
+  },
+  "display_corner_profile": {
+    "detail": "B",
+    "x": [
+      0.0,
+      0.01,
+      0.03,
+      0.08,
+      0.19,
+      0.43,
+      0.93,
+      1.75,
+      2.85,
+      4.17,
+      5.59,
+      7.04,
+      8.5,
+      9.96,
+      11.42
+    ],
+    "y": [
+      12.03,
+      10.57,
+      9.11,
+      7.65,
+      6.19,
+      4.75,
+      3.38,
+      2.18,
+      1.23,
+      0.6,
+      0.27,
+      0.11,
+      0.04,
+      0.01,
+      0.0
+    ]
+  },
+  "edge_profile": {
+    "detail": "C",
+    "x": [
+      0.0,
+      0.02,
+      0.07,
+      0.21,
+      0.45,
+      0.8,
+      1.27,
+      1.45,
+      1.89,
+      2.39,
+      2.92,
+      3.49,
+      4.08,
+      4.68,
+      5.3,
+      5.91,
+      6.51,
+      7.09,
+      7.64,
+      8.16,
+      8.63,
+      9.04,
+      9.41,
+      9.54,
+      9.78,
+      10.0,
+      10.22,
+      10.43,
+      10.57,
+      10.66,
+      10.7
+    ],
+    "z_left": [
+      6.44,
+      5.62,
+      4.8,
+      4.0,
+      3.21,
+      2.48,
+      1.81,
+      1.61,
+      1.19,
+      0.82,
+      0.52,
+      0.28,
+      0.11,
+      0.02,
+      0.0
+    ],
+    "z_right": [
+      6.91,
+      5.84,
+      5.18,
+      4.54,
+      3.92,
+      3.41,
+      2.98,
+      2.56,
+      2.33,
+      1.84,
+      1.39,
+      0.99,
+      0.66,
+      0.39,
+      0.18,
+      0.06
+    ]
+  },
+  "unverified": [
+    "no text layer | values read from renders",
+    "read against the Series 9 45 mm sheet: same printed values; 34.59 x 41.45 labelled display width and height here"
+  ],
+  "title_block": "title block reads APPLE WATCH SERIES 8, 44MM; the page footer reads 45 mm"
+}
