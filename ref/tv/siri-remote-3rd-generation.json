@@ -1,0 +1,340 @@
+{
+  "product": "Siri Remote (3rd generation)",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/siri-remote-3rd-generation.pdf",
+    "file": "extract/pdf/siri-remote-3rd-generation.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing",
+    "sheet_date": "2022-10-26",
+    "sheets": 1
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "general_tolerance": {
+    "x.x": 0.2,
+    "x.xx": 0.1,
+    "x.xxx": 0.05,
+    "angles": 0.5
+  },
+  "notes": {
+    "1": "notes 2-5 prevent performance degradation during normal use | stands or holders not in place during normal use can disregard them",
+    "2": "no material to contact, overlap or obstruct any portion of IR / antenna window | recommended min clearance 0.5 mm",
+    "3": "no obstruction of mic port | min 1 mm clearance to opening",
+    "4": "no material within 5 mm of clickpad | no metals within 10 mm of clickpad",
+    "5": "not compatible with Apple Remote Loop",
+    "6": "see detail A for minimum clearance required around connector opening"
+  },
+  "body": {
+    "length": 129.0,
+    "width": 35.0,
+    "thickness": 9.25
+  },
+  "front": {
+    "clickpad": {
+      "outer_diameter": 31.0,
+      "centre_diameter": 17.5,
+      "centre_from_bottom": 107.56,
+      "proud": 0.5,
+      "note": 4
+    },
+    "buttons": {
+      "diameter": 12.25,
+      "count": 4,
+      "column_offset": 7.5,
+      "rows_from_bottom": [
+        84.62,
+        69.87,
+        55.12
+      ],
+      "pitch": 14.75,
+      "proud": 0.6,
+      "front_count": 5
+    },
+    "volume_rocker": {
+      "length": 27.0,
+      "width": 11.75
+    },
+    "power_button": {
+      "diameter": 6.0,
+      "offset_from_centre": 7.0,
+      "proud": 0.15
+    },
+    "mic": {
+      "offset_from_centre": 2.5,
+      "clearance": 1.0,
+      "column_offset": 10.5,
+      "note": 3
+    }
+  },
+  "side": {
+    "siri_button": {
+      "length": 15.0,
+      "proud": 0.6,
+      "positions": [
+        3.6,
+        3.5
+      ]
+    },
+    "ir_window": {
+      "keepout_all_around": 0.5,
+      "enclosure_rim": 0.8,
+      "length": 6.86,
+      "note": 2
+    }
+  },
+  "bottom": {
+    "usb_c": {
+      "clearance": [
+        13.65,
+        6.85
+      ],
+      "detail": "A",
+      "note": 5
+    },
+    "height": [
+      7.1,
+      9.25,
+      4.03
+    ],
+    "port_offsets": [
+      3.01,
+      8.8
+    ]
+  },
+  "rear_profile": {
+    "symmetric": true,
+    "width": 17.5,
+    "offsets": [
+      1.0,
+      1.0
+    ],
+    "z": [
+      -7.29,
+      -7.55,
+      -7.79,
+      -8.0,
+      -8.2,
+      -8.37,
+      -8.52,
+      -8.66,
+      -8.78,
+      -8.89,
+      -8.98,
+      -9.06,
+      -9.12,
+      -9.17,
+      -9.21,
+      -9.24,
+      -9.25
+    ],
+    "spacing": "1.00 typ all points"
+  },
+  "corner_profile": {
+    "detail": "B",
+    "applies": "4x",
+    "x": [
+      0.0,
+      0.01,
+      0.06,
+      0.2,
+      0.46,
+      0.86,
+      1.41,
+      2.08,
+      2.87,
+      3.75,
+      4.69,
+      5.67,
+      6.67,
+      7.67,
+      9.17
+    ],
+    "y": [
+      -9.17,
+      -8.17,
+      -7.17,
+      -6.17,
+      -5.18,
+      -4.22,
+      -3.3,
+      -2.47,
+      -1.73,
+      -1.12,
+      -0.64,
+      -0.31,
+      -0.12,
+      -0.03,
+      0.0
+    ]
+  },
+  "blend_profile": {
+    "detail": "C",
+    "applies": "2x",
+    "x": [
+      0.0,
+      -0.65,
+      -1.08,
+      -1.53,
+      -1.9,
+      -2.1,
+      -2.22,
+      -2.37,
+      -2.57,
+      -2.82,
+      -3.29,
+      -3.85,
+      -4.49,
+      -5.28,
+      -6.25,
+      -7.24,
+      -8.23
+    ],
+    "z": [
+      -2.0,
+      -2.01,
+      -2.06,
+      -2.22,
+      -2.5,
+      -2.87,
+      -3.35,
+      -3.92,
+      -4.35,
+      -4.81,
+      -5.28,
+      -5.87,
+      -6.32,
+      -6.66,
+      -6.84,
+      -6.86
+    ]
+  },
+  "printed_values_in_stream_order": {
+    "sheet 1": [
+      107.56,
+      129.0,
+      55.12,
+      69.87,
+      84.62,
+      35.0,
+      7.1,
+      9.25,
+      6.0,
+      12.25,
+      7.5,
+      7.5,
+      11.75,
+      14.75,
+      14.75,
+      1.0,
+      31.0,
+      17.5,
+      3.6,
+      15.0,
+      0.15,
+      0.6,
+      2.5,
+      0.8,
+      0.5,
+      27.0,
+      10.5,
+      3.5,
+      4.03,
+      8.8,
+      3.01,
+      0.6,
+      -7.29,
+      -7.55,
+      -7.79,
+      -8.0,
+      -8.2,
+      -8.37,
+      -8.52,
+      -8.66,
+      -8.78,
+      -8.89,
+      -8.98,
+      -9.06,
+      -9.12,
+      -9.17,
+      -9.21,
+      -9.24,
+      -9.25,
+      17.5,
+      1.0,
+      1.0,
+      0.0,
+      -8.17,
+      -7.17,
+      -6.17,
+      -5.18,
+      -4.22,
+      -3.3,
+      -2.47,
+      -1.73,
+      -1.12,
+      -0.64,
+      -0.31,
+      -0.12,
+      -0.03,
+      0.0,
+      -9.17,
+      0.01,
+      0.06,
+      0.2,
+      0.46,
+      0.86,
+      1.41,
+      2.08,
+      2.87,
+      3.75,
+      4.69,
+      5.67,
+      6.67,
+      7.67,
+      9.17,
+      7.0,
+      6.86,
+      -6.86,
+      -6.84,
+      -6.66,
+      -6.32,
+      -5.87,
+      -5.28,
+      -4.81,
+      -4.35,
+      -3.92,
+      -3.35,
+      -2.87,
+      -2.5,
+      -2.22,
+      -2.06,
+      -2.01,
+      -2.0,
+      0.0,
+      -0.65,
+      -1.08,
+      -1.53,
+      -1.9,
+      -2.1,
+      -2.22,
+      -2.37,
+      -2.57,
+      -2.82,
+      -3.29,
+      -3.85,
+      -4.49,
+      -5.28,
+      -6.25,
+      -7.24,
+      -8.23,
+      0.0,
+      1.0,
+      6.0,
+      13.65,
+      6.85,
+      0.5
+    ]
+  },
+  "unverified": [
+    "front button and mic positions paired by leader lines"
+  ]
+}
