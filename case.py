@@ -102,6 +102,8 @@ MS_FLOOR = 0.80        # magnet to case outside: 0.85 max (ADG 42.1 fig 42-3), 0
 MS_T = 0.55            # magnet thickness (ADG fig 42-3)
 MS_CLR = 0.1           # magnet pocket, each side
 MS_OPEN_D = 60.0       # "open" hole, a MagSafe charger puck seats on the phone
+RIB_W = 1.2            # RIBS: rib across the back, and the solid rim round every pocket
+RIB_PITCH = 10.0       # RIBS: rib centre to centre, both ways
 CIG_D = 8.0            # king size 7.9-8.0, slim 5.4
 CIG_WALL = 1.4
 CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
@@ -262,6 +264,8 @@ def build(name="17e", style="case", **knobs):
     assert not PLATE or BACK_BAND, "the plate sits in a banded back"
     assert not MAGSAFE or BACK_BAND is None, "magnets and the charger need the full back"
     assert not SLIDER or CAMERA == "fitted", "the slider covers a fitted window"
+    assert not RIBS or (BACK_BAND is None and not MAGSAFE), "ribs pocket the full back, magnets need it solid"
+    assert not RIBS or BACK - RIBS >= MIN_GAP, "back between the ribs under the glass gap"
     assert not (SLIDER and MAGSAFE), "slider rails reach y -52, a charger's top edge is at -45"
     assert not (CAMERA == "fitted" and p["plateau"] == "full"), "full-width camera plateau, use CAMERA universal"
     assert not CIG or CIG_Y - CIG_LEN / 2 > -L, "cigarette clip runs off the bottom"
@@ -485,6 +489,24 @@ def build(name="17e", style="case", **knobs):
         part -= span(mx - 3 - MS_CLR, mx + 3 + MS_CLR, my - 31.18 + MS_CLR, my - 50.49 - MS_CLR, z0, z1)
     elif MAGSAFE == "open":
         part -= cylinder(mx, my, MS_OPEN_D / 2, Z_BACK - BACK - 1, Z_BACK + BACK + 1)
+
+    # Ribs: pockets in the outside of the back leave BACK - RIBS between the ribs; the
+    # ribs and the rim keep BACK, so the case still rests at BACK off the table.
+    if RIBS:
+        keep = prism(offset(ring, -1), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS) - prism(offset(ring, RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
+        if CAMERA == "fitted":
+            keep += prism(offset(cam, -(RING_W + Z_CASE_BACK - Z_RING + RIB_W)), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
+            if loose:
+                keep += prism(offset(hole, -(WINDOW_FLARE + RIB_W)), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
+        else:
+            keep += top_band(UNI_L + RING_W + RIB_W)
+        n = int(max(W, L) / RIB_PITCH) + 2
+        for i in range(n):
+            keep += span(W / 2 + (i - n / 2) * RIB_PITCH - RIB_W / 2, W / 2 + (i - n / 2) * RIB_PITCH + RIB_W / 2,
+                         10, -L - 10, Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
+            keep += span(-10, W + 10, -L / 2 + (i - n / 2) * RIB_PITCH - RIB_W / 2,
+                         -L / 2 + (i - n / 2) * RIB_PITCH + RIB_W / 2, Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
+        part -= prism(offset(ring, RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS) - keep
 
     # Cigarette clip along the right edge of the back.
     if CIG:

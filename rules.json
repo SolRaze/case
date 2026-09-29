@@ -67,6 +67,10 @@
     "COUPON": {
       "default": null,
       "values": "null or mm of each edge kept round the bottom-right corner"
+    },
+    "RIBS": {
+      "default": null,
+      "values": "null (solid back) or mm pocketed out of the back between ribs"
     }
   },
   "combinations": [
@@ -145,6 +149,18 @@
         ]
       },
       "why": "a button is either a key or covered"
+    },
+    {
+      "id": "ribs-full-back",
+      "text": "Ribs pocket the full back; the magnets need it solid.",
+      "if": {
+        "RIBS": "set"
+      },
+      "require": {
+        "BACK_BAND": null,
+        "MAGSAFE": null
+      },
+      "why": "ribs pocket the full back, magnets need it solid"
     }
   ],
   "phones": [
@@ -338,7 +354,8 @@
       "spine": "sheet has no corner profile",
       "slider": "sheet has no corner profile",
       "cig": "sheet has no corner profile",
-      "corner": "sheet has no corner profile"
+      "corner": "sheet has no corner profile",
+      "ribcorner": "sheet has no corner profile"
     },
     "se-2-3": {
       "case": "sheet has no corner profile",
@@ -353,7 +370,8 @@
       "spine": "sheet has no corner profile",
       "slider": "sheet has no corner profile",
       "cig": "sheet has no corner profile",
-      "corner": "sheet has no corner profile"
+      "corner": "sheet has no corner profile",
+      "ribcorner": "sheet has no corner profile"
     },
     "12-mini": {
       "spine": "right rail falls off the case",
@@ -446,7 +464,8 @@
       "spine": "full-width camera plateau, use CAMERA universal",
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal"
+      "corner": "full-width camera plateau, use CAMERA universal",
+      "ribcorner": "full-width camera plateau, use CAMERA universal"
     },
     "17-pro": {
       "case": "full-width camera plateau, use CAMERA universal",
@@ -457,7 +476,8 @@
       "spine": "full-width camera plateau, use CAMERA universal",
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal"
+      "corner": "full-width camera plateau, use CAMERA universal",
+      "ribcorner": "full-width camera plateau, use CAMERA universal"
     },
     "17-pro-max": {
       "case": "full-width camera plateau, use CAMERA universal",
@@ -468,7 +488,8 @@
       "spine": "full-width camera plateau, use CAMERA universal",
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal"
+      "corner": "full-width camera plateau, use CAMERA universal",
+      "ribcorner": "full-width camera plateau, use CAMERA universal"
     },
     "18-pro": {
       "case": "full-width camera plateau, use CAMERA universal",
@@ -479,7 +500,8 @@
       "spine": "full-width camera plateau, use CAMERA universal",
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal"
+      "corner": "full-width camera plateau, use CAMERA universal",
+      "ribcorner": "full-width camera plateau, use CAMERA universal"
     },
     "18-pro-max": {
       "case": "full-width camera plateau, use CAMERA universal",
@@ -490,7 +512,8 @@
       "spine": "full-width camera plateau, use CAMERA universal",
       "slider": "full-width camera plateau, use CAMERA universal",
       "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal"
+      "corner": "full-width camera plateau, use CAMERA universal",
+      "ribcorner": "full-width camera plateau, use CAMERA universal"
     }
   }
 }
