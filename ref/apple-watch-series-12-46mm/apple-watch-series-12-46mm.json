@@ -1,0 +1,486 @@
+{
+  "product": "Apple Watch Series 12, 46 mm",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/apple-watch-series-12-46mm.pdf",
+    "file": "~/Reference/apple/apple-watch-series-12-46mm.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 2,
+  "general_tolerance": null,
+  "notes": {
+    "1": "case does not interfere with click or rotation of digital crown | no force on crown | does not obstruct crown face",
+    "2": "case does not obstruct acoustic openings and altimeter | must not degrade acoustic or water ejection performance",
+    "3": "no metal cases | antenna function",
+    "4": "case does not obstruct charging interface",
+    "5": "case does not obstruct optical sensors",
+    "6": "case does not extend beyond sensor windows",
+    "7": "case does not contact cover glass",
+    "8": "case does not contact electrical sensors",
+    "9": "case does not interfere with click function of button",
+    "10": "case does not contain ferromagnetic material"
+  },
+  "frames": {
+    "plan": "origin at case centre | x right toward crown | y up toward 12 o'clock",
+    "side": "crown side view | y from case centreline | z from flat of cover glass, positive toward the back",
+    "corner_table": "plan corner profile | x from left edge, y from bottom edge | one quadrant, mirrored",
+    "display_table": "display active area corner | x from display left edge, y from display bottom edge",
+    "side_table": "side profile | y from case edge | z from back datum toward glass"
+  },
+  "variants": [
+    {
+      "name": "aluminum case",
+      "body": {
+        "width": 40.28,
+        "height": 46.38,
+        "width_including_crown": 42.55,
+        "apex_of_dome_to_flat_of_cover_glass": 12.08,
+        "flat_of_back_to_flat_of_cover_glass": 9.7
+      },
+      "cover_glass": {
+        "width": 38.6,
+        "height": 44.84,
+        "no_contact_clearance": 2.5,
+        "note": 7
+      },
+      "display_active_area": {
+        "width": 32.45,
+        "height": 38.69
+      },
+      "no_thickness_band": {
+        "depth": 0.76,
+        "note": 6
+      },
+      "digital_crown": {
+        "dial_diameter": 7.0,
+        "dial_keepout_diameter": 9.25,
+        "center_y": 8.26,
+        "center_z": 5.07,
+        "access_angle": 36.0,
+        "access_angle_count": 2,
+        "notes": [
+          1,
+          9
+        ]
+      },
+      "mic": {
+        "port_center_y": 2.68,
+        "keepout_diameter": 3.0,
+        "note": 2
+      },
+      "side_button": {
+        "top_y": 0.41,
+        "bottom_y": -12.49,
+        "center_y": -6.04,
+        "z_min": 3.59,
+        "center_z": 5.14,
+        "z_max": 6.69,
+        "note": 9
+      },
+      "speaker_keepout": {
+        "all_around": 0.3,
+        "count": 2,
+        "note": 2
+      },
+      "band_release_buttons": {
+        "y": [
+          17.58,
+          -17.58
+        ]
+      },
+      "back": {
+        "dome_diameter": 26.6,
+        "electrical_sensor_keepout": 1.0,
+        "electrical_sensors": 32,
+        "note": 8
+      },
+      "charging": {
+        "max_offset_from_puck_center": 0.86,
+        "note": 4
+      },
+      "sections": {
+        "A-A": {
+          "view_angle": 23.44
+        },
+        "B-B": {
+          "angles": [
+            23.45,
+            2.72,
+            60.0,
+            60.0
+          ]
+        }
+      },
+      "plan_corner_points": {
+        "A": [
+          0.0,
+          23.26
+        ],
+        "B": [
+          0.03,
+          14.24
+        ],
+        "C": [
+          0.35,
+          9.74
+        ],
+        "D": [
+          1.42,
+          6.3
+        ],
+        "E": [
+          3.46,
+          3.46
+        ],
+        "F": [
+          6.31,
+          1.45
+        ],
+        "G": [
+          9.74,
+          0.35
+        ],
+        "H": [
+          13.94,
+          0.03
+        ],
+        "I": [
+          20.14,
+          0.0
+        ]
+      },
+      "display_corner_points": {
+        "D-A": [
+          3.66,
+          17.97
+        ],
+        "D-B": [
+          3.71,
+          12.95
+        ],
+        "D-C": [
+          3.98,
+          9.95
+        ],
+        "D-D": [
+          4.65,
+          7.83
+        ],
+        "D-E": [
+          5.82,
+          6.12
+        ],
+        "D-F": [
+          7.45,
+          4.84
+        ],
+        "D-G": [
+          9.49,
+          4.07
+        ],
+        "D-H": [
+          12.31,
+          3.73
+        ],
+        "D-I": [
+          16.1,
+          3.66
+        ]
+      },
+      "side_profile_points": {
+        "S-A": [
+          6.83,
+          9.7
+        ],
+        "S-B": [
+          5.61,
+          9.69
+        ],
+        "S-C": [
+          4.32,
+          9.6
+        ],
+        "S-D": [
+          3.05,
+          9.29
+        ],
+        "S-E": [
+          1.86,
+          8.63
+        ],
+        "S-F": [
+          0.88,
+          7.61
+        ],
+        "S-G": [
+          0.23,
+          6.31
+        ],
+        "S-H": [
+          0.0,
+          4.85
+        ],
+        "S-I": [
+          0.23,
+          3.39
+        ],
+        "S-J": [
+          1.86,
+          1.07
+        ],
+        "S-K": [
+          0.88,
+          2.09
+        ],
+        "S-L": [
+          3.05,
+          0.41
+        ],
+        "S-M": [
+          4.32,
+          0.1
+        ],
+        "S-N": [
+          5.61,
+          0.01
+        ],
+        "S-O": [
+          6.83,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "ceramic case",
+      "body": {
+        "width": 40.58,
+        "height": 46.84,
+        "width_including_crown": 42.98,
+        "apex_of_dome_to_flat_of_cover_glass": 12.33,
+        "flat_of_back_to_flat_of_cover_glass": 9.85
+      },
+      "cover_glass": {
+        "width": 38.6,
+        "height": 44.84,
+        "no_contact_clearance": 2.5,
+        "note": 7
+      },
+      "display_active_area": {
+        "width": 32.45,
+        "height": 38.69
+      },
+      "no_thickness_band": {
+        "depth": 0.86,
+        "note": 6
+      },
+      "digital_crown": {
+        "dial_diameter": 7.0,
+        "dial_keepout_diameter": 9.25,
+        "center_y": 8.26,
+        "center_z": 5.07,
+        "access_angle": 36.0,
+        "access_angle_count": 2,
+        "notes": [
+          1,
+          9
+        ]
+      },
+      "mic": {
+        "port_center_y": 2.68,
+        "keepout_diameter": 3.0,
+        "note": 2
+      },
+      "side_button": {
+        "top_y": 0.41,
+        "bottom_y": -12.49,
+        "center_y": -6.04,
+        "z_min": 3.59,
+        "center_z": 5.14,
+        "z_max": 6.69,
+        "note": 9
+      },
+      "speaker_keepout": {
+        "all_around": 0.3,
+        "count": 2,
+        "note": 2
+      },
+      "band_release_buttons": {
+        "y": [
+          17.96,
+          -17.96
+        ]
+      },
+      "back": {
+        "dome_diameter": 26.6,
+        "electrical_sensor_keepout": 1.0,
+        "electrical_sensors": 32,
+        "note": 8
+      },
+      "charging": {
+        "max_offset_from_puck_center": 0.86,
+        "note": 4
+      },
+      "sections": {
+        "A-A": {
+          "view_angle": 22.74
+        },
+        "B-B": {
+          "angles": [
+            23.45,
+            2.72,
+            60.0,
+            60.0
+          ]
+        }
+      },
+      "plan_corner_points": {
+        "A": [
+          0.0,
+          23.48
+        ],
+        "B": [
+          0.03,
+          14.42
+        ],
+        "C": [
+          0.35,
+          9.9
+        ],
+        "D": [
+          1.45,
+          6.42
+        ],
+        "E": [
+          3.52,
+          3.52
+        ],
+        "F": [
+          6.42,
+          1.45
+        ],
+        "G": [
+          9.9,
+          0.35
+        ],
+        "H": [
+          14.12,
+          0.03
+        ],
+        "I": [
+          20.36,
+          0.0
+        ]
+      },
+      "display_corner_points": {
+        "D-A": [
+          4.13,
+          18.45
+        ],
+        "D-B": [
+          4.18,
+          13.43
+        ],
+        "D-C": [
+          4.46,
+          10.42
+        ],
+        "D-D": [
+          5.12,
+          8.31
+        ],
+        "D-E": [
+          6.29,
+          6.6
+        ],
+        "D-F": [
+          7.93,
+          5.32
+        ],
+        "D-G": [
+          9.96,
+          4.55
+        ],
+        "D-H": [
+          12.79,
+          4.21
+        ],
+        "D-I": [
+          16.57,
+          4.13
+        ]
+      },
+      "side_profile_points": {
+        "S-A": [
+          7.14,
+          9.85
+        ],
+        "S-B": [
+          6.1,
+          9.85
+        ],
+        "S-C": [
+          4.99,
+          9.79
+        ],
+        "S-D": [
+          3.88,
+          9.6
+        ],
+        "S-E": [
+          2.81,
+          9.18
+        ],
+        "S-F": [
+          1.84,
+          8.5
+        ],
+        "S-G": [
+          1.05,
+          7.55
+        ],
+        "S-H": [
+          0.76,
+          7.35
+        ],
+        "S-I": [
+          0.46,
+          7.15
+        ],
+        "S-J": [
+          0.08,
+          4.15
+        ],
+        "S-K": [
+          0.04,
+          5.67
+        ],
+        "S-L": [
+          0.58,
+          2.7
+        ],
+        "S-M": [
+          1.52,
+          1.49
+        ],
+        "S-N": [
+          2.78,
+          0.63
+        ],
+        "S-O": [
+          4.24,
+          0.16
+        ],
+        "S-P": [
+          5.77,
+          0.01
+        ],
+        "S-Q": [
+          7.31,
+          0.0
+        ]
+      }
+    }
+  ],
+  "band_slot": null
+}
