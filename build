@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+"""Run every parts/*.py and export its `part` to out/ as STEP and STL.
+
+    ./build              every part
+    ./build motor-mount  one part
+    ./build --check      build only, assert each solid is valid and closed
+
+Each part file is a script, not a module: it sets a module-level `part` and
+nothing else. Export lives here so the part files stay pure geometry.
+"""
+
+import os
+import runpy
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+PARTS = ROOT / "parts"
+OUT = ROOT / "out"
+VENV = ROOT / ".venv/bin/python"
+
+# OCP is a binary extension, so the venv has to be the interpreter, not a path
+# entry. Re-exec rather than make every caller remember to activate.
+if sys.prefix == sys.base_prefix and VENV.exists():
+    os.execv(str(VENV), [str(VENV), str(Path(__file__).resolve()), *sys.argv[1:]])
+
+from build123d import export_step, export_stl  # noqa: E402
+
+
+def load(path):
+    ns = runpy.run_path(str(path))
+    part = ns.get("part")
+    if part is None:
+        raise SystemExit(f"{path.name}: no module-level `part`")
+    return part
+
+
+def check(name, part):
+    """Fails if the solid is not watertight — a mesh no slicer can use."""
+    assert part.is_valid, f"{name}: invalid solid"
+    assert part.is_manifold, f"{name}: not manifold, open edges"
+    assert part.volume > 0, f"{name}: zero volume"
+    assert len(part.solids()) == 1, f"{name}: {len(part.solids())} solids, want 1"
+
+
+def main(argv):
+    only = [a for a in argv if not a.startswith("-")]
+    check_only = "--check" in argv
+
+    sources = sorted(PARTS.glob("*.py"))
+    if only:
+        sources = [p for p in sources if p.stem in only]
+        if not sources:
+            raise SystemExit(f"no part named {', '.join(only)}")
+
+    if not check_only:
+        OUT.mkdir(exist_ok=True)
+
+    for src in sources:
+        part = load(src)
+        check(src.stem, part)
+        if check_only:
+            print(f"{src.stem}: ok, {part.volume / 1000:.1f} cm3")
+            continue
+        export_step(part, str(OUT / f"{src.stem}.step"))
+        export_stl(part, str(OUT / f"{src.stem}.stl"))
+        print(f"{src.stem}: step stl, {part.volume / 1000:.1f} cm3")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
