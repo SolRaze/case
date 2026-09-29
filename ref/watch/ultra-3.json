@@ -480,6 +480,34 @@
         0.1,
         0.02
       ]
+    },
+    "crown_scoop": {
+      "view": "from top",
+      "x": [
+        2.77,
+        2.72,
+        2.57,
+        2.1,
+        1.17,
+        0.15,
+        0.0
+      ],
+      "y": [
+        10.23,
+        10.2,
+        9.86,
+        8.97,
+        7.97,
+        6.95,
+        5.93,
+        4.91,
+        3.91,
+        3.02,
+        2.68,
+        2.66,
+        0.0
+      ],
+      "source": "ultra 2 sheet text layer; the ultra 3 sheet draws the same profile"
     }
   },
   "band_slot": null,
