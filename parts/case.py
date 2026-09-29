@@ -1,18 +1,23 @@
-"""iPhone 17e case. Geometry comes from the drawing JSON, not from measurement.
+"""Phone case for any phone in ref/iphone/sizes.json. Geometry comes from the drawing
+JSON, not from measurement.
 
 Sources:
-- ref/iphone/17e.json, every value of the iPhone 17e PDF (Apple's dimensional
-  drawing) transcribed and checked against the drawn paths. The 16e drawing is
-  the same body, so every style fits it too.
-- Accessory Design Guidelines (Apple, not committed): chapter 5 "Cases" (pages 32-46) and 42.1
-  "MagSafe Case Magnet Array" (pages 269-272), cited below as ADG.
+- ref/iphone/, Apple's dimensional drawings transcribed: 17e.json every value of
+  its sheet, checked against the drawn paths; sizes.json the main sheet of every
+  other iPhone. extract/phones.py reads both into one flat phone dict.
+- Accessory Design Guidelines (Apple, extract/pdf/adg.pdf, not committed): chapter 5
+  "Cases" (pages 32-46) and 42.1 "MagSafe Case Magnet Array" (pages 269-272), cited
+  below as ADG.
 
-Drawing frame, kept throughout: x 0..71.52 across the width, y 0..-146.71 down
-the length, z 0 at the front cover-glass plane and -7.80 at the back face.
+Drawing frame, kept throughout: x 0..W across the width, y 0..-L down the length,
+z 0 at the front cover-glass plane and -T at the back face.
 
-Style knobs, set by the case-17e-* part files through runpy init_globals:
+Knobs, set through runpy init_globals: PHONE by ./build, the rest by the style
+files parts/case-*.py.
+  PHONE      a key of ref/iphone/sizes.json, "17e" by default
   BUTTONS    "windows" one window per button | "slot" one window per side
-  KEYS       button names printed as flexure keys that press through the wall
+  KEYS       button names printed as flexure keys that press through the wall;
+             names this phone lacks are dropped
   CLOSED     button names covered, the wall relieved so it never presses them
   CAMERA     "fitted" ring round this cluster | "universal" full-width top band
   BACK_BAND  None full back | mm of back kept round the edge
@@ -22,13 +27,13 @@ Style knobs, set by the case-17e-* part files through runpy init_globals:
   SLIDER     lens cover sliding down rails on a raised track, `slider`
   CIG        cigarette clip along the right edge of the back
 A fitted camera on a banded back stands on a spine, a full-width strip of back
-across the camera, which also carries the slider rails.
+across the camera, which also carries the slider rails. ref/rules.json lists the
+valid combinations; the asserts below are the same rules.
 
-    .venv/bin/python parts/case-17e.py    asserts the ADG glass clearance
+    .venv/bin/python parts/case.py [phone]    asserts the ADG glass clearance
 """
 
 import importlib.util
-import json
 import math
 from pathlib import Path
 
@@ -49,8 +54,7 @@ from build123d import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC = ROOT / "ref/iphone/17e.json"
-OUTLINE = ROOT / "extract/phone-body.py"
+PHONES = ROOT / "extract/phones.py"
 
 CLEAR = 0.25   # phone to inner wall, all round
 WALL = 1.55    # side wall. CLEAR + WALL is the bottom, 1.8 max for docks (ADG 5.1.3)
@@ -97,6 +101,7 @@ CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
 CIG_LEN = 30.0
 CIG_Y = -120.0         # clip centre, below the MagSafe charger and clocking magnet
 
+PHONE = globals().get("PHONE", "17e")
 BUTTONS = globals().get("BUTTONS", "windows")
 KEYS = tuple(globals().get("KEYS", ()))
 CLOSED = tuple(globals().get("CLOSED", ()))
@@ -109,9 +114,8 @@ SLIDER = globals().get("SLIDER", False)
 CIG = globals().get("CIG", False)
 
 
-def _outline_module():
-    """phone-body.py owns the squircle outline and the exact ring offset."""
-    spec = importlib.util.spec_from_file_location("phone_body", OUTLINE)
+def _module(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -128,31 +132,35 @@ def span(x0, x1, y0, y1, z0, z1):
         abs(x1 - x0), abs(y1 - y0), abs(z1 - z0))
 
 
-pb = _outline_module()
-spec = json.loads(SPEC.read_text())
-names = {b["name"] for b in spec["buttons"]}
-assert BACK <= spec["case_hard_limits"]["max_backside_thickness"]
+ph = _module("phones", PHONES)
+offset = ph.offset
+p = ph.phone(PHONE)
+W, L, T = p["W"], p["L"], p["T"]
+names = {b["name"] for b in p["buttons"]}
+KEYS = tuple(k for k in KEYS if k in names)
+CLOSED = tuple(k for k in CLOSED if k in names)
+assert BACK <= p["max_back"]
 assert CLEAR + WALL <= 1.8
 assert CLEAR < LIP < 1.05
 assert BUTTONS in ("windows", "slot") and CAMERA in ("fitted", "universal")
 assert WALLS in ("full", "sides", "corners") and MAGSAFE in (None, "ring", "open")
-assert set(KEYS) | set(CLOSED) <= names and not set(KEYS) & set(CLOSED)
+assert not set(KEYS) & set(CLOSED)
 assert not (KEYS and WALLS == "corners"), "corner walls leave no wall for a key"
 assert not PLATE or BACK_BAND, "the plate sits in a banded back"
 assert not MAGSAFE or BACK_BAND is None, "magnets and the charger need the full back"
 assert not SLIDER or CAMERA == "fitted", "the slider covers a fitted window"
 assert not (SLIDER and MAGSAFE), "slider rails reach y -52, a charger's top edge is at -45"
-body = spec["body"]
-W, L, T = body["width"], body["length"], body["thickness"]
+assert not (CAMERA == "fitted" and p["plateau"] == "full"), "full-width camera plateau, use CAMERA universal"
+assert not CIG or CIG_Y - CIG_LEN / 2 > -L, "cigarette clip runs off the bottom"
 
-ring = pb.plan_outline(body["corner"]["polyline"], W, L)
-outer = pb.offset_ring(ring, -(CLEAR + WALL))   # negative is outward
-inner = pb.offset_ring(ring, -CLEAR)
-front = pb.offset_ring(ring, LIP)
+ring = ph.pb.plan_outline(p["corner"], W, L)
+outer = offset(ring, -(CLEAR + WALL))   # negative is outward
+inner = offset(ring, -CLEAR)
+front = offset(ring, LIP)
 
 Z_BACK = -T                 # back face of the phone
 Z_CASE_BACK = Z_BACK - BACK  # outer back of the case
-Z_LENS = Z_BACK - spec["glass"]["back_glass_to_camera_glass"]
+Z_LENS = Z_BACK - p["lens_z"]
 Z_RING = Z_LENS - GLASS_GAP
 OUT = CLEAR + WALL
 
@@ -186,30 +194,25 @@ def side_box(side, d0, d1, y0, y1, z0, z1):
     return span(-d0, -d1, y0, y1, z0, z1)
 
 
-bottom = spec["bottom_edge"]
-
-# USB-C: Apple's recommended connector keepout, an obround 12.45 x 6.6, grown
-# by CLEAR because the phone shifts that far inside the case (ADG 5.1.2.3).
-usb = bottom["usb_c"]
-ko = usb["recommended_connector_keepout"]
-part -= Pos(sum(usb["opening_x"]) / 2, -L, usb["opening_centre_z"]) * extrude(
-    Plane.XZ * make_face(SlotOverall(ko["width"] + 2 * CLEAR, ko["height"] + 2 * CLEAR)),
+# USB-C: Apple's recommended connector keepout, an obround 12.45 x 6.6 on the 17e,
+# grown by CLEAR because the phone shifts that far inside the case (ADG 5.1.2.3).
+ux, uz, kw, kh = p["usb"]
+part -= Pos(ux, -L, uz) * extrude(
+    Plane.XZ * make_face(SlotOverall(kw + 2 * CLEAR, kh + 2 * CLEAR)),
     amount=WALL + CLEAR + 2, both=True,
 )
 
 # Speaker / mic ports: one opening per group, PORT_OFFSET past the outer holes.
-sp = bottom["speaker_ports"]
-for grp in (sp["left_group"], sp["right_group"]):
-    x0, x1 = grp["x_span"]
-    part -= edge_port(x1 - x0 + 2 * PORT_OFFSET, sp["diameter"] + 2 * PORT_OFFSET,
-                      (x0 + x1) / 2, sp["centre_z"], top=False)
+sd, sz, groups = p["speakers"]
+for x0, x1 in groups:
+    part -= edge_port(x1 - x0 + 2 * PORT_OFFSET, sd + 2 * PORT_OFFSET, (x0 + x1) / 2, sz, top=False)
 
 # Receiver / front mic slot in the top edge, centred on the width. A notch up
 # through the rim: its sound leaves forward past the glass as well as up.
-rec = spec["top_edge"]["receiver_slot"]
-rec_z0 = rec["z_from_front"][1] - RECEIVER_CLEAR
+rw, rz = p["receiver"]
+rec_z0 = rz[1] - RECEIVER_CLEAR
 rec_z1 = PROUD + 1
-part -= edge_port(rec["width"] + 2 * RECEIVER_CLEAR, rec_z1 - rec_z0, W / 2, (rec_z0 + rec_z1) / 2,
+part -= edge_port(rw + 2 * RECEIVER_CLEAR, rec_z1 - rec_z0, W / 2, (rec_z0 + rec_z1) / 2,
                   top=True, shape=Rectangle)
 
 # Buttons. Open ones are cut-through windows with rails kept above and below;
@@ -217,26 +220,24 @@ part -= edge_port(rec["width"] + 2 * RECEIVER_CLEAR, rec_z1 - rec_z0, W / 2, (re
 # buttons keep the wall, relieved KEY_GAP off the button top. A key is a tab
 # cut free on three sides, hinged KEY_HINGE above the window, with a nub on
 # its inner face over the button.
-bx = spec["button_cross_section"]
-zc = bx["centre_z"]
+bw, zc = p["bx"]
 half = -BUTTON_RAIL - zc          # rail to centre, same both sides of the midplane
 thru = OUT + 2
 windows = [(b["side"], b["center_y"] + b["length"] / 2, b["center_y"] - b["length"] / 2)
-           for b in spec["buttons"] if b["name"] not in KEYS + CLOSED]
+           for b in p["buttons"] if b["name"] not in KEYS + CLOSED]
 if BUTTONS == "slot":
     windows = [(side, max(t for s_, t, _ in windows if s_ == side),
                 min(b for s_, _, b in windows if s_ == side))
                for side in sorted({s_ for s_, _, _ in windows})]
 for side, top, bot in windows:
     part -= side_box(side, -thru, thru, top + BUTTON_MARGIN, bot - BUTTON_MARGIN, zc - half, zc + half)
-for b in spec["buttons"]:
+for b in p["buttons"]:
     if b["name"] not in KEYS + CLOSED:
         continue
     side, cy, bl = b["side"], b["center_y"], b["length"]
     relief = b["protrusion"] + KEY_GAP
     part -= side_box(side, 0, relief, cy + bl / 2 + 0.5, cy - bl / 2 - 0.5,
-                     zc - bx["width_across_thickness"] / 2 - 0.3,
-                     zc + bx["width_across_thickness"] / 2 + 0.3)
+                     zc - bw / 2 - 0.3, zc + bw / 2 + 0.3)
     if b["name"] in CLOSED:
         continue
     free, root = cy - bl / 2 - BUTTON_MARGIN, cy + bl / 2 + BUTTON_MARGIN + KEY_HINGE
@@ -254,51 +255,55 @@ if WALLS == "corners":
     for x0, x1 in ((-5, LIP + 1), (W - LIP - 1, W + 5)):
         part -= span(x0, x1, -CORNER_L, -(L - CORNER_L), *top_z)
 
-# Rear camera cluster: one opening over lens, flash and rear mic.
-cam = spec["rear_camera"]
-xs, ys = [], []
-for feat, dia in (
-    (cam["lens"], cam["lens"]["outer_diameter"]),
-    (cam["flash"], cam["flash"]["diameter"]),
-    (cam["rear_mic"], cam["rear_mic"]["diameter"]),
-):
-    cx, cy = feat["center"]
-    xs += [cx - dia / 2, cx + dia / 2]
-    ys += [cy - dia / 2, cy + dia / 2]
+# Rear camera cluster: one opening over every lens, flash, mic, sensor and the plateau.
+feats = p["lenses"] + [f for f in [p["flash"]] if f] + p["others"]
+xs = [v for cx, _, d in feats for v in (cx - d / 2, cx + d / 2)]
+ys = [v for _, cy, d in feats for v in (cy - d / 2, cy + d / 2)]
+if isinstance(p["plateau"], tuple):
+    xs += p["plateau"][:2]
+    ys += p["plateau"][2:]
 cam_w = max(xs) - min(xs) + 2 * FEATURE_MARGIN
 cam_l = max(ys) - min(ys) + 2 * FEATURE_MARGIN
 cam_x, cam_y = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
 cam_c = Pos(cam_x, cam_y, 0)
 
-cones = cam["keepout_cones"]
-fx, fy = cam["flash"]["center"]
-fi, fo = cones["flash_inner"], cones["flash_outer"]
-z_tr = Z_BACK - fo["transition_to_back_glass"]
-lx, ly = cam["lens"]["center"]
-lc = cones["rear_camera"]
+Z_FLASH = Z_BACK - p["flash_z"]
+fi_a, fi_d = p["flash_inner"]
+fo_a, fo_d, fo_tr = p["flash_outer"]
+z_tr = Z_FLASH - fo_tr
+lc_a, lc_d = p["lens_cone"]
 
 
 def flash_r(z):
     """Flash keepout radius at z past the transition, grown by CLEAR."""
-    return fo["diameter_at_transition"] / 2 + CLEAR + (z_tr - z) * math.tan(math.radians(fo["angle"] / 2))
+    return fo_d / 2 + CLEAR + (z_tr - z) * math.tan(math.radians(fo_a / 2))
 
 
 def lens_r(z):
     """Lens keepout radius at z past the lens cover, grown by CLEAR."""
-    return lc["base_diameter"] / 2 + CLEAR + (Z_LENS - z) * math.tan(math.radians(lc["angle"] / 2))
+    return lc_d / 2 + CLEAR + (Z_LENS - z) * math.tan(math.radians(lc_a / 2))
+
+
+def cone_edges(z):
+    """(x, y, r) of every light cone at depth z."""
+    out = [(lx, ly, lens_r(z)) for lx, ly, _ in p["lenses"]]
+    if p["flash"]:
+        out.append((p["flash"][0], p["flash"][1], flash_r(z)))
+    return out
 
 
 # Slider: a plate riding on a raised track in two rails, sliding down (-y)
 # from covering the window to clear of the lens and flash keepouts at its own
-# depth. Both rail lips stand outside both keepouts at the lip's depth.
+# depth. Both rail lips stand outside every keepout at the lip's depth.
+slider = None
 if SLIDER:
     z_sl = Z_RING - SL_T                          # slider outside face
     z_lip = z_sl - SL_CLR - RAIL_LIP_T            # rail lip outside face
     sl_top = cam_y + cam_l / 2 + RING_W
     sl_l = cam_l + 2 * RING_W
-    open_top = min(fy - flash_r(z_sl), ly - lens_r(z_sl)) - 0.5
-    lip_x0 = min(fx - flash_r(z_lip), lx - lens_r(z_lip)) - 0.5
-    lip_x1 = max(fx + flash_r(z_lip), lx + lens_r(z_lip)) + 0.5
+    open_top = min(cy - r for _, cy, r in cone_edges(z_sl)) - 0.5
+    lip_x0 = min(cx - r for cx, _, r in cone_edges(z_lip)) - 0.5
+    lip_x1 = max(cx + r for cx, _, r in cone_edges(z_lip)) + 0.5
     sl_x0 = min(cam_x - cam_w / 2 - RING_W, lip_x0 - RAIL_LIP + SL_CLR)
     sl_x1 = max(cam_x + cam_w / 2 + RING_W, lip_x1 + RAIL_LIP - SL_CLR)
     assert sl_x1 + SL_CLR + RAIL_W <= W + OUT, "right rail falls off the case"
@@ -318,9 +323,9 @@ if SLIDER:
 # Banded back, then the spine and swap-in plate rebate.
 spine_bot = None
 if BACK_BAND is not None:
-    part -= prism(pb.offset_ring(ring, BACK_BAND), Z_RING - 5, Z_BACK)
+    part -= prism(offset(ring, BACK_BAND), Z_RING - 5, Z_BACK)
     if PLATE:
-        rebate = pb.offset_ring(ring, BACK_BAND - PLATE_LEDGE)
+        rebate = offset(ring, BACK_BAND - PLATE_LEDGE)
         part -= prism(rebate, Z_BACK - PLATE_T, Z_BACK)
     if CAMERA == "fitted":
         spine_bot = (rail_bot if SLIDER else cam_y - cam_l / 2 - RING_W) - SPINE_W
@@ -339,27 +344,34 @@ if CAMERA == "fitted":
 else:
     # Universal: the whole top band opens, whatever the camera layout, and a
     # rim round it stands GLASS_GAP past this phone's lens cover.
+    assert cam_y - cam_l / 2 >= -UNI_L, "camera reaches past the universal window"
+
     def top_band(depth):
         return Pos(W / 2, 10 - (depth + 10) / 2, 0) * Box(W + 20, depth + 10, 100)
     part += top_band(UNI_L + RING_W) & prism(outer, Z_RING, Z_CASE_BACK + 0.5)
-    window = top_band(UNI_L) & prism(pb.offset_ring(ring, UNI_INSET), Z_RING - 1, Z_BACK)
+    window = top_band(UNI_L) & prism(offset(ring, UNI_INSET), Z_RING - 1, Z_BACK)
 part -= window
 
 # Apple's light cones, cut past the window edge, each grown by CLEAR for the
 # phone's shift in the case (ADG 5.7.1). The flash cone is 80 deg from the
 # rear glass to the transition, then 155 deg.
 Z_OUT = Z_RING - 6
-keepout = keepout_cone(fx, fy, Z_BACK, fi["base_diameter"] / 2 + CLEAR, fi["angle"] / 2, z_tr)
-keepout += keepout_cone(fx, fy, z_tr, fo["diameter_at_transition"] / 2 + CLEAR, fo["angle"] / 2, Z_OUT)
-keepout += keepout_cone(lx, ly, Z_LENS, lc["base_diameter"] / 2 + CLEAR, lc["angle"] / 2, Z_OUT)
+cones = []
+if p["flash"]:
+    fx, fy, _ = p["flash"]
+    cones += [keepout_cone(fx, fy, Z_FLASH, fi_d / 2 + CLEAR, fi_a / 2, z_tr),
+              keepout_cone(fx, fy, z_tr, fo_d / 2 + CLEAR, fo_a / 2, Z_OUT)]
+cones += [keepout_cone(lx, ly, Z_LENS, lc_d / 2 + CLEAR, lc_a / 2, Z_OUT) for lx, ly, _ in p["lenses"]]
+keepout = cones[0]
+for c in cones[1:]:
+    keepout += c
 part -= keepout
 
 # MagSafe (ADG 42.1, figs 42-2 to 42-4): magnet ring 46.00-54.10 and clocking
 # magnet 6.00 x 19.31, 0.55 thick, 0.55 from the device and MS_FLOOR from the
 # outside. Pockets open to the phone side; the magnets glue in, ring outer pole
 # N toward the phone, inner pole S, clocking magnet S-N-S across its width.
-ms = spec["magsafe"]
-mx, my = ms["center"]
+mx, my = p["magsafe"]
 if MAGSAFE == "ring":
     z0, z1 = Z_CASE_BACK + MS_FLOOR, Z_BACK
     assert z1 - z0 >= MS_T + 0.5, "magnet ends up past 0.55 from the device"
@@ -385,8 +397,9 @@ if CIG:
     part += tube & prism(outer, Z_CASE_BACK - 30, Z_CASE_BACK + 0.5)
 
 # Swap-in back plate: fills the rebate, minus the camera window, keepouts and spine.
+plate = None
 if PLATE:
-    plate = prism(pb.offset_ring(ring, BACK_BAND - PLATE_LEDGE + PLATE_CLR), Z_BACK - PLATE_T, Z_BACK)
+    plate = prism(offset(ring, BACK_BAND - PLATE_LEDGE + PLATE_CLR), Z_BACK - PLATE_T, Z_BACK)
     plate -= window + keepout
     if CAMERA == "universal":
         plate -= Pos(W / 2, 10 - (UNI_L + RING_W + PLATE_CLR + 10) / 2, 0) * Box(
@@ -394,26 +407,28 @@ if PLATE:
     if spine_bot is not None:
         plate -= span(-10, W + 10, 10, spine_bot - PLATE_CLR, -50, 50)
 
+for n in p["notes"]:
+    print(f"{PHONE}: {n}")
+
+# ADG 5.1.1: no exposed glass within GLASS_GAP of a flat surface in any orientation.
+# glass_gap() in ./build measures these points against the case's convex hull.
+GLASS = {
+    "front glass": [(x, y, 0.0) for x, y in offset(ring, 1.05)],
+    "lens cover": [(lx + d / 2 * math.cos(2 * math.pi * i / 180), ly + d / 2 * math.sin(2 * math.pi * i / 180), Z_LENS)
+                   for lx, ly, d in p["lenses"] for i in range(180)],
+    "back glass": [(x, y, Z_BACK) for x in (5 + (W - 10) * i / 29 for i in range(30))
+                   for y in (-5 - (L - 10) * j / 59 for j in range(60))],
+}
+
 
 if __name__ == "__main__":
-    # ADG 5.1.1: no exposed glass within GLASS_GAP of a flat surface in any
-    # orientation. A flat surface touches the case's convex hull, so the gap is
-    # each glass point's distance to the nearest hull facet.
-    import numpy as np
-    from scipy.spatial import ConvexHull
+    import runpy
+    import sys
 
-    verts, _ = part.tessellate(0.02)
-    eq = ConvexHull([(v.X, v.Y, v.Z) for v in verts]).equations
-    lr = cam["lens"]["outer_diameter"] / 2
-    a = np.linspace(0, 2 * math.pi, 180, endpoint=False)
-    glass = {
-        "front glass": [(x, y, 0.0) for x, y in pb.offset_ring(ring, 1.05)],
-        "lens cover": [(lx + lr * math.cos(t), ly + lr * math.sin(t), Z_LENS) for t in a],
-        "back glass": [(x, y, Z_BACK) for x in np.linspace(5, W - 5, 30)
-                       for y in np.linspace(-5, 5 - L, 60)],
-    }
-    for name, pts in glass.items():
-        pts = np.array(pts)
-        gap = -(pts @ eq[:, :3].T + eq[:, 3]).max(axis=1).min()
+    ns = globals()
+    if len(sys.argv) > 1:
+        ns = runpy.run_path(__file__, init_globals={"PHONE": sys.argv[1]})
+    build = runpy.run_path(str(ROOT / "build"), run_name="build")
+    for name, gap in build["glass_gaps"](ns["part"], ns["GLASS"]).items():
         print(f"{name}: {gap:.3f} mm to a flat surface")
         assert gap >= 0.85 - 1e-6, name
