@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Body solid from an Apple dimensional-drawing JSON (see ref/).
 
-Sweeps the plan outline - the detail-A corner polyline mirrored into four corners -
+Sweeps the plan outline - the detail-A corner polyline reflected into four corners -
 through the detail-B edge profile and writes a binary STL in drawing coordinates:
 x 0..width, y 0..-length, z 0..-thickness, with z 0 at the front cover-glass plane.
 
@@ -22,9 +22,9 @@ def shoelace(ring):
 
 
 def plan_outline(corner, width, length):
-    """The corner polyline mirrored into all four corners, closed and counterclockwise.
+    """The corner polyline reflected into all four corners, closed and counterclockwise.
 
-    The polyline runs from the side edge (x 0) to the end edge (y 0), so the mirrored
+    The polyline runs from the side edge (x 0) to the end edge (y 0), so the reflected
     copies must alternate direction for the ring to stay continuous.
     """
     mx = [(width - x, y) for x, y in corner]

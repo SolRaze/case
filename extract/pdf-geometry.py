@@ -4,7 +4,7 @@
 Apple's sheets draw each page into a Form XObject; the path coordinates here are in
 that form's frame, with every cm inside it applied. Text objects are skipped.
 
-    load(pdf)              the document, via pymupdf (pdftext.load for older callers)
+    load(pdf)              the document (also as pdftext.load)
     segments(doc, xref)    [("l", p0, p1) | ("c", p0, p1, p2, p3)] of one stream
     components(segs)       connected groups of endpoints, rounded to 0.01 pt
     streams(doc)           xrefs of every form or page content stream, biggest first

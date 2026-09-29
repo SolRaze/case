@@ -1,7 +1,7 @@
 """Phones for the case, from the drawing data in ref/iphone/. 1 unit = 1 mm.
 
-A phone is a flat dict the case geometry reads, the same for parts/case.py and
-blender/case.py. ref/iphone/sizes.json names every phone: an entry with `spec` points
+A phone is a flat dict the case geometry in blender/case.py reads.
+ref/iphone/sizes.json names every phone: an entry with `spec` points
 at a full drawing transcription (ref/iphone/17e.json's shape, read by from_spec); the
 rest are one-sheet summaries (from_sizes), and what those sheets leave out is taken
 from the 17e drawing.
@@ -142,7 +142,7 @@ def from_sizes(e):
 
     def feat(f):
         if f and None not in (f.get("x"), f.get("y"), f.get("d")):
-            return (W - f["x"], f["y"], f["d"])   # back-view x, mirrored to the front view
+            return (W - f["x"], f["y"], f["d"])   # back-view x, flipped to the front view
         return None
 
     rename = {"vol_up": "volume_up", "vol_down": "volume_down", "side": "side_power"}
