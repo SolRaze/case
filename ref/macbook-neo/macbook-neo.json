@@ -1,0 +1,133 @@
+{
+  "product": "MacBook Neo",
+  "source": {
+    "url": "https://developer.apple.com/download/files/accessories/dimensional-drawings/macbook-neo.pdf",
+    "file": "~/Reference/apple/macbook-neo.pdf",
+    "publisher": "Apple Accessory Design Guidelines dimensional drawing"
+  },
+  "units": "mm",
+  "angle_units": "deg",
+  "sheets": 1,
+  "general_tolerance": null,
+  "notes": {
+    "1": "no metal contact with product",
+    "2": "do not obstruct ports",
+    "3": "do not touch glass",
+    "4": "do not obstruct antenna aperture"
+  },
+  "body": {
+    "width": 297.55,
+    "depth": 206.39,
+    "thickness_with_feet": 14.7,
+    "thickness_without_feet": 12.75,
+    "foot_height": 1.5,
+    "display_to_base_gap": 0.56
+  },
+  "right_side": {
+    "frame": "y from body front-to-back centreline",
+    "speaker_port": {
+      "y": [
+        27.48,
+        49.55
+      ]
+    },
+    "audio_jack": {
+      "y": 68.44
+    },
+    "usb_c": {
+      "count": 2,
+      "y": [
+        65.26,
+        80.13
+      ],
+      "keepout_height": 6.6,
+      "keepout_pitch": 12.38,
+      "note": "recommended connector keepout"
+    }
+  },
+  "left_side": {
+    "speaker_port": true
+  },
+  "bottom": {
+    "feet": {
+      "count": 4,
+      "diameter": 26.74,
+      "inset_x": 21.01,
+      "inset_y": 21.01
+    },
+    "mic_ports": 2,
+    "antenna_aperture": {
+      "note": 4
+    }
+  },
+  "hinge": {
+    "section": "C-C",
+    "display_rear_edge_height": 10.01,
+    "rear_overhang": 2.94,
+    "hinge_axis_height": 7.95
+  },
+  "detail_a": {
+    "scale": "4:1",
+    "edge_profile_y_upper": [
+      0.0,
+      0.16,
+      0.58,
+      1.32,
+      2.27,
+      3.3,
+      4.34,
+      5.38
+    ],
+    "edge_profile_y_lower": [
+      4.79,
+      3.9,
+      3.01,
+      2.14,
+      1.35,
+      0.64,
+      0.17,
+      0.01
+    ]
+  },
+  "detail_b": {
+    "scale": "4:1",
+    "part": "plan corner",
+    "x": [
+      0.0,
+      0.1,
+      0.32,
+      0.77,
+      1.5,
+      2.53,
+      3.84,
+      5.43,
+      7.11,
+      8.98,
+      10.95,
+      12.95,
+      14.97,
+      16.98
+    ],
+    "y": [
+      0.0,
+      -0.02,
+      -0.1,
+      -0.32,
+      -0.78,
+      -1.5,
+      -2.53,
+      -3.84,
+      -5.37,
+      -7.11,
+      -8.98,
+      -10.95,
+      -12.95,
+      -14.97,
+      -16.98
+    ]
+  },
+  "unverified": [
+    "detail A and B ordinates read from a 0.8x render, not zoomed",
+    "detail A x ordinates not read"
+  ]
+}
