@@ -1,0 +1,259 @@
+{
+  "product": "GF65 Thin 10SER mainboard",
+  "board": "MS-16W1",
+  "units": "mm",
+  "status": "measured from two photos on a SKÅDIS pegboard, not calipered",
+  "source": "IMG_1876 (near-frontal) + IMG_1879 (43 deg oblique), iPhone 17e main camera 26 mm equiv. Pegboard slot grid 40 x 40 mm plus a copy offset 20, 20 fitted as a homography per photo, camera pose from the known focal length, depth by two-view triangulation, edges projected onto the solved board plane",
+  "length": 352.2,
+  "width": 156.9,
+  "pcb_thickness": 1.2,
+  "pcb_thickness_note": "typical laptop board, not measured. fit-gauge slots 1.2-1.8 settle it",
+  "stack_top": 8.0,
+  "stack_top_note": "heatsink side, derived: 11.4 panel-to-shield minus 1.2 PCB minus about 2 for the shield, assuming the heatsink rests on the panel under the bungee cords",
+  "stack_bottom": 3.0,
+  "stack_bottom_note": "shield side, shield face about 2 mm off the PCB plus margin",
+  "port_edges": "both short edges carry ports. Photo-left edge (-X in the scene) 2-3 connectors, photo-right edge (+X) 6 connectors incl. audio",
+  "photo": "board-top.png, heatsink side on the PCB plane, true scale, written by skadis-measure.py --ortho, not in this repo",
+  "fans": {
+    "cpu": "PABD08008SH N413",
+    "gpu": "PAAD06015SL N433",
+    "note": "GPU blower bay is empty in IMG_1565/1566. Replacements list both numbers for MS-16W1, 9S and 10S GF65 Thin"
+  },
+  "accuracy": "cross-checked edges agree between the two photos within 1.5 mm. Length +/-3 mm, width +/-1.5 mm. Depth of the shield face +/-1.7 mm",
+  "length_note": "heatsink fin stack left face to port-edge PCB right edge. DC and HDMI port faces on the left sit within a few mm of the fins, hidden behind the plugs",
+  "width_note": "PCB edge to PCB edge across the short axis",
+  "heatsink_overhang": 3.5,
+  "heatsink_overhang_note": "heatsink fin stack past the PCB edge on the side opposite the M.2 slots",
+  "ssd_protrusion": 74.0,
+  "ssd_protrusion_note": "two M.2 2280 cards stick out 74.0 mm past the PCB edge on the M.2 side, unsupported. The chassis carried their screw ends; the enclosure has to",
+  "ssd_span": [
+    256.2,
+    302.2
+  ],
+  "ssd_span_note": "along the length from the heatsink face: 256.2-278.6 and 280.2-302.2, 1.6 mm apart",
+  "shield": {
+    "length": 306.1,
+    "height": 116.4,
+    "height_note": "outer top lip to the middle bottom edge, the lower-left lobe reaches about 125"
+  },
+  "panel_to_shield_face": 11.4,
+  "derivation": "skadis-measure.py in the cad repo reproduces every measured value here from the two source photos, not in this repo",
+  "outline": {
+    "frame": "board-local mm: origin at the board centre (midway heatsink face to port edge, midway PCB edge to PCB edge), +X toward the 6-connector port edge, +Y toward the M.2 edge, heatsink side up. Panel mm from skadis-measure.py minus (-42.395, -140.945)",
+    "source": "read off board-shield.png (not in this repo) on a 1 mm grid, +/-1 mm. Main extremes are the measured edges above",
+    "pcb": [
+      [
+        -77.5,
+        -78.47
+      ],
+      [
+        85.4,
+        -78.47
+      ],
+      [
+        85.4,
+        -38.26
+      ],
+      [
+        148.0,
+        -38.26
+      ],
+      [
+        148.0,
+        -57.76
+      ],
+      [
+        176.12,
+        -57.76
+      ],
+      [
+        176.12,
+        78.47
+      ],
+      [
+        -172.4,
+        78.47
+      ],
+      [
+        -172.4,
+        29.65
+      ],
+      [
+        -150.6,
+        29.65
+      ],
+      [
+        -150.6,
+        -38.26
+      ],
+      [
+        -77.5,
+        -38.26
+      ]
+    ],
+    "pcb_note": "notch 85.4-148.0 on the -Y edge is where the heatpipe stubs run. The top-left corner behind the heatsink block is not visible and left out",
+    "shield": [
+      [
+        -150.7,
+        -38.27
+      ],
+      [
+        155.4,
+        -38.27
+      ],
+      [
+        155.4,
+        85.95
+      ],
+      [
+        152.4,
+        90.65
+      ],
+      [
+        82.5,
+        90.65
+      ],
+      [
+        82.5,
+        78.47
+      ],
+      [
+        -61.4,
+        78.47
+      ],
+      [
+        -61.4,
+        90.65
+      ],
+      [
+        -140.2,
+        90.65
+      ],
+      [
+        -140.2,
+        78.47
+      ],
+      [
+        -150.7,
+        78.47
+      ]
+    ],
+    "shield_note": "stamped plate on the PCB underside. The two lobes on the +Y edge overhang the PCB edge by 12.2 mm; openings are traced from the photo into board-ortho.json",
+    "shield_thickness": 2.0,
+    "heatsink": {
+      "top_fins": [
+        [
+          -151.9,
+          -81.95
+        ],
+        [
+          -77.5,
+          -53.65
+        ]
+      ],
+      "heat_plate": [
+        [
+          -170.1,
+          -53.65
+        ],
+        [
+          -77.5,
+          -35.35
+        ]
+      ],
+      "left_fins": [
+        [
+          -176.1,
+          -40.45
+        ],
+        [
+          -160.1,
+          28.55
+        ]
+      ],
+      "heatpipe_stubs": [
+        [
+          85.4,
+          -66.95
+        ],
+        [
+          140.0,
+          -50.25
+        ]
+      ],
+      "note": "boxes as [min corner, max corner] in plan, on the heatsink side. Fin stacks overhang the PCB outline"
+    },
+    "ports": {
+      "rj45": {
+        "edge": "+X",
+        "y": [
+          -35.35,
+          -15.75
+        ],
+        "height": 6.5
+      },
+      "usb_c_1": {
+        "edge": "+X",
+        "y": [
+          -7.65,
+          3.75
+        ],
+        "height": 3.3
+      },
+      "usb_c_2": {
+        "edge": "+X",
+        "y": [
+          7.25,
+          18.75
+        ],
+        "height": 3.3
+      },
+      "usb_a_1": {
+        "edge": "+X",
+        "y": [
+          22.15,
+          37.15
+        ],
+        "height": 5.1
+      },
+      "usb_a_2": {
+        "edge": "+X",
+        "y": [
+          41.75,
+          56.65
+        ],
+        "height": 5.1
+      },
+      "audio": {
+        "edge": "+X",
+        "y": [
+          60.75,
+          67.05
+        ],
+        "height": 5.0
+      },
+      "dc_in": {
+        "edge": "-X",
+        "y": [
+          30.85,
+          39.45
+        ],
+        "height": 5.0
+      },
+      "hdmi": {
+        "edge": "-X",
+        "y": [
+          52.65,
+          65.65
+        ],
+        "height": 4.5
+      },
+      "face_x": {
+        "+X": 181.0,
+        "-X": -174.1
+      },
+      "depth": 11.6,
+      "note": "port bodies from the photo +/-2 mm along the edge. Face x from the photo; heights are typical part heights on the heatsink side, not measured"
+    }
+  }
+}
