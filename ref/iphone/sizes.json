@@ -20,10 +20,12 @@
     "l": 138.44,
     "t": 7.31
    },
-   "corner": null,
+   "corner": {"x":[0.18,3.0,9.1,14.61],"y":[0.18,3.0,9.1,14.62]},
    "left": {
     "ring": {
-     "c": 17.56
+     "c": 17.56,
+     "len": 10.62,
+     "len_from": "volume buttons, the sheet leaves the switch undimensioned"
     },
     "vol_up": {
      "c": 34.56,

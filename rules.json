@@ -20,7 +20,8 @@
       "default": "fitted",
       "values": [
         "fitted",
-        "universal"
+        "universal",
+        "auto"
       ]
     },
     "BACK_BAND": {
@@ -71,6 +72,17 @@
     "RIBS": {
       "default": null,
       "values": "null (solid back) or mm pocketed out of the back between ribs"
+    },
+    "RIB_SIDE": {
+      "default": "out",
+      "values": [
+        "out",
+        "in"
+      ]
+    },
+    "BUMPER": {
+      "default": null,
+      "values": "null or mm the outside bulges out round each corner"
     }
   },
   "combinations": [
@@ -168,8 +180,7 @@
       "id": "corner-profile",
       "text": "Phones whose sheet has no corner profile can't be built.",
       "phones": [
-        "5s",
-        "se-2-3"
+        "5s"
       ],
       "why": "sheet has no corner profile",
       "test": "ref/iphone/sizes.json entry has a corner list (or a full spec)"
@@ -342,23 +353,7 @@
   ],
   "invalid": {
     "5s": {
-      "case": "sheet has no corner profile",
-      "slot": "sheet has no corner profile",
-      "magsafe": "sheet has no corner profile",
-      "sides": "sheet has no corner profile",
-      "corners": "sheet has no corner profile",
-      "frame": "sheet has no corner profile",
-      "backless": "sheet has no corner profile",
-      "plateframe": "sheet has no corner profile",
-      "plate": "sheet has no corner profile",
-      "spine": "sheet has no corner profile",
-      "slider": "sheet has no corner profile",
-      "cig": "sheet has no corner profile",
-      "corner": "sheet has no corner profile",
-      "ribs": "sheet has no corner profile",
-      "ribcorner": "sheet has no corner profile"
-    },
-    "se-2-3": {
+      "base": "sheet has no corner profile",
       "case": "sheet has no corner profile",
       "slot": "sheet has no corner profile",
       "magsafe": "sheet has no corner profile",

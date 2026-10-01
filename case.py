@@ -103,7 +103,10 @@ MS_T = 0.55            # magnet thickness (ADG fig 42-3)
 MS_CLR = 0.1           # magnet pocket, each side
 MS_OPEN_D = 60.0       # "open" hole, a MagSafe charger puck seats on the phone
 RIB_W = 1.2            # RIBS: rib across the back, and the solid rim round every pocket
-RIB_PITCH = 10.0       # RIBS: rib centre to centre, both ways, stretched to divide each side evenly
+RIB_PITCH = 10.0       # RIBS: rib centre to centre, stretched to divide each side evenly
+VENT_L = 4.0           # RIB_SIDE "in": vent slot through the back at each channel end
+BUMP_R = 6.0           # BUMPER: full bulge this far from each corner of the phone outline,
+BUMP_FALL = 4.0        # gone this much further; ports start 15 and button windows 11.5 out
 CIG_D = 8.0            # king size 7.9-8.0, slim 5.4
 CIG_WALL = 1.4
 CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
@@ -250,6 +253,8 @@ def build(name="17e", style="case", **knobs):
     globals().update({**KNOBS, **base, **knobs})
     p = phone(name)
     W, L, T = p["W"], p["L"], p["T"]
+    if CAMERA == "auto":
+        globals()["CAMERA"] = "universal" if p["plateau"] == "full" else "fitted"
 
     names = {b["name"] for b in p["buttons"]}
     KEYS = tuple(k for k in globals()["KEYS"] if k in names)
@@ -257,7 +262,7 @@ def build(name="17e", style="case", **knobs):
     assert BACK <= p["max_back"]
     assert CLEAR + WALL <= 1.8
     assert CLEAR < LIP < 1.05
-    assert BUTTONS in ("windows", "slot") and CAMERA in ("fitted", "universal")
+    assert BUTTONS in ("windows", "slot") and CAMERA in ("fitted", "universal")   # "auto" resolved above
     assert WALLS in ("full", "sides", "corners") and MAGSAFE in (None, "ring", "open")
     assert not set(KEYS) & set(CLOSED)
     assert not (KEYS and WALLS == "corners"), "corner walls leave no wall for a key"
@@ -266,6 +271,7 @@ def build(name="17e", style="case", **knobs):
     assert not SLIDER or CAMERA == "fitted", "the slider covers a fitted window"
     assert not RIBS or (BACK_BAND is None and not MAGSAFE), "ribs pocket the full back, magnets need it solid"
     assert not RIBS or BACK - RIBS >= MIN_GAP, "back between the ribs under the glass gap"
+    assert RIB_SIDE in ("out", "in")
     assert not (SLIDER and MAGSAFE), "slider rails reach y -52, a charger's top edge is at -45"
     assert not (CAMERA == "fitted" and p["plateau"] == "full"), "full-width camera plateau, use CAMERA universal"
     assert not CIG or CIG_Y - CIG_LEN / 2 > -L, "cigarette clip runs off the bottom"
@@ -282,14 +288,28 @@ def build(name="17e", style="case", **knobs):
     Z_BACK = -T
     Z_CASE_BACK = Z_BACK - BACK
     Z_LENS = Z_BACK - p["lens_z"]
-    Z_RING = Z_LENS - GLASS_GAP
+    Z_RING = min(Z_LENS - GLASS_GAP, Z_CASE_BACK)   # a lens under the back's own gap needs no ring
 
     def body(z0, z1, back=EDGE_BACK, top=EDGE_FRONT):
         """Outer shape from z0 (back) to z1 (front), both edges rounded."""
         rings = [(z0 + back * v, back * a) for a, v in quarter()]
         rings += [(z1 - top * v, top * a) for a, v in quarter()[::-1]]
         rings = [r for i, r in enumerate(rings) if not i or r != rings[i - 1]]
-        return loft([[(x, y, z) for x, y in offset(ring, -OUT + d)] for z, d in rings])
+        return loft([[(x, y, z) for x, y in bumped(offset(ring, -OUT + d))] for z, d in rings])
+
+    def bumped(pts):
+        """BUMPER mm pushed out along the normal round each corner, a cosine fade to the sides."""
+        if not BUMPER:
+            return pts
+        out = []
+        for i, (x, y) in enumerate(pts):
+            (ax, ay), (bx, by) = pts[i - 1], pts[(i + 1) % len(pts)]
+            m = math.hypot(bx - ax, by - ay)
+            dc = min(math.hypot(x - cx, y - cy) for cx, cy in ((0, 0), (W, 0), (0, -L), (W, -L)))
+            t = min(1.0, max(0.0, (dc - BUMP_R) / BUMP_FALL))
+            k = BUMPER * 0.5 * (1 + math.cos(math.pi * t)) / m
+            out.append((x + k * (by - ay), y - k * (bx - ax)))   # outward for a counterclockwise ring
+        return out
 
     part = body(Z_CASE_BACK, PROUD)
     part -= prism(inner, Z_BACK, 0.0)
@@ -490,9 +510,29 @@ def build(name="17e", style="case", **knobs):
     elif MAGSAFE == "open":
         part -= cylinder(mx, my, MS_OPEN_D / 2, Z_BACK - BACK - 1, Z_BACK + BACK + 1)
 
-    # Ribs: pockets in the outside of the back leave BACK - RIBS between the ribs; the
-    # ribs and the rim keep BACK, so the case still rests at BACK off the table.
-    if RIBS:
+    # Ribs, RIB_SIDE "out": pockets in the outside of the back leave BACK - RIBS between
+    # the ribs; the ribs and the rim keep BACK, so the case still rests at BACK off the table.
+    # RIB_SIDE "in": lengthwise channels on the phone side, the outside stays flat. The phone
+    # rests on the ribs; each channel vents through the back at both ends and into the
+    # camera window, an air path along the phone's back.
+    if RIBS and RIB_SIDE == "in":
+        z0 = Z_BACK - RIBS
+        n = max(1, round((W - RIB_W) / RIB_PITCH))
+        chan = prism(offset(ring, RIB_W), z0, Z_BACK + 0.01)
+        vents = None
+        for i in range(n):
+            c0 = RIB_W + i * (W - RIB_W) / n
+            c1 = RIB_W / 2 + (i + 1) * (W - RIB_W) / n - RIB_W / 2
+            if i:
+                chan -= span(c0 - RIB_W, c0, 10, -L - 10, z0 - 1, Z_BACK + 1)
+            for y0 in (-RIB_W, -L + RIB_W + VENT_L):
+                v = span(c0 + 0.5, c1 - 0.5, y0, y0 - VENT_L, Z_CASE_BACK - 1, z0 + 0.01)
+                vents = v if vents is None else vents + v
+        ring_keep = (prism(offset(cam, -(RING_W + Z_CASE_BACK - Z_RING + RIB_W)), Z_CASE_BACK - 30, Z_BACK + 1)
+                     if CAMERA == "fitted" else top_band(UNI_L + RING_W + RIB_W))
+        part -= chan
+        part -= (vents & prism(offset(ring, RIB_W), Z_CASE_BACK - 1, Z_BACK)) - ring_keep
+    elif RIBS:
         keep = prism(offset(ring, -1), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS) - prism(offset(ring, RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
         if CAMERA == "fitted":
             keep += prism(offset(cam, -(RING_W + Z_CASE_BACK - Z_RING + RIB_W)), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
