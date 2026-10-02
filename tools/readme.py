@@ -33,7 +33,7 @@ L += [f"- {k} | default {json.dumps(v['default'])} | {v['values'] if isinstance(
 L += ["", "design",
       "- The outside is one rounded shape: a 1.55 mm wall rolling into the back over 3.0 mm, a 0.8 mm round on the front rim, and the rim opening flared 0.4 mm.",
       "- The camera opening hugs every lens and the plateau they stand on, 1.2 mm out; flash and mic outside it get their own hole. A full-width plateau opens the top of the back, its top corners and rim kept.",
-      "- The camera ring stands 1.0 mm past the lens, rounded over its top; every opening in the back rounds out 0.75 mm at its outside edge.",
+      "- The camera ring stands 1.0 mm past the lens: a flat 1.5 mm top, its outside rounded; the camera and flash holes chamfer 0.4 mm at their outside edge, every other opening in the back rounds out 0.75 mm.",
       "- A banded back keeps the camera ring on an island swept out to the band, every inside corner filleted at 6 mm, so each opening is one curve.",
       "- Open walls end in a 5 mm round into the back and a 2 mm round over the rim top.",
       "- Button windows and port openings are obround; a flexure key hinges toward the larger gap to the next button. The receiver gets a shallow dip in the top rim that eases back up over 4 mm each side.",

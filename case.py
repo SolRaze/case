@@ -79,11 +79,12 @@ GLASS_GAP = 1.0        # exposed glass to any flat surface: 0.85 min, 1.0 ideal 
 MIN_GAP = 0.85
 PROUD = GLASS_GAP      # how far the rim stands above the front glass plane
 RING_W = 1.5           # raised ring round the camera window, holds the lens off a table
-FLARE = RING_W / 2     # every opening in the back rounds out this much at its outside
+FLARE = RING_W / 2     # band and wall openings in the back round out this much at their outside
                        # edge; the ring's top is this round inside, its own height outside
 EDGE_BACK = (1.55, 3.0)  # back edge round, across (CLEAR + WALL) and up: an elliptical roll
 EDGE_FRONT = 0.8       # round on the outer edge of the front rim
 RIM_FLARE = 0.4        # the front opening opens this much wider at the rim top
+WINDOW_FLARE = 0.4     # camera and flash holes open this much wider at their outside edge
 RECEIVER_BLEND = 4.0   # the receiver dip eases back up to the rim over this, each side
 BUTTON_MARGIN = 0.5    # extra window each end of a button
 BUTTON_RAIL = 1.3      # wall left above and below a button window
@@ -537,7 +538,7 @@ def build(name="17e", style="case", **knobs):
         return loft([[(x, y, zz) for x, y in grow(pts, g)] for zz, g in prof + [(z - 1, FLARE)]])
 
     h = Z_CASE_BACK - Z_RING
-    foot = FLARE + h   # ring footprint past the opening
+    foot = RING_W + h   # ring footprint past the opening
 
     slider = None
     if SLIDER:
@@ -584,22 +585,26 @@ def build(name="17e", style="case", **knobs):
             if PLATE:
                 part -= prism(grow(pts, PLATE_LEDGE), Z_BACK - PLATE_T, Z_BACK)
 
-    # Ring round the opening, as high as the lens needs: its top a round of FLARE on
-    # the inside, of its own height outside, meeting at the ring top.
+    # Ring round the opening, as high as the lens needs: a flat top RING_W wide, its
+    # outside a round of its own height.
     if h > 0.05:
-        prof = [(Z_BACK, foot)] + [(Z_CASE_BACK - h * (1 - a), FLARE + h * (1 - v)) for a, v in quarter()]
+        prof = [(Z_BACK, foot)] + [(Z_CASE_BACK - h * (1 - a), RING_W + h * (1 - v)) for a, v in quarter()]
         part += loft([[(x, y, z) for x, y in grow(opening, d)] for z, d in prof]) & body(Z_RING, PROUD)
     if LEATHER:
         # Collar flush with the skin round each opening, so no skin edge meets a lens.
         collar = prism(grow(opening, foot + RING_W), Z_CASE_BACK, Z_BACK)
         if loose:
-            collar += prism(grow(resample(loose), FLARE + RING_W), Z_CASE_BACK, Z_BACK)
+            collar += prism(grow(resample(loose), WINDOW_FLARE + RING_W), Z_CASE_BACK, Z_BACK)
         part += collar & body(Z_CASE_BACK, PROUD, out=out_l)
     if SLIDER:
         part += rails & prism(outer, z_lip - 1, 0)
-    window = through(opening, Z_RING)
+    def chamfered(pts, z):
+        """Straight cut through the back, opening WINDOW_FLARE wider at its outside edge z."""
+        return loft([[(x, y, zz) for x, y in grow(pts, g)] for zz, g in
+                     ((Z_BACK + 1, 0), (z + WINDOW_FLARE, 0), (z - 0.01, WINDOW_FLARE + 0.01))])
+    window = chamfered(opening, Z_RING)
     if loose:
-        window += through(resample(loose), Z_CASE_BACK)
+        window += chamfered(resample(loose), Z_CASE_BACK)
     part -= window
 
     # Light cones past the window edge, grown by CLEAR (ADG 5.7.1).
@@ -640,7 +645,7 @@ def build(name="17e", style="case", **knobs):
         keep = prism(offset(ring, -1), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS) - prism(offset(ring, RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
         keep += prism(grow(opening, foot + RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
         if loose:
-            keep += prism(grow(resample(loose), FLARE + RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
+            keep += prism(grow(resample(loose), WINDOW_FLARE + RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
         # Pitch stretched so each side divides evenly: the end ribs land on the rim, no sliver cells.
         for size, along_x in ((W, True), (L, False)):
             n = max(1, round((size - RIB_W) / RIB_PITCH))
