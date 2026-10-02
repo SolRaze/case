@@ -68,13 +68,6 @@
         true
       ]
     },
-    "WEB": {
-      "default": false,
-      "values": [
-        false,
-        true
-      ]
-    },
     "RIBS": {
       "default": null,
       "values": "null (solid back) or mm pocketed out of the back between ribs"
@@ -108,15 +101,15 @@
       "why": "slider rails reach y -52, a charger's top edge is at -45"
     },
     {
-      "id": "magsafe-open-full-back",
-      "text": "The open charger hole needs the full back round it; on a banded back the magnet ring stands on the web's arms.",
+      "id": "magsafe-full-back",
+      "text": "The magnets and the charger hole need the full back round them.",
       "if": {
-        "MAGSAFE": "open"
+        "MAGSAFE": "set"
       },
       "require": {
         "BACK_BAND": null
       },
-      "why": "the charger hole needs the full back round it"
+      "why": "magnets and the charger hole need the full back round them"
     },
     {
       "id": "plate-band",
@@ -186,12 +179,11 @@
     },
     {
       "id": "leather-plain",
-      "text": "A leather skin needs the whole outside, plain: full back and walls, no ribs, bumpers or MagSafe magnets.",
+      "text": "A leather skin needs a plain outside: full walls, no ribs, bumpers or MagSafe magnets.",
       "if": {
         "LEATHER": "set"
       },
       "require": {
-        "BACK_BAND": null,
         "RIBS": null,
         "WALLS": "full",
         "BUMPER": null,
@@ -390,9 +382,7 @@
       "magsafe": "sheet has no corner profile",
       "sides": "sheet has no corner profile",
       "corners": "sheet has no corner profile",
-      "skeleton": "sheet has no corner profile",
       "frame": "sheet has no corner profile",
-      "backless": "sheet has no corner profile",
       "plateframe": "sheet has no corner profile",
       "plate": "sheet has no corner profile",
       "spine": "sheet has no corner profile",

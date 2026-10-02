@@ -25,24 +25,14 @@
     "about": "top and bottom walls open between the corners"
   },
   "corners": {
-    "knobs": {"WALLS": "corners", "BUTTONS": "slot", "BACK_BAND": 3.0},
+    "knobs": {"WALLS": "corners", "BUTTONS": "slot"},
     "output": "part",
-    "about": "held at the four corners, walls open between them and rounded at the ends; back cut to a 3 mm band, a cap over each corner and the camera island"
-  },
-  "skeleton": {
-    "knobs": {"BACK_BAND": 3.0, "WEB": true, "KEYS": ["action", "side_power"], "BUMPER": 1.5},
-    "output": "part",
-    "about": "back cut to a 3 mm band, the camera island and a ring on four arms, every inside corner filleted, the phone's back open to air between them; 1.5 mm corner bumpers"
+    "about": "held at the four corners, full back, walls open between them and rounded at the ends"
   },
   "frame": {
     "knobs": {"BUTTONS": "slot", "BACK_BAND": 8.0},
     "output": "part",
     "about": "back kept as an 8 mm band round the edge, the camera ring on an island swept into it"
-  },
-  "backless": {
-    "knobs": {"BUTTONS": "slot", "BACK_BAND": 1.5},
-    "output": "part",
-    "about": "side walls with a 1.5 mm band of back, the camera ring on an island swept into it"
   },
   "plateframe": {
     "knobs": {"BUTTONS": "slot", "BACK_BAND": 8.0, "PLATE": true},
@@ -65,9 +55,9 @@
     "about": "lens cover for spine, printed flat on its outside face, slides down clear of the lens and flash keepouts"
   },
   "leather": {
-    "knobs": {"LEATHER": 0.6},
+    "knobs": {"LEATHER": 0.6, "BACK_BAND": 8.0},
     "output": "part",
-    "about": "printed core for a 0.6 mm leather skin glued over the back and walls: 0.95 mm walls, 1.4 mm back, 1.8 and 2.0 with the skin on; camera ring and a 1.5 mm rim band stand flush with the skin and cover its edges"
+    "about": "printed core for a 0.6 mm leather skin glued over the back and walls: 0.95 mm walls, an 8 mm band of 1.4 mm back the skin bridges, 1.8 and 2.0 with the skin on; camera ring and a 1.5 mm rim band stand flush with the skin and cover its edges"
   },
   "cig": {
     "knobs": {"CIG": true},

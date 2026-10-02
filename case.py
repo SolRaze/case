@@ -15,23 +15,21 @@ Knobs, defaults in rules.json; a style in styles.json is a named knob set.
   CLOSED     button names covered, the wall relieved so it never presses them
   BACK_BAND  None full back | mm of back kept round the edge; the camera ring stands
              on an island swept out to the band, every inside corner filleted
-  WEB        a banded back keeps a ring at the MagSafe position on four arms
   PLATE      the band carries an inside rebate for a swap-in back plate, `plate`
-  WALLS      "full" | "sides" top and bottom walls open | "corners" corners only, and
-             on a banded back a cap over each corner
-  MAGSAFE    None | "ring" pockets for the ADG 42.1 magnet array | "open" hole.
-             "ring" on a banded back implies WEB, the pockets in its ring and a tab
+  WALLS      "full" | "sides" top and bottom walls open | "corners" corners only
+  MAGSAFE    None | "ring" pockets for the ADG 42.1 magnet array | "open" hole
   SLIDER     lens cover sliding down rails on a raised track, `slider`
   CIG        cigarette clip along the right edge of the back
   COUPON     None | mm of each edge kept round the bottom-right corner, a fit test
   LEATHER    None | mm of skin glued over the outside; the print is the core under it,
-             the camera ring and a band at the rim top stand flush with the skin
+             the camera ring and a band at the rim top stand flush with the skin;
+             on a banded back the skin bridges the openings
   FLIP       front cover, `cover`, on a 3DS-style hinge along the left edge: the
              case carries the two end knuckles, the cover the barrel between
              them, the axis on the rim-top plane where the two meet. Opens 180
              onto a stop shelf under each knuckle
-The camera opening traces the plateau, so a full-width plateau opens the top of
-the back. A slider's rails stand on a spine, a full-width strip of back across
+The camera opening hugs the lenses and their plateau; a full-width plateau opens
+the top of the back. A slider's rails stand on a spine, a full-width strip of back across
 the camera. rules.json lists the valid combinations; the asserts in build() are
 the same rules.
 
@@ -108,7 +106,6 @@ WALL_END_TOP = 2.0     # round over the rim top at each wall end
 SPINE_W = 4.0          # spine past the camera ring
 ISLAND_W = 4.0         # banded back: island past the camera ring's footprint
 BAND_FILLET = 6.0      # banded back: radius in every inside corner of what is kept
-ARM_W = 8.0            # WEB: arm width at the ring, twice that out at the band
 PLATE_T = 1.0          # swap-in back plate, the band keeps BACK - PLATE_T as its ledge
 PLATE_LEDGE = 3.0      # ledge the plate rests on, inside the band opening
 PLATE_CLR = 0.2        # plate to rebate, each side
@@ -121,7 +118,6 @@ MS_FLOOR = 0.80        # magnet to case outside: 0.85 max (ADG 42.1 fig 42-3), 0
 MS_T = 0.55            # magnet thickness (ADG fig 42-3)
 MS_CLR = 0.1           # magnet pocket, each side
 MS_OPEN_D = 60.0       # "open" hole, a MagSafe charger puck seats on the phone
-MS_RIM = 1.6           # banded back: solid round the magnet and clocking pockets
 RIB_W = 1.2            # RIBS: rib across the back, and the solid rim round every pocket
 RIB_PITCH = 10.0       # RIBS: rib centre to centre, stretched to divide each side evenly
 BUMP_R = 3.0           # BUMPER: full bulge this far from each corner of the phone outline,
@@ -337,7 +333,7 @@ def build(name="17e", style="case", **knobs):
     assert not set(KEYS) & set(CLOSED)
     assert not (KEYS and WALLS == "corners"), "corner walls leave no wall for a key"
     assert not PLATE or BACK_BAND, "the plate sits in a banded back"
-    assert MAGSAFE != "open" or BACK_BAND is None, "the charger hole needs the full back round it"
+    assert not MAGSAFE or BACK_BAND is None, "magnets and the charger hole need the full back round them"
     assert not RIBS or (BACK_BAND is None and not MAGSAFE), "ribs pocket the full back, magnets need it solid"
     assert not RIBS or BACK - RIBS >= MIN_GAP, "back between the ribs under the glass gap"
     assert RIB_SIDE in ("out", "in")
@@ -345,7 +341,7 @@ def build(name="17e", style="case", **knobs):
     assert not (SLIDER and p["plateau"] == "full"), "the slider can't cover a full-width plateau"
     assert not CIG or CIG_Y - CIG_LEN / 2 > -L, "cigarette clip runs off the bottom"
     assert not (FLIP and WALLS == "corners"), "the knuckles stand on the left wall"
-    assert not LEATHER or (BACK_BAND is None and not RIBS and WALLS == "full" and not BUMPER and not MAGSAFE), \
+    assert not LEATHER or (not RIBS and WALLS == "full" and not BUMPER and not MAGSAFE), \
         "the skin needs the whole outside, plain"
     assert not LEATHER or BACK - LEATHER >= 1.2, "core back under 1.2"
 
@@ -486,9 +482,9 @@ def build(name="17e", style="case", **knobs):
         for x0, x1 in ((-5, LIP + 1), (W - LIP - 1, W + 5)):
             part -= loft([[(x, -u, z) for u, z in wall_cut(L)] for x in (x0, x1)])
 
-    # Rear camera: the opening traces the plateau FEATURE_MARGIN out, or hugs the lenses,
-    # flash and mic where there is none. A full-width plateau runs to CAM_INSET off the sides, as deep
-    # below the lowest feature as the lenses sit below the top edge.
+    # Rear camera: the opening hugs every lens and the plateau they stand on. A full-width
+    # plateau runs to CAM_INSET off the sides, as deep below the lowest feature as the lenses
+    # sit below the top edge.
     feats = p["lenses"] + [f for f in [p["flash"]] if f] + p["others"]
     xs = [v for cx, _, d in feats for v in (cx - d / 2, cx + d / 2)]
     ys = [v for _, cy, d in feats for v in (cy - d / 2, cy + d / 2)]
@@ -520,15 +516,14 @@ def build(name="17e", style="case", **knobs):
     if p["plateau"] == "full":
         y0 = min(ys) + max(cy + d / 2 for _, cy, d in p["lenses"]) - FEATURE_MARGIN
         opening = rounded(W - 2 * CAM_INSET, -2 * y0, PLATEAU_R + FEATURE_MARGIN, W / 2, 0)
-    elif p["plateau"]:
-        x0, x1, y0, y1 = p["plateau"]
-        opening = rounded(x1 - x0 + 2 * FEATURE_MARGIN, y1 - y0 + 2 * FEATURE_MARGIN, PLATEAU_R + FEATURE_MARGIN,
-                          (x0 + x1) / 2, (y0 + y1) / 2)
     else:
-        # Wide enough for every light cone where it passes the ring top.
-        reach = [max(d / 2 + FEATURE_MARGIN, r + FEATURE_MARGIN / 2) for (cx, cy, d), (_, _, r) in
-                 zip(feats, cone_edges(Z_RING) + [(0, 0, 0)] * len(p["others"]))]
-        opening = hull([q for (cx, cy, _), r in zip(feats, reach) for q in circle(r, cx, cy)])
+        # Hull of every lens and the plateau they stand on.
+        pts = [q for cx, cy, d in p["lenses"] for q in circle(d / 2 + FEATURE_MARGIN, cx, cy)]
+        if p["plateau"]:
+            x0, x1, y0, y1 = p["plateau"]
+            pts += rounded(x1 - x0 + 2 * FEATURE_MARGIN, y1 - y0 + 2 * FEATURE_MARGIN, 4.0 + FEATURE_MARGIN,
+                           (x0 + x1) / 2, (y0 + y1) / 2)
+        opening = hull(pts)
     opening = (Polygon(opening) & Polygon(offset(ring, CAM_INSET))).buffer(-2).buffer(2)
     # Flash and mic outside it get their own flush hole in the back.
     loose = [f for f in feats[len(p["lenses"]):] if not opening.contains(Point(f[:2]))]
@@ -568,7 +563,7 @@ def build(name="17e", style="case", **knobs):
         slider += span(sl_x0 + 3, sl_x1 - 3, sl_top - sl_l + 1.0, sl_top - sl_l + 2.0, z_sl - 0.6, z_sl + 0.01)
 
     # Banded back: what stays is the band, the camera island swept out to the top and
-    # nearer side, WEB's ring on arms, corner caps, a slider's spine; every inside
+    # nearer side, a slider's spine; every inside
     # corner filleted at BAND_FILLET so each opening is one smooth curve.
     holes = []
     if BACK_BAND is not None:
@@ -577,20 +572,6 @@ def build(name="17e", style="case", **knobs):
         side = -W if island.centroid.x < W / 2 else W
         for dx, dy in ((0, L), (side, 0)):
             keep |= (island | translate(island, dx, dy)).convex_hull
-        if WEB or MAGSAFE == "ring":
-            mx, my = p["magsafe"]
-            r0, r1 = 46.00 / 2 - MS_CLR - MS_RIM, 54.10 / 2 + MS_CLR + MS_RIM
-            keep |= Point(mx, my).buffer(r1) - Point(mx, my).buffer(r0)
-            for ex, ey in ((-W, my), (2 * W, my), (mx, L), (mx, -2 * L)):
-                a = math.atan2(ey - my, ex - mx)
-                keep |= (Point(mx + r1 * math.cos(a), my + r1 * math.sin(a)).buffer(ARM_W / 2)
-                         | Point(ex, ey).buffer(ARM_W)).convex_hull
-            if MAGSAFE == "ring":
-                tab = 3 + MS_CLR + MS_RIM
-                keep |= box(mx - tab, my - 50.49 - tab, mx + tab, my - r0)
-        if WALLS == "corners":
-            for cx, cy in ((0, 0), (W, 0), (0, -L), (W, -L)):
-                keep |= Point(cx, cy).buffer(CORNER_L + WALL_END_R)
         if SLIDER:
             spine_bot = rail_bot - SPINE_W
             keep |= box(-50, spine_bot, W + 50, 50)
@@ -599,7 +580,7 @@ def build(name="17e", style="case", **knobs):
         holes = [resample(g) for g in getattr(cut, "geoms", [cut]) if g.area > 1]
         assert all(not g.interiors for g in getattr(cut, "geoms", [cut])), "band opening with an island inside"
         for pts in holes:
-            part -= through(pts, Z_CASE_BACK)
+            part -= through(pts, Z_CASE_BACK + (LEATHER or 0))
             if PLATE:
                 part -= prism(grow(pts, PLATE_LEDGE), Z_BACK - PLATE_T, Z_BACK)
 
