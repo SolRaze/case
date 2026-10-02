@@ -18,19 +18,20 @@ run
 - `python tools/readme.py` rewrite the readmes
 
 styles
-- base | the template every phone gets: flat outside, 1.0 mm back skin under lengthwise channels on the phone side, vented at both ends and into the camera window; 1.0 mm corner bumpers; universal window where the plateau is full width
+- base | the template every phone gets: flat outside, 1.0 mm back skin under lengthwise channels on the phone side that run out into the camera window; every button a flexure key; 1.0 mm corner bumpers
 - case | full case: a window per button, fitted camera ring, full back
 - slot | one button slot per side, fitted camera, full back
 - magsafe | pockets for the ADG 42.1 magnet array, glued in from the phone side; action and side buttons as flexure keys where the phone has them
 - sides | top and bottom walls open between the corners
-- corners | held at the four corners only, walls open between them
-- skeleton | back cut to a 3 mm band, the camera ring and the MagSafe magnet ring on struts, the phone's back open to air between them; 1.5 mm corner bumpers; carries magpack
-- frame | back kept as an 8 mm band round the edge, universal top-band camera window
-- backless | side walls with a 1.5 mm band of back, universal top-band camera rim
+- corners | held at the four corners, walls open between them and rounded at the ends; back cut to a 3 mm band, a cap over each corner and the camera island
+- skeleton | back cut to a 3 mm band, the camera island and a ring on four arms, every inside corner filleted, the phone's back open to air between them; 1.5 mm corner bumpers
+- frame | back kept as an 8 mm band round the edge, the camera ring on an island swept into it
+- backless | side walls with a 1.5 mm band of back, the camera ring on an island swept into it
 - plateframe | frame with a rebate for the swap-in back plate
 - plate | 1 mm swap-in back plate for plateframe, dropped in from the phone side and held by the phone
 - spine | 1.5 mm band and a full-width strip across the fitted camera ring carrying slider rails
 - slider | lens cover for spine, printed flat on its outside face, slides down clear of the lens and flash keepouts
+- leather | printed core for a 0.6 mm leather skin glued over the back and walls: 0.95 mm walls, 1.4 mm back, 1.8 and 2.0 with the skin on; camera ring and a 1.5 mm rim band stand flush with the skin and cover its edges
 - cig | snap clip for one unlit cigarette along the right edge of the back; PETG softens near 80 C
 - corner | bottom-right corner only, 45 mm of each edge: squircle corner, USB-C edge and speaker group, a fit test that prints in minutes
 - ribs | full case, ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs
@@ -42,7 +43,6 @@ knobs
 - BUTTONS | default "windows" | "windows" "slot"
 - KEYS | default [] | button names; names a phone lacks are dropped
 - CLOSED | default [] | button names, none shared with KEYS
-- CAMERA | default "fitted" | "fitted" "universal" "auto"
 - BACK_BAND | default null | null (full back) or mm of back kept round the edge
 - PLATE | default false | false true
 - WALLS | default "full" | "full" "sides" "corners"
@@ -51,36 +51,40 @@ knobs
 - CIG | default false | false true
 - COUPON | default null | null or mm of each edge kept round the bottom-right corner
 - FLIP | default false | false true
+- WEB | default false | false true
 - RIBS | default null | null (solid back) or mm pocketed out of the back between ribs
 - RIB_SIDE | default "out" | "out" "in"
 - BUMPER | default null | null or mm the outside bulges out round each corner
+- LEATHER | default null | null or mm of leather glued over the outside
 
 design
-- The outside is one rounded shape: a 1.8 mm round on the back edge, a 0.8 mm round on the front rim, and the rim opening flared 0.4 mm.
-- The camera bump (the lenses and any plateau) gets a round window with a rounded ring 1.5 mm wide, standing 1.0 mm past the lens; a flash or mic outside the bump gets its own flush hole, and the flash light cone is cut as a shallow countersink round it.
-- Button windows and port openings are obround; the receiver gets a shallow dip in the top rim that eases back up over 4 mm each side.
+- The outside is one rounded shape: a 1.55 mm wall rolling into the back over 3.0 mm, a 0.8 mm round on the front rim, and the rim opening flared 0.4 mm.
+- The camera opening traces the plateau 1.2 mm out, 7.0 mm corner radius; a full-width plateau opens the top of the back, its top corners and rim kept. Without a plateau it hugs the lenses, flash and mic, wide enough for every light cone.
+- The camera ring stands 1.0 mm past the lens, rounded over its top; every opening in the back rounds out 0.75 mm at its outside edge.
+- A banded back keeps the camera ring on an island swept out to the band, every inside corner filleted at 6 mm, so each opening is one curve.
+- Open walls end in a 5 mm round into the back and a 2 mm round over the rim top.
+- Button windows and port openings are obround; a flexure key hinges toward the larger gap to the next button. The receiver gets a shallow dip in the top rim that eases back up over 4 mm each side.
 - Styles only change knobs, so every style shares this shape.
 
 rules | build skips a phone and style that break one, and says which
-- The slider needs the fitted camera ring; it slides over that window.
 - The slider and MagSafe don't mix: the rails run down to y -52 and the charger's top edge sits at -45.
-- The open charger hole needs the full back round it; on a banded back the magnet ring keeps only its annulus and struts.
+- The open charger hole needs the full back round it; on a banded back the magnet ring stands on the web's arms.
 - A back plate needs a banded back to sit in.
 - Keys need side walls, so they don't work with corner-only walls.
 - A button is either a key or closed over, never both.
 - Ribs pocket the full back; the magnets need it solid.
 - The hinge knuckles stand on the left wall, so the flip cover needs it.
+- A leather skin needs the whole outside, plain: full back and walls, no ribs, bumpers or MagSafe magnets.
 - Phones whose sheet has no corner profile can't be built. Ruled out: 5s.
-- Phones with a full-width camera plateau need the universal camera window. Ruled out: air, 17-pro, 17-pro-max, 18-pro, 18-pro-max.
+- The slider can't cover a full-width camera plateau. Fits only se-2-3, 12, 16e, 17e.
 - The slider needs room for its right rail beside the camera. Fits only se-2-3, 12, 16e, 17e.
 - The cigarette clip needs a phone long enough to hold it. Ruled out: 12-mini, 13-mini.
-- The universal window only works when the camera sits within 48 mm of the top. Ruled out: none.
 - The flip cover's top knuckle starts 1 mm past the corner arc and must clear the left buttons. Ruled out: 12-mini, 12, 12-pro, 13-mini, se-2-3.
 
 limits | from the apple accessory design guidelines and the phone sheets, checked on every build
 - Any exposed glass stays at least 0.85 mm, ideally 1.0, off a flat table; the rim and camera ring stand 1.0 proud. (ADG 5.1.1)
 - The back of the case is 2.0 mm thick, under the 2.1 each phone sheet allows (5.0 on the SE). (note 8 on every iPhone sheet)
-- The bottom wall is 1.8 mm, the most docks and cables allow. (ADG 5.1.3)
+- The bottom wall is 1.55 mm, under the 1.8 mm docks and cables allow. (ADG 5.1.3)
 - MagSafe magnets sit 0.85 mm from the outside face at most. (ADG 42.1 fig 42-3)
 - Every lens and flash light cone is cut clear, with the fit clearance added. (ADG 5.7.1 and each sheet's keepout cones)
 - The USB-C connector keepout is cut through the bottom wall, with the fit clearance added. (each sheet, ADG 5.1.2.3)
@@ -89,39 +93,39 @@ limits | from the apple accessory design guidelines and the phone sheets, checke
 
 checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass
-- 444 of 570 phone x style build and pass | the rest are in rules.json invalid
+- 518 of 600 phone x style build and pass | the rest are in rules.json invalid
 
 previews | from the back, grid in previews/README.md
 - 5s | none, sheet has no corner profile
-- [se-2-3](previews/README.md#se-2-3) | 17 styles
-- [12-mini](previews/README.md#12-mini) | 14 styles
-- [12](previews/README.md#12) | 17 styles
-- [12-pro](previews/README.md#12-pro) | 15 styles
-- [12-pro-max](previews/README.md#12-pro-max) | 17 styles
-- [13-mini](previews/README.md#13-mini) | 14 styles
-- [13](previews/README.md#13) | 17 styles
-- [13-pro](previews/README.md#13-pro) | 17 styles
-- [13-pro-max](previews/README.md#13-pro-max) | 17 styles
-- [14](previews/README.md#14) | 17 styles
-- [14-plus](previews/README.md#14-plus) | 17 styles
-- [14-pro](previews/README.md#14-pro) | 17 styles
-- [14-pro-max](previews/README.md#14-pro-max) | 17 styles
-- [15](previews/README.md#15) | 17 styles
-- [15-plus](previews/README.md#15-plus) | 17 styles
-- [15-pro](previews/README.md#15-pro) | 17 styles
-- [15-pro-max](previews/README.md#15-pro-max) | 17 styles
-- [16](previews/README.md#16) | 17 styles
-- [16-plus](previews/README.md#16-plus) | 17 styles
-- [16e](previews/README.md#16e) | 19 styles
-- [16-pro](previews/README.md#16-pro) | 17 styles
-- [16-pro-max](previews/README.md#16-pro-max) | 17 styles
-- [17](previews/README.md#17) | 17 styles
-- [17e](previews/README.md#17e) | 19 styles
-- [air](previews/README.md#air) | 8 styles
-- [17-pro](previews/README.md#17-pro) | 8 styles
-- [17-pro-max](previews/README.md#17-pro-max) | 8 styles
-- [18-pro](previews/README.md#18-pro) | 8 styles
-- [18-pro-max](previews/README.md#18-pro-max) | 8 styles
+- [se-2-3](previews/README.md#se-2-3) | 18 styles
+- [12-mini](previews/README.md#12-mini) | 15 styles
+- [12](previews/README.md#12) | 18 styles
+- [12-pro](previews/README.md#12-pro) | 16 styles
+- [12-pro-max](previews/README.md#12-pro-max) | 18 styles
+- [13-mini](previews/README.md#13-mini) | 15 styles
+- [13](previews/README.md#13) | 18 styles
+- [13-pro](previews/README.md#13-pro) | 18 styles
+- [13-pro-max](previews/README.md#13-pro-max) | 18 styles
+- [14](previews/README.md#14) | 18 styles
+- [14-plus](previews/README.md#14-plus) | 18 styles
+- [14-pro](previews/README.md#14-pro) | 18 styles
+- [14-pro-max](previews/README.md#14-pro-max) | 18 styles
+- [15](previews/README.md#15) | 18 styles
+- [15-plus](previews/README.md#15-plus) | 18 styles
+- [15-pro](previews/README.md#15-pro) | 18 styles
+- [15-pro-max](previews/README.md#15-pro-max) | 18 styles
+- [16](previews/README.md#16) | 18 styles
+- [16-plus](previews/README.md#16-plus) | 18 styles
+- [16e](previews/README.md#16e) | 20 styles
+- [16-pro](previews/README.md#16-pro) | 18 styles
+- [16-pro-max](previews/README.md#16-pro-max) | 18 styles
+- [17](previews/README.md#17) | 18 styles
+- [17e](previews/README.md#17e) | 20 styles
+- [air](previews/README.md#air) | 18 styles
+- [17-pro](previews/README.md#17-pro) | 18 styles
+- [17-pro-max](previews/README.md#17-pro-max) | 18 styles
+- [18-pro](previews/README.md#18-pro) | 18 styles
+- [18-pro-max](previews/README.md#18-pro-max) | 18 styles
 
 requirements
 - `pip install -r requirements.txt` | blender's python module, numpy, pymupdf | libegl for headless previews

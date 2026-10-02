@@ -31,9 +31,12 @@ L += ["", "knobs"]
 L += [f"- {k} | default {json.dumps(v['default'])} | {v['values'] if isinstance(v['values'], str) else ' '.join(json.dumps(x) for x in v['values'])}"
       for k, v in rules["knobs"].items()]
 L += ["", "design",
-      "- The outside is one rounded shape: a 1.8 mm round on the back edge, a 0.8 mm round on the front rim, and the rim opening flared 0.4 mm.",
-      "- The camera bump (the lenses and any plateau) gets a round window with a rounded ring 1.5 mm wide, standing 1.0 mm past the lens; a flash or mic outside the bump gets its own flush hole, and the flash light cone is cut as a shallow countersink round it.",
-      "- Button windows and port openings are obround; the receiver gets a shallow dip in the top rim that eases back up over 4 mm each side.",
+      "- The outside is one rounded shape: a 1.55 mm wall rolling into the back over 3.0 mm, a 0.8 mm round on the front rim, and the rim opening flared 0.4 mm.",
+      "- The camera opening traces the plateau 1.2 mm out, 7.0 mm corner radius; a full-width plateau opens the top of the back, its top corners and rim kept. Without a plateau it hugs the lenses, flash and mic, wide enough for every light cone.",
+      "- The camera ring stands 1.0 mm past the lens, rounded over its top; every opening in the back rounds out 0.75 mm at its outside edge.",
+      "- A banded back keeps the camera ring on an island swept out to the band, every inside corner filleted at 6 mm, so each opening is one curve.",
+      "- Open walls end in a 5 mm round into the back and a 2 mm round over the rim top.",
+      "- Button windows and port openings are obround; a flexure key hinges toward the larger gap to the next button. The receiver gets a shallow dip in the top rim that eases back up over 4 mm each side.",
       "- Styles only change knobs, so every style shares this shape.",
       "", "rules | build skips a phone and style that break one, and says which"]
 L += [f"- {r['text']}" for r in rules["combinations"]]

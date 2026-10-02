@@ -16,14 +16,6 @@
       "default": [],
       "values": "button names, none shared with KEYS"
     },
-    "CAMERA": {
-      "default": "fitted",
-      "values": [
-        "fitted",
-        "universal",
-        "auto"
-      ]
-    },
     "BACK_BAND": {
       "default": null,
       "values": "null (full back) or mm of back kept round the edge"
@@ -76,6 +68,13 @@
         true
       ]
     },
+    "WEB": {
+      "default": false,
+      "values": [
+        false,
+        true
+      ]
+    },
     "RIBS": {
       "default": null,
       "values": "null (solid back) or mm pocketed out of the back between ribs"
@@ -90,20 +89,13 @@
     "BUMPER": {
       "default": null,
       "values": "null or mm the outside bulges out round each corner"
+    },
+    "LEATHER": {
+      "default": null,
+      "values": "null or mm of leather glued over the outside"
     }
   },
   "combinations": [
-    {
-      "id": "slider-fitted",
-      "text": "The slider needs the fitted camera ring; it slides over that window.",
-      "if": {
-        "SLIDER": true
-      },
-      "require": {
-        "CAMERA": "fitted"
-      },
-      "why": "the slider covers a fitted window"
-    },
     {
       "id": "slider-no-magsafe",
       "text": "The slider and MagSafe don't mix: the rails run down to y -52 and the charger's top edge sits at -45.",
@@ -117,7 +109,7 @@
     },
     {
       "id": "magsafe-open-full-back",
-      "text": "The open charger hole needs the full back round it; on a banded back the magnet ring keeps only its annulus and struts.",
+      "text": "The open charger hole needs the full back round it; on a banded back the magnet ring stands on the web's arms.",
       "if": {
         "MAGSAFE": "open"
       },
@@ -191,6 +183,21 @@
         ]
       },
       "why": "the knuckles stand on the left wall"
+    },
+    {
+      "id": "leather-plain",
+      "text": "A leather skin needs the whole outside, plain: full back and walls, no ribs, bumpers or MagSafe magnets.",
+      "if": {
+        "LEATHER": "set"
+      },
+      "require": {
+        "BACK_BAND": null,
+        "RIBS": null,
+        "WALLS": "full",
+        "BUMPER": null,
+        "MAGSAFE": null
+      },
+      "why": "the skin needs the whole outside, plain"
     }
   ],
   "phones": [
@@ -205,9 +212,9 @@
     },
     {
       "id": "full-width-plateau",
-      "text": "Phones with a full-width camera plateau need the universal camera window.",
+      "text": "The slider can't cover a full-width camera plateau.",
       "if": {
-        "CAMERA": "fitted"
+        "SLIDER": true
       },
       "phones": [
         "air",
@@ -216,7 +223,7 @@
         "18-pro",
         "18-pro-max"
       ],
-      "why": "full-width camera plateau, use CAMERA universal",
+      "why": "the slider can't cover a full-width plateau",
       "test": "sizes.json camera plateau is not a bounded outline"
     },
     {
@@ -262,16 +269,6 @@
       ],
       "why": "cigarette clip runs off the bottom",
       "test": "CIG_Y - CIG_LEN / 2 > -L"
-    },
-    {
-      "id": "universal-window",
-      "text": "The universal window only works when the camera sits within 48 mm of the top.",
-      "if": {
-        "CAMERA": "universal"
-      },
-      "phones": [],
-      "why": "camera reaches past the universal window",
-      "test": "camera cluster bottom >= -UNI_L"
     },
     {
       "id": "flip-knuckles",
@@ -323,12 +320,12 @@
     },
     {
       "id": "bottom-wall",
-      "text": "The bottom wall is 1.8 mm, the most docks and cables allow.",
+      "text": "The bottom wall is 1.55 mm, under the 1.8 mm docks and cables allow.",
       "rule": "case wall below the phone, for docks and cables",
       "max": 1.8,
       "unit": "mm",
       "source": "ADG 5.1.3",
-      "case": "CLEAR 0.25 + WALL 1.55 = 1.80",
+      "case": "CLEAR 0.25 + WALL 1.3 = 1.55",
       "checked": "assert CLEAR + WALL <= 1.8"
     },
     {
@@ -400,6 +397,7 @@
       "plate": "sheet has no corner profile",
       "spine": "sheet has no corner profile",
       "slider": "sheet has no corner profile",
+      "leather": "sheet has no corner profile",
       "cig": "sheet has no corner profile",
       "corner": "sheet has no corner profile",
       "ribs": "sheet has no corner profile",
@@ -504,69 +502,24 @@
       "slider": "right rail falls off the case"
     },
     "air": {
-      "case": "full-width camera plateau, use CAMERA universal",
-      "slot": "full-width camera plateau, use CAMERA universal",
-      "magsafe": "full-width camera plateau, use CAMERA universal",
-      "sides": "full-width camera plateau, use CAMERA universal",
-      "corners": "full-width camera plateau, use CAMERA universal",
-      "spine": "full-width camera plateau, use CAMERA universal",
-      "slider": "full-width camera plateau, use CAMERA universal",
-      "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal",
-      "ribs": "full-width camera plateau, use CAMERA universal",
-      "ribcorner": "full-width camera plateau, use CAMERA universal"
+      "spine": "the slider can't cover a full-width plateau",
+      "slider": "the slider can't cover a full-width plateau"
     },
     "17-pro": {
-      "case": "full-width camera plateau, use CAMERA universal",
-      "slot": "full-width camera plateau, use CAMERA universal",
-      "magsafe": "full-width camera plateau, use CAMERA universal",
-      "sides": "full-width camera plateau, use CAMERA universal",
-      "corners": "full-width camera plateau, use CAMERA universal",
-      "spine": "full-width camera plateau, use CAMERA universal",
-      "slider": "full-width camera plateau, use CAMERA universal",
-      "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal",
-      "ribs": "full-width camera plateau, use CAMERA universal",
-      "ribcorner": "full-width camera plateau, use CAMERA universal"
+      "spine": "the slider can't cover a full-width plateau",
+      "slider": "the slider can't cover a full-width plateau"
     },
     "17-pro-max": {
-      "case": "full-width camera plateau, use CAMERA universal",
-      "slot": "full-width camera plateau, use CAMERA universal",
-      "magsafe": "full-width camera plateau, use CAMERA universal",
-      "sides": "full-width camera plateau, use CAMERA universal",
-      "corners": "full-width camera plateau, use CAMERA universal",
-      "spine": "full-width camera plateau, use CAMERA universal",
-      "slider": "full-width camera plateau, use CAMERA universal",
-      "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal",
-      "ribs": "full-width camera plateau, use CAMERA universal",
-      "ribcorner": "full-width camera plateau, use CAMERA universal"
+      "spine": "the slider can't cover a full-width plateau",
+      "slider": "the slider can't cover a full-width plateau"
     },
     "18-pro": {
-      "case": "full-width camera plateau, use CAMERA universal",
-      "slot": "full-width camera plateau, use CAMERA universal",
-      "magsafe": "full-width camera plateau, use CAMERA universal",
-      "sides": "full-width camera plateau, use CAMERA universal",
-      "corners": "full-width camera plateau, use CAMERA universal",
-      "spine": "full-width camera plateau, use CAMERA universal",
-      "slider": "full-width camera plateau, use CAMERA universal",
-      "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal",
-      "ribs": "full-width camera plateau, use CAMERA universal",
-      "ribcorner": "full-width camera plateau, use CAMERA universal"
+      "spine": "the slider can't cover a full-width plateau",
+      "slider": "the slider can't cover a full-width plateau"
     },
     "18-pro-max": {
-      "case": "full-width camera plateau, use CAMERA universal",
-      "slot": "full-width camera plateau, use CAMERA universal",
-      "magsafe": "full-width camera plateau, use CAMERA universal",
-      "sides": "full-width camera plateau, use CAMERA universal",
-      "corners": "full-width camera plateau, use CAMERA universal",
-      "spine": "full-width camera plateau, use CAMERA universal",
-      "slider": "full-width camera plateau, use CAMERA universal",
-      "cig": "full-width camera plateau, use CAMERA universal",
-      "corner": "full-width camera plateau, use CAMERA universal",
-      "ribs": "full-width camera plateau, use CAMERA universal",
-      "ribcorner": "full-width camera plateau, use CAMERA universal"
+      "spine": "the slider can't cover a full-width plateau",
+      "slider": "the slider can't cover a full-width plateau"
     }
   }
 }

@@ -1,8 +1,8 @@
 {
   "base": {
-    "knobs": {"RIBS": 1.0, "RIB_SIDE": "in", "BUMPER": 1.0, "CAMERA": "auto"},
+    "knobs": {"RIBS": 1.0, "RIB_SIDE": "in", "BUMPER": 1.0, "KEYS": ["action", "side_power", "volume_up", "volume_down"]},
     "output": "part",
-    "about": "the template every phone gets: flat outside, 1.0 mm back skin under lengthwise channels on the phone side, vented at both ends and into the camera window; 1.0 mm corner bumpers; universal window where the plateau is full width"
+    "about": "the template every phone gets: flat outside, 1.0 mm back skin under lengthwise channels on the phone side that run out into the camera window; every button a flexure key; 1.0 mm corner bumpers"
   },
   "case": {
     "knobs": {},
@@ -25,32 +25,32 @@
     "about": "top and bottom walls open between the corners"
   },
   "corners": {
-    "knobs": {"WALLS": "corners", "BUTTONS": "slot"},
+    "knobs": {"WALLS": "corners", "BUTTONS": "slot", "BACK_BAND": 3.0},
     "output": "part",
-    "about": "held at the four corners only, walls open between them"
+    "about": "held at the four corners, walls open between them and rounded at the ends; back cut to a 3 mm band, a cap over each corner and the camera island"
   },
   "skeleton": {
-    "knobs": {"BACK_BAND": 3.0, "MAGSAFE": "ring", "KEYS": ["action", "side_power"], "BUMPER": 1.5, "CAMERA": "auto"},
+    "knobs": {"BACK_BAND": 3.0, "WEB": true, "KEYS": ["action", "side_power"], "BUMPER": 1.5},
     "output": "part",
-    "about": "back cut to a 3 mm band, the camera ring and the MagSafe magnet ring on struts, the phone's back open to air between them; 1.5 mm corner bumpers; carries magpack"
+    "about": "back cut to a 3 mm band, the camera island and a ring on four arms, every inside corner filleted, the phone's back open to air between them; 1.5 mm corner bumpers"
   },
   "frame": {
-    "knobs": {"BUTTONS": "slot", "CAMERA": "universal", "BACK_BAND": 8.0},
+    "knobs": {"BUTTONS": "slot", "BACK_BAND": 8.0},
     "output": "part",
-    "about": "back kept as an 8 mm band round the edge, universal top-band camera window"
+    "about": "back kept as an 8 mm band round the edge, the camera ring on an island swept into it"
   },
   "backless": {
-    "knobs": {"BUTTONS": "slot", "CAMERA": "universal", "BACK_BAND": 1.5},
+    "knobs": {"BUTTONS": "slot", "BACK_BAND": 1.5},
     "output": "part",
-    "about": "side walls with a 1.5 mm band of back, universal top-band camera rim"
+    "about": "side walls with a 1.5 mm band of back, the camera ring on an island swept into it"
   },
   "plateframe": {
-    "knobs": {"BUTTONS": "slot", "CAMERA": "universal", "BACK_BAND": 8.0, "PLATE": true},
+    "knobs": {"BUTTONS": "slot", "BACK_BAND": 8.0, "PLATE": true},
     "output": "part",
     "about": "frame with a rebate for the swap-in back plate"
   },
   "plate": {
-    "knobs": {"BUTTONS": "slot", "CAMERA": "universal", "BACK_BAND": 8.0, "PLATE": true},
+    "knobs": {"BUTTONS": "slot", "BACK_BAND": 8.0, "PLATE": true},
     "output": "plate",
     "about": "1 mm swap-in back plate for plateframe, dropped in from the phone side and held by the phone"
   },
@@ -63,6 +63,11 @@
     "knobs": {"BUTTONS": "slot", "BACK_BAND": 1.5, "SLIDER": true},
     "output": "slider",
     "about": "lens cover for spine, printed flat on its outside face, slides down clear of the lens and flash keepouts"
+  },
+  "leather": {
+    "knobs": {"LEATHER": 0.6},
+    "output": "part",
+    "about": "printed core for a 0.6 mm leather skin glued over the back and walls: 0.95 mm walls, 1.4 mm back, 1.8 and 2.0 with the skin on; camera ring and a 1.5 mm rim band stand flush with the skin and cover its edges"
   },
   "cig": {
     "knobs": {"CIG": true},
@@ -85,12 +90,12 @@
     "about": "the corner coupon with a ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs"
   },
   "flip": {
-    "knobs": {"FLIP": true, "BUMPER": 1.5, "CAMERA": "auto"},
+    "knobs": {"FLIP": true, "BUMPER": 1.5},
     "output": "part",
     "about": "full case carrying a front cover on a 3DS-style hinge along the left edge: two end knuckles, stop shelves for the cover open flat at 180, 1.5 mm corner bumpers"
   },
   "cover": {
-    "knobs": {"FLIP": true, "BUMPER": 1.5, "CAMERA": "auto"},
+    "knobs": {"FLIP": true, "BUMPER": 1.5},
     "output": "cover",
     "about": "2 mm front cover for flip, its barrel runs between the case's knuckles on a 1.75 filament pin"
   }

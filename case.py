@@ -13,23 +13,27 @@ Knobs, defaults in rules.json; a style in styles.json is a named knob set.
   KEYS       button names printed as flexure keys that press through the wall;
              names this phone lacks are dropped
   CLOSED     button names covered, the wall relieved so it never presses them
-  CAMERA     "fitted" ring round this cluster | "universal" full-width top band
-  BACK_BAND  None full back | mm of back kept round the edge
+  BACK_BAND  None full back | mm of back kept round the edge; the camera ring stands
+             on an island swept out to the band, every inside corner filleted
+  WEB        a banded back keeps a ring at the MagSafe position on four arms
   PLATE      the band carries an inside rebate for a swap-in back plate, `plate`
-  WALLS      "full" | "sides" top and bottom walls open | "corners" corners only
+  WALLS      "full" | "sides" top and bottom walls open | "corners" corners only, and
+             on a banded back a cap over each corner
   MAGSAFE    None | "ring" pockets for the ADG 42.1 magnet array | "open" hole.
-             "ring" on a banded back keeps only the magnet ring, its clocking tab
-             and struts out to the band; the centre stays open to the phone
+             "ring" on a banded back implies WEB, the pockets in its ring and a tab
   SLIDER     lens cover sliding down rails on a raised track, `slider`
   CIG        cigarette clip along the right edge of the back
   COUPON     None | mm of each edge kept round the bottom-right corner, a fit test
+  LEATHER    None | mm of skin glued over the outside; the print is the core under it,
+             the camera ring and a band at the rim top stand flush with the skin
   FLIP       front cover, `cover`, on a 3DS-style hinge along the left edge: the
              case carries the two end knuckles, the cover the barrel between
              them, the axis on the rim-top plane where the two meet. Opens 180
              onto a stop shelf under each knuckle
-A fitted camera on a banded back stands on a spine, a full-width strip of back
-across the camera, which also carries the slider rails. rules.json lists the
-valid combinations; the asserts in build() are the same rules.
+The camera opening traces the plateau, so a full-width plateau opens the top of
+the back. A slider's rails stand on a spine, a full-width strip of back across
+the camera. rules.json lists the valid combinations; the asserts in build() are
+the same rules.
 
     python case.py                         every style, for the 17e
     python case.py magsafe frame           these styles
@@ -55,6 +59,9 @@ import bpy
 import bmesh
 import numpy as np
 from mathutils import Matrix, Vector
+from shapely import Point, Polygon, box
+from shapely.affinity import translate
+from shapely.geometry.polygon import orient
 
 import phone as ph
 import rules
@@ -64,7 +71,7 @@ SOLVER = "MANIFOLD"   # every operand is a closed loft, which is all this solver
 SEG = 64              # segments per full circle
 
 CLEAR = 0.25   # phone to inner wall, all round
-WALL = 1.55    # side wall. CLEAR + WALL is the bottom, 1.8 max for docks (ADG 5.1.3)
+WALL = 1.3     # side wall. CLEAR + WALL is the bottom, 1.8 max for docks (ADG 5.1.3)
 BACK = 2.0     # 2.1 is the Apple hard limit for backside thickness
 LIP = 0.5      # rim reaches this far in over the phone's rolled front edge, clear
                # of the glass edge at 1.05. Rigid print (PETG/PLA): the phone snaps
@@ -74,28 +81,34 @@ GLASS_GAP = 1.0        # exposed glass to any flat surface: 0.85 min, 1.0 ideal 
 MIN_GAP = 0.85
 PROUD = GLASS_GAP      # how far the rim stands above the front glass plane
 RING_W = 1.5           # raised ring round the camera window, holds the lens off a table
-EDGE_BACK = 1.8        # round on the back edge of the case, CLEAR + WALL
+FLARE = RING_W / 2     # every opening in the back rounds out this much at its outside
+                       # edge; the ring's top is this round inside, its own height outside
+EDGE_BACK = (1.55, 3.0)  # back edge round, across (CLEAR + WALL) and up: an elliptical roll
 EDGE_FRONT = 0.8       # round on the outer edge of the front rim
 RIM_FLARE = 0.4        # the front opening opens this much wider at the rim top
-WINDOW_FLARE = 0.4     # the camera window opens this much wider at the ring top
 RECEIVER_BLEND = 4.0   # the receiver dip eases back up to the rim over this, each side
-BUTTON_MARGIN = 0.75   # extra window each end of a button
+BUTTON_MARGIN = 0.5    # extra window each end of a button
 BUTTON_RAIL = 1.3      # wall left above and below a button window
 FEATURE_MARGIN = 1.2   # around the rear camera cluster
 PORT_OFFSET = 2.0      # speaker/mic opening past the port edge, thin case (ADG 5.2.3.1)
 PORT_LAND = 0.6        # straight wall at an opening's inner edge, 1.5 max (ADG 5.2.3.1)
 RECEIVER_CLEAR = 0.35  # round the receiver slot, which the rim notch leaves open forward
-UNI_L = 48.0           # universal camera window, full width, this deep from the top edge.
-                       # Deepest plateau drawn is 46.54 (15 Pro, 16 Pro Max); 17 Pro Max is full width
-UNI_INSET = 0.5        # universal window edge in from the phone outline; plateaus start 1.04 in
+CAM_INSET = 0.5        # camera opening edge in from the phone outline; plateaus start 1.04 in
+PLATEAU_R = 7.0        # plateau corner radius. ponytail: no sheet prints it, read off the 16 Pro
+                       # and 17 Pro renders; a sheet that dimensions it replaces this
 
 KEY_GAP = 0.2          # button top to the relieved wall face
 KEY_NUB = 0.15         # nub on a key, reaches KEY_GAP - KEY_NUB from the button top
 KEY_SLOT = 0.6         # cut round a key tab
-KEY_HINGE = 6.0        # key tab length past the window, hinged at the top end;
-                       # 0.35 press at the nub strains the 1.15 tab about 0.5 %
-CORNER_L = 20.0        # WALLS "sides"/"corners": wall kept this far along each edge from a corner
+KEY_HINGE = 6.0        # key tab length past the window, less where the next button is close;
+                       # 0.35 press at the nub strains the 0.9 tab about 0.4 %
+CORNER_L = 24.0        # WALLS "sides"/"corners": wall kept this far along each edge from a corner
+WALL_END_R = 5.0       # where it rounds into the back, so it reaches CORNER_L + this at the back
+WALL_END_TOP = 2.0     # round over the rim top at each wall end
 SPINE_W = 4.0          # spine past the camera ring
+ISLAND_W = 4.0         # banded back: island past the camera ring's footprint
+BAND_FILLET = 6.0      # banded back: radius in every inside corner of what is kept
+ARM_W = 8.0            # WEB: arm width at the ring, twice that out at the band
 PLATE_T = 1.0          # swap-in back plate, the band keeps BACK - PLATE_T as its ledge
 PLATE_LEDGE = 3.0      # ledge the plate rests on, inside the band opening
 PLATE_CLR = 0.2        # plate to rebate, each side
@@ -109,17 +122,16 @@ MS_T = 0.55            # magnet thickness (ADG fig 42-3)
 MS_CLR = 0.1           # magnet pocket, each side
 MS_OPEN_D = 60.0       # "open" hole, a MagSafe charger puck seats on the phone
 MS_RIM = 1.6           # banded back: solid round the magnet and clocking pockets
-STRUT_W = 5.0          # banded back: struts from the magnet ring out to the band
 RIB_W = 1.2            # RIBS: rib across the back, and the solid rim round every pocket
 RIB_PITCH = 10.0       # RIBS: rib centre to centre, stretched to divide each side evenly
-VENT_L = 4.0           # RIB_SIDE "in": vent slot through the back at each channel end
-BUMP_R = 6.0           # BUMPER: full bulge this far from each corner of the phone outline,
-BUMP_FALL = 4.0        # gone this much further; ports start 15 and button windows 11.5 out
+BUMP_R = 3.0           # BUMPER: full bulge this far from each corner of the phone outline,
+BUMP_FALL = 12.0       # gone this much further; ports start 15 out
 CIG_D = 8.0            # king size 7.9-8.0, slim 5.4
 CIG_WALL = 1.4
 CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
 CIG_LEN = 30.0
 CIG_Y = -120.0         # clip centre, below the MagSafe charger and clocking magnet
+LEATHER_BAND = 1.5     # LEATHER: full-size band at the rim top the skin's edge tucks under
 FLIP_R = 2.5           # FLIP: barrel and knuckle radius, the axis on the rim-top plane
 FLIP_GAP = 0.3         # barrel to knuckle and to the case
 FLIP_PIN = 1.75        # 1.75 filament pin, pressed in the knuckles, free in the barrel
@@ -243,6 +255,51 @@ def hull(pts):
     return half(pts) + half(pts[::-1])
 
 
+def resample(poly, step=0.4):
+    """Outline of a shapely polygon, counterclockwise, as points step apart."""
+    ext = orient(poly).exterior
+    n = max(32, int(ext.length / step))
+    return [ext.interpolate(i / n, normalized=True).coords[0] for i in range(n)]
+
+
+def grow(pts, d):
+    """Counterclockwise ring pushed d outward along each point's normal; exact while
+    every inside corner's radius exceeds d."""
+    out = []
+    for i, (x, y) in enumerate(pts):
+        (ax, ay), (bx, by) = pts[i - 1], pts[(i + 1) % len(pts)]
+        m = math.hypot(bx - ax, by - ay)
+        out.append((x + d * (by - ay) / m, y - d * (bx - ax) / m))
+    return out
+
+
+def drop_slivers(obj, most=50.0):
+    """Delete loose pieces under `most` mm3: an open wall's rounded end can leave a
+    port's edge standing free."""
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    seen, gone = set(), []
+    for v in bm.verts:
+        if v.index in seen:
+            continue
+        comp, stack = [], [v]
+        seen.add(v.index)
+        while stack:
+            u = stack.pop()
+            comp.append(u)
+            for e in u.link_edges:
+                w = e.other_vert(u)
+                if w.index not in seen:
+                    seen.add(w.index)
+                    stack.append(w)
+        faces = {f for u in comp for f in u.link_faces}
+        if abs(sum(f.calc_area() * f.normal.dot(f.verts[0].co) for f in faces) / 3) < most:
+            gone += comp
+    bmesh.ops.delete(bm, geom=gone, context="VERTS")
+    bm.to_mesh(obj.data)
+    bm.free()
+
+
 def quarter(n=8):
     """(across, up) on a quarter round of radius 1, from its side to its top."""
     return [(1 - math.sin(math.pi / 2 * i / n), 1 - math.cos(math.pi / 2 * i / n)) for i in range(n + 1)]
@@ -268,8 +325,6 @@ def build(name="17e", style="case", **knobs):
     globals().update({**KNOBS, **base, **knobs})
     p = phone(name)
     W, L, T = p["W"], p["L"], p["T"]
-    if CAMERA == "auto":
-        globals()["CAMERA"] = "universal" if p["plateau"] == "full" else "fitted"
 
     names = {b["name"] for b in p["buttons"]}
     KEYS = tuple(k for k in globals()["KEYS"] if k in names)
@@ -277,20 +332,22 @@ def build(name="17e", style="case", **knobs):
     assert BACK <= p["max_back"]
     assert CLEAR + WALL <= 1.8
     assert CLEAR < LIP < 1.05
-    assert BUTTONS in ("windows", "slot") and CAMERA in ("fitted", "universal")   # "auto" resolved above
+    assert BUTTONS in ("windows", "slot")
     assert WALLS in ("full", "sides", "corners") and MAGSAFE in (None, "ring", "open")
     assert not set(KEYS) & set(CLOSED)
     assert not (KEYS and WALLS == "corners"), "corner walls leave no wall for a key"
     assert not PLATE or BACK_BAND, "the plate sits in a banded back"
     assert MAGSAFE != "open" or BACK_BAND is None, "the charger hole needs the full back round it"
-    assert not SLIDER or CAMERA == "fitted", "the slider covers a fitted window"
     assert not RIBS or (BACK_BAND is None and not MAGSAFE), "ribs pocket the full back, magnets need it solid"
     assert not RIBS or BACK - RIBS >= MIN_GAP, "back between the ribs under the glass gap"
     assert RIB_SIDE in ("out", "in")
     assert not (SLIDER and MAGSAFE), "slider rails reach y -52, a charger's top edge is at -45"
-    assert not (CAMERA == "fitted" and p["plateau"] == "full"), "full-width camera plateau, use CAMERA universal"
+    assert not (SLIDER and p["plateau"] == "full"), "the slider can't cover a full-width plateau"
     assert not CIG or CIG_Y - CIG_LEN / 2 > -L, "cigarette clip runs off the bottom"
     assert not (FLIP and WALLS == "corners"), "the knuckles stand on the left wall"
+    assert not LEATHER or (BACK_BAND is None and not RIBS and WALLS == "full" and not BUMPER and not MAGSAFE), \
+        "the skin needs the whole outside, plain"
+    assert not LEATHER or BACK - LEATHER >= 1.2, "core back under 1.2"
 
     SCRATCH = bpy.data.collections.new("case-scratch")
     bpy.context.scene.collection.children.link(SCRATCH)
@@ -306,12 +363,12 @@ def build(name="17e", style="case", **knobs):
     Z_LENS = Z_BACK - p["lens_z"]
     Z_RING = min(Z_LENS - GLASS_GAP, Z_CASE_BACK)   # a lens under the back's own gap needs no ring
 
-    def body(z0, z1, back=EDGE_BACK, top=EDGE_FRONT):
-        """Outer shape from z0 (back) to z1 (front), both edges rounded."""
-        rings = [(z0 + back * v, back * a) for a, v in quarter()]
+    def body(z0, z1, back=EDGE_BACK, top=EDGE_FRONT, out=OUT):
+        """Outer shape from z0 (back) to z1 (front), out past the phone outline, both edges rounded."""
+        rings = [(z0 + back[1] * v, back[0] * a) for a, v in quarter()]
         rings += [(z1 - top * v, top * a) for a, v in quarter()[::-1]]
         rings = [r for i, r in enumerate(rings) if not i or r != rings[i - 1]]
-        return loft([[(x, y, z) for x, y in bumped(offset(ring, -OUT + d))] for z, d in rings])
+        return loft([[(x, y, z) for x, y in bumped(offset(ring, -out + d))] for z, d in rings])
 
     def bumped(pts):
         """BUMPER mm pushed out along the normal round each corner, a cosine fade to the sides."""
@@ -327,7 +384,15 @@ def build(name="17e", style="case", **knobs):
             out.append((x + k * (by - ay), y - k * (bx - ax)))   # outward for a counterclockwise ring
         return out
 
-    part = body(Z_CASE_BACK, PROUD)
+    if LEATHER:
+        # Core under a glued skin: the outside with the skin on is as wide as the bottom
+        # wall allows and as thick as BACK; a full-size band at the rim top covers its edge.
+        out_l = min(OUT + LEATHER, 1.8 - 1e-6)
+        part = body(Z_CASE_BACK + LEATHER, PROUD, (EDGE_BACK[0] + out_l - OUT - LEATHER, EDGE_BACK[1] - LEATHER),
+                    out=out_l - LEATHER)
+        part += body(Z_CASE_BACK, PROUD, out=out_l) & span(-10, W + 10, 10, -L - 10, PROUD - LEATHER_BAND, PROUD + 1)
+    else:
+        part = body(Z_CASE_BACK, PROUD)
     part -= prism(inner, Z_BACK, 0.0)
     part -= loft([[(x, y, z) for x, y in r] for r, z in
                   ((front, -0.01), (front, PROUD - RIM_FLARE), (offset(ring, LIP - RIM_FLARE), PROUD + 0.01))])
@@ -392,22 +457,38 @@ def build(name="17e", style="case", **knobs):
         part -= side_box(side, 0, relief, cy + bl / 2 + 0.5, cy - bl / 2 - 0.5, zc - bw / 2 - 0.3, zc + bw / 2 + 0.3)
         if b["name"] in CLOSED:
             continue
-        free, root = cy - bl / 2 - BUTTON_MARGIN, cy + bl / 2 + BUTTON_MARGIN + KEY_HINGE
+        # Hinged toward the larger gap to the next button on this side, taking at most
+        # half of it so the neighbour's tab keeps the other half.
+        ends = [(o["center_y"] - o["length"] / 2, o["center_y"] + o["length"] / 2)
+                for o in p["buttons"] if o["side"] == side and o is not b]
+        gaps = [min([lo - cy - bl / 2 for lo, _ in ends if lo > cy] + [99]),
+                min([cy - bl / 2 - hi for _, hi in ends if hi < cy] + [99])]
+        u = 1 if gaps[0] >= gaps[1] else -1
+        hinge = min(KEY_HINGE, max(gaps) / 2 - BUTTON_MARGIN - KEY_SLOT)
+        free, root = cy - u * (bl / 2 + BUTTON_MARGIN), cy + u * (bl / 2 + BUTTON_MARGIN + hinge)
         for z in (zc - half, zc + half):
-            part -= side_box(side, -thru, thru, free - KEY_SLOT, root, z - KEY_SLOT / 2, z + KEY_SLOT / 2)
-        part -= side_box(side, -thru, thru, free - KEY_SLOT, free, zc - half, zc + half)
+            part -= side_box(side, -thru, thru, free - u * KEY_SLOT, root, z - KEY_SLOT / 2, z + KEY_SLOT / 2)
+        part -= side_box(side, -thru, thru, free - u * KEY_SLOT, free, zc - half, zc + half)
         part += side_box(side, relief - KEY_NUB, relief + 0.01, cy + 1.5, cy - 1.5, zc - 1.0, zc + 1.0)
 
-    # Wall styles.
-    top_z = (Z_BACK, PROUD + 1)
+    # Wall styles: each opening's ends round into the back and over the rim top.
+    def wall_cut(length):
+        """(u, z) outline of the opening in a wall `length` long, CORNER_L kept at each end."""
+        u0, u1, rt, rb = CORNER_L, length - CORNER_L, WALL_END_TOP, WALL_END_R
+        q = [(math.cos(t), math.sin(t)) for t in np.linspace(0, math.pi / 2, 9)]
+        left = ([(u0 - rt, PROUD + 5)] + [(u0 - rt + rt * c, PROUD - rt + rt * s) for c, s in q[::-1]]
+                + [(u0 + rb - rb * s, Z_BACK + rb - rb * c) for c, s in q])
+        return left + [(length - u, z) for u, z in left[::-1]]
     if WALLS in ("sides", "corners"):
         for y0, y1 in ((5, -LIP - 1), (-L + LIP + 1, -L - 5)):
-            part -= span(CORNER_L, W - CORNER_L, y0, y1, *top_z)
+            part -= loft([[(u, y, z) for u, z in wall_cut(W)] for y in (y0, y1)])
     if WALLS == "corners":
         for x0, x1 in ((-5, LIP + 1), (W - LIP - 1, W + 5)):
-            part -= span(x0, x1, -CORNER_L, -(L - CORNER_L), *top_z)
+            part -= loft([[(x, -u, z) for u, z in wall_cut(L)] for x in (x0, x1)])
 
-    # Rear camera: one opening over every lens, flash, mic, sensor and the plateau.
+    # Rear camera: the opening traces the plateau FEATURE_MARGIN out, or hugs the lenses,
+    # flash and mic where there is none. A full-width plateau runs to CAM_INSET off the sides, as deep
+    # below the lowest feature as the lenses sit below the top edge.
     feats = p["lenses"] + [f for f in [p["flash"]] if f] + p["others"]
     xs = [v for cx, _, d in feats for v in (cx - d / 2, cx + d / 2)]
     ys = [v for _, cy, d in feats for v in (cy - d / 2, cy + d / 2)]
@@ -417,14 +498,6 @@ def build(name="17e", style="case", **knobs):
     cam_w = max(xs) - min(xs) + 2 * FEATURE_MARGIN
     cam_l = max(ys) - min(ys) + 2 * FEATURE_MARGIN
     cam_x, cam_y = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
-    # The bump: every lens and the plateau they stand on. Flash and mic outside it get
-    # their own flush hole in the back.
-    pts = [q for cx, cy, d in p["lenses"] for q in circle(d / 2 + FEATURE_MARGIN, cx, cy)]
-    if isinstance(p["plateau"], tuple):
-        x0, x1, y0, y1 = p["plateau"]
-        pts += rounded(x1 - x0 + 2 * FEATURE_MARGIN, y1 - y0 + 2 * FEATURE_MARGIN, 4.0 + FEATURE_MARGIN,
-                       (x0 + x1) / 2, (y0 + y1) / 2)
-
     Z_FLASH = Z_BACK - p["flash_z"]
     fi_a, fi_d = p["flash_inner"]
     fo_a, fo_d, fo_tr = p["flash_outer"]
@@ -444,11 +517,32 @@ def build(name="17e", style="case", **knobs):
             out.append((p["flash"][0], p["flash"][1], flash_r(z)))
         return out
 
-    cam = hull(pts)
+    if p["plateau"] == "full":
+        y0 = min(ys) + max(cy + d / 2 for _, cy, d in p["lenses"]) - FEATURE_MARGIN
+        opening = rounded(W - 2 * CAM_INSET, -2 * y0, PLATEAU_R + FEATURE_MARGIN, W / 2, 0)
+    elif p["plateau"]:
+        x0, x1, y0, y1 = p["plateau"]
+        opening = rounded(x1 - x0 + 2 * FEATURE_MARGIN, y1 - y0 + 2 * FEATURE_MARGIN, PLATEAU_R + FEATURE_MARGIN,
+                          (x0 + x1) / 2, (y0 + y1) / 2)
+    else:
+        # Wide enough for every light cone where it passes the ring top.
+        reach = [max(d / 2 + FEATURE_MARGIN, r + FEATURE_MARGIN / 2) for (cx, cy, d), (_, _, r) in
+                 zip(feats, cone_edges(Z_RING) + [(0, 0, 0)] * len(p["others"]))]
+        opening = hull([q for (cx, cy, _), r in zip(feats, reach) for q in circle(r, cx, cy)])
+    opening = (Polygon(opening) & Polygon(offset(ring, CAM_INSET))).buffer(-2).buffer(2)
+    # Flash and mic outside it get their own flush hole in the back.
+    loose = [f for f in feats[len(p["lenses"]):] if not opening.contains(Point(f[:2]))]
+    loose = Polygon(hull([q for cx, cy, d in loose for q in circle(d / 2 + FEATURE_MARGIN, cx, cy)])) if loose else None
+    opening = resample(opening)
 
-    def inside(x, y):
-        return all((bx - ax) * (y - ay) - (by - ay) * (x - ax) >= 0 for (ax, ay), (bx, by) in zip(cam, cam[1:] + cam[:1]))
-    loose = [f for f in feats[len(p["lenses"]):] if not inside(f[0], f[1])]
+    def through(pts, z):
+        """Cut through the back from the phone side, its outside edge at z rounded out by FLARE."""
+        prof = [(Z_BACK + 1, 0)] + [(z + FLARE - FLARE * s, FLARE - FLARE * c) for c, s in
+                                    ((math.cos(t), math.sin(t)) for t in np.linspace(0, math.pi / 2, 9))]
+        return loft([[(x, y, zz) for x, y in grow(pts, g)] for zz, g in prof + [(z - 1, FLARE)]])
+
+    h = Z_CASE_BACK - Z_RING
+    foot = FLARE + h   # ring footprint past the opening
 
     slider = None
     if SLIDER:
@@ -473,46 +567,58 @@ def build(name="17e", style="case", **knobs):
         slider = span(sl_x0, sl_x1, sl_top, sl_top - sl_l, z_sl, Z_RING - 0.05)
         slider += span(sl_x0 + 3, sl_x1 - 3, sl_top - sl_l + 1.0, sl_top - sl_l + 2.0, z_sl - 0.6, z_sl + 0.01)
 
-    spine_bot = None
+    # Banded back: what stays is the band, the camera island swept out to the top and
+    # nearer side, WEB's ring on arms, corner caps, a slider's spine; every inside
+    # corner filleted at BAND_FILLET so each opening is one smooth curve.
+    holes = []
     if BACK_BAND is not None:
-        part -= prism(offset(ring, BACK_BAND), Z_RING - 5, Z_BACK)
-        if PLATE:
-            part -= prism(offset(ring, BACK_BAND - PLATE_LEDGE), Z_BACK - PLATE_T, Z_BACK)
-        if CAMERA == "fitted":
-            spine_bot = (rail_bot if SLIDER else cam_y - cam_l / 2 - RING_W) - SPINE_W
-            part += span(-10, W + 10, 10, spine_bot, Z_CASE_BACK, Z_BACK) & body(Z_CASE_BACK, PROUD)
-        if MAGSAFE == "ring":
-            # Back reduced to the magnet ring: annulus, the clocking tab below it, struts
-            # left, right and up to the band, the bottom strut as wide as the tab.
+        keep = box(-50, -L - 50, W + 50, 50) - Polygon(offset(ring, BACK_BAND))
+        island = Polygon(grow(opening, foot + ISLAND_W))
+        side = -W if island.centroid.x < W / 2 else W
+        for dx, dy in ((0, L), (side, 0)):
+            keep |= (island | translate(island, dx, dy)).convex_hull
+        if WEB or MAGSAFE == "ring":
             mx, my = p["magsafe"]
-            tab = 3 + MS_CLR + MS_RIM
-            web = cylinder(mx, my, 54.10 / 2 + MS_CLR + MS_RIM, Z_CASE_BACK - 1, Z_BACK)
-            web += span(mx - tab, mx + tab, my, -L - 10, Z_CASE_BACK - 1, Z_BACK)
-            web += span(-10, W + 10, my + STRUT_W / 2, my - STRUT_W / 2, Z_CASE_BACK - 1, Z_BACK)
-            web += span(mx - STRUT_W / 2, mx + STRUT_W / 2, 10, my, Z_CASE_BACK - 1, Z_BACK)
-            web -= cylinder(mx, my, 46.00 / 2 - MS_CLR - MS_RIM, Z_CASE_BACK - 2, Z_BACK + 1)
-            part += web & body(Z_CASE_BACK, PROUD)
-
-    def top_band(depth):
-        return span(-10, W + 10, 10, -depth, -50, 50)
-
-    if CAMERA == "fitted":
-        # Ring round the bump, its outer edge a round as high as the ring stands.
-        h = Z_CASE_BACK - Z_RING
-        prof = [(Z_CASE_BACK + 0.5, RING_W + h)] + [(Z_CASE_BACK - h * (1 - a), RING_W + h * (1 - v)) for a, v in quarter()]
-        part += loft([[(x, y, z) for x, y in offset(cam, -d)] for z, d in prof])
+            r0, r1 = 46.00 / 2 - MS_CLR - MS_RIM, 54.10 / 2 + MS_CLR + MS_RIM
+            keep |= Point(mx, my).buffer(r1) - Point(mx, my).buffer(r0)
+            for ex, ey in ((-W, my), (2 * W, my), (mx, L), (mx, -2 * L)):
+                a = math.atan2(ey - my, ex - mx)
+                keep |= (Point(mx + r1 * math.cos(a), my + r1 * math.sin(a)).buffer(ARM_W / 2)
+                         | Point(ex, ey).buffer(ARM_W)).convex_hull
+            if MAGSAFE == "ring":
+                tab = 3 + MS_CLR + MS_RIM
+                keep |= box(mx - tab, my - 50.49 - tab, mx + tab, my - r0)
+        if WALLS == "corners":
+            for cx, cy in ((0, 0), (W, 0), (0, -L), (W, -L)):
+                keep |= Point(cx, cy).buffer(CORNER_L + WALL_END_R)
         if SLIDER:
-            part += rails & prism(outer, z_lip - 1, 0)
-        window = loft([[(x, y, z) for x, y in offset(cam, -d)] for z, d in
-                       ((Z_BACK + 1, 0), (Z_RING + WINDOW_FLARE, 0), (Z_RING - 0.01, WINDOW_FLARE + 0.01))])
+            spine_bot = rail_bot - SPINE_W
+            keep |= box(-50, spine_bot, W + 50, 50)
+        keep = keep.buffer(BAND_FILLET).buffer(-BAND_FILLET)
+        cut = Polygon(offset(ring, BACK_BAND)) - keep
+        holes = [resample(g) for g in getattr(cut, "geoms", [cut]) if g.area > 1]
+        assert all(not g.interiors for g in getattr(cut, "geoms", [cut])), "band opening with an island inside"
+        for pts in holes:
+            part -= through(pts, Z_CASE_BACK)
+            if PLATE:
+                part -= prism(grow(pts, PLATE_LEDGE), Z_BACK - PLATE_T, Z_BACK)
+
+    # Ring round the opening, as high as the lens needs: its top a round of FLARE on
+    # the inside, of its own height outside, meeting at the ring top.
+    if h > 0.05:
+        prof = [(Z_BACK, foot)] + [(Z_CASE_BACK - h * (1 - a), FLARE + h * (1 - v)) for a, v in quarter()]
+        part += loft([[(x, y, z) for x, y in grow(opening, d)] for z, d in prof]) & body(Z_RING, PROUD)
+    if LEATHER:
+        # Collar flush with the skin round each opening, so no skin edge meets a lens.
+        collar = prism(grow(opening, foot + RING_W), Z_CASE_BACK, Z_BACK)
         if loose:
-            hole = hull([q for cx, cy, d in loose for q in circle(d / 2 + FEATURE_MARGIN, cx, cy)])
-            window += loft([[(x, y, z) for x, y in offset(hole, -d)] for z, d in
-                            ((Z_BACK + 1, 0), (Z_CASE_BACK + WINDOW_FLARE, 0), (Z_CASE_BACK - 0.01, WINDOW_FLARE + 0.01))])
-    else:
-        assert cam_y - cam_l / 2 >= -UNI_L, "camera reaches past the universal window"
-        part += top_band(UNI_L + RING_W) & body(Z_RING, Z_CASE_BACK + 0.5, min(EDGE_BACK, Z_CASE_BACK - Z_RING), 0)
-        window = top_band(UNI_L) & prism(offset(ring, UNI_INSET), Z_RING - 1, Z_BACK)
+            collar += prism(grow(resample(loose), FLARE + RING_W), Z_CASE_BACK, Z_BACK)
+        part += collar & body(Z_CASE_BACK, PROUD, out=out_l)
+    if SLIDER:
+        part += rails & prism(outer, z_lip - 1, 0)
+    window = through(opening, Z_RING)
+    if loose:
+        window += through(resample(loose), Z_CASE_BACK)
     part -= window
 
     # Light cones past the window edge, grown by CLEAR (ADG 5.7.1).
@@ -540,33 +646,20 @@ def build(name="17e", style="case", **knobs):
     # Ribs, RIB_SIDE "out": pockets in the outside of the back leave BACK - RIBS between
     # the ribs; the ribs and the rim keep BACK, so the case still rests at BACK off the table.
     # RIB_SIDE "in": lengthwise channels on the phone side, the outside stays flat. The phone
-    # rests on the ribs; each channel vents through the back at both ends and into the
-    # camera window, an air path along the phone's back.
+    # rests on the ribs; each channel runs out into the camera window.
     if RIBS and RIB_SIDE == "in":
         z0 = Z_BACK - RIBS
         n = max(1, round((W - RIB_W) / RIB_PITCH))
         chan = prism(offset(ring, RIB_W), z0, Z_BACK + 0.01)
-        vents = None
-        for i in range(n):
+        for i in range(1, n):
             c0 = RIB_W + i * (W - RIB_W) / n
-            c1 = RIB_W / 2 + (i + 1) * (W - RIB_W) / n - RIB_W / 2
-            if i:
-                chan -= span(c0 - RIB_W, c0, 10, -L - 10, z0 - 1, Z_BACK + 1)
-            for y0 in (-RIB_W, -L + RIB_W + VENT_L):
-                v = span(c0 + 0.5, c1 - 0.5, y0, y0 - VENT_L, Z_CASE_BACK - 1, z0 + 0.01)
-                vents = v if vents is None else vents + v
-        ring_keep = (prism(offset(cam, -(RING_W + Z_CASE_BACK - Z_RING + RIB_W)), Z_CASE_BACK - 30, Z_BACK + 1)
-                     if CAMERA == "fitted" else top_band(UNI_L + RING_W + RIB_W))
+            chan -= span(c0 - RIB_W, c0, 10, -L - 10, z0 - 1, Z_BACK + 1)
         part -= chan
-        part -= (vents & prism(offset(ring, RIB_W), Z_CASE_BACK - 1, Z_BACK)) - ring_keep
     elif RIBS:
         keep = prism(offset(ring, -1), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS) - prism(offset(ring, RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
-        if CAMERA == "fitted":
-            keep += prism(offset(cam, -(RING_W + Z_CASE_BACK - Z_RING + RIB_W)), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
-            if loose:
-                keep += prism(offset(hole, -(WINDOW_FLARE + RIB_W)), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
-        else:
-            keep += top_band(UNI_L + RING_W + RIB_W)
+        keep += prism(grow(opening, foot + RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
+        if loose:
+            keep += prism(grow(resample(loose), FLARE + RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
         # Pitch stretched so each side divides evenly: the end ribs land on the rim, no sliver cells.
         for size, along_x in ((W, True), (L, False)):
             n = max(1, round((size - RIB_W) / RIB_PITCH))
@@ -616,18 +709,18 @@ def build(name="17e", style="case", **knobs):
             cover -= axle(FLIP_R + FLIP_GAP, y0 + FLIP_GAP, y1 - FLIP_GAP)
         cover -= axle((FLIP_PIN + FLIP_PIN_FREE) / 2, 10, -L - 10)
 
+    if WALLS != "full":
+        drop_slivers(part.obj)
+
     if COUPON:
         part &= span(W - COUPON, W + COUPON, -L + COUPON, -L - COUPON, Z_CASE_BACK - 30, PROUD + 30)
 
     plate = None
     if PLATE:
-        plate = prism(offset(ring, BACK_BAND - PLATE_LEDGE + PLATE_CLR), Z_BACK - PLATE_T, Z_BACK)
-        plate -= window
+        for pts in holes:
+            s = prism(grow(pts, PLATE_LEDGE - PLATE_CLR), Z_BACK - PLATE_T, Z_BACK)
+            plate = s if plate is None else plate + s
         plate -= keepout
-        if CAMERA == "universal":
-            plate -= top_band(UNI_L + RING_W + PLATE_CLR)
-        if spine_bot is not None:
-            plate -= span(-10, W + 10, 10, spine_bot - PLATE_CLR, -50, 50)
 
     col = bpy.data.collections.get("case") or bpy.data.collections.new("case")
     if col.name not in bpy.context.scene.collection.children:
