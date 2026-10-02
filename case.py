@@ -15,6 +15,7 @@ Knobs, defaults in rules.json; a style in styles.json is a named knob set.
   CLOSED     button names covered, the wall relieved so it never presses them
   BACK_BAND  None full back | mm of back kept round the edge; the camera ring stands
              on an island swept out to the band, every inside corner filleted
+  RING       False: no camera ring or island, the camera sits in the open back
   PLATE      the band carries an inside rebate for a swap-in back plate, `plate`
   WALLS      "full" | "sides" top and bottom walls open | "corners" corners only
   MAGSAFE    None | "ring" pockets for the ADG 42.1 magnet array | "open" hole
@@ -345,6 +346,7 @@ def build(name="17e", style="case", **knobs):
     assert not LEATHER or (not RIBS and WALLS == "full" and not BUMPER and not MAGSAFE), \
         "the skin needs the whole outside, plain"
     assert not LEATHER or BACK - LEATHER >= 1.2, "core back under 1.2"
+    assert RING or (BACK_BAND is not None and not SLIDER and not LEATHER), "only a banded back leaves the camera open"
 
     SCRATCH = bpy.data.collections.new("case-scratch")
     bpy.context.scene.collection.children.link(SCRATCH)
@@ -569,10 +571,11 @@ def build(name="17e", style="case", **knobs):
     holes = []
     if BACK_BAND is not None:
         keep = box(-50, -L - 50, W + 50, 50) - Polygon(offset(ring, BACK_BAND))
-        island = Polygon(grow(opening, foot + ISLAND_W))
-        side = -W if island.centroid.x < W / 2 else W
-        for dx, dy in ((0, L), (side, 0)):
-            keep |= (island | translate(island, dx, dy)).convex_hull
+        if RING:
+            island = Polygon(grow(opening, foot + ISLAND_W))
+            side = -W if island.centroid.x < W / 2 else W
+            for dx, dy in ((0, L), (side, 0)):
+                keep |= (island | translate(island, dx, dy)).convex_hull
         if SLIDER:
             spine_bot = rail_bot - SPINE_W
             keep |= box(-50, spine_bot, W + 50, 50)
@@ -587,7 +590,7 @@ def build(name="17e", style="case", **knobs):
 
     # Ring round the opening, as high as the lens needs: a flat top RING_W wide, its
     # outside a round of its own height.
-    if h > 0.05:
+    if RING and h > 0.05:
         prof = [(Z_BACK, foot)] + [(Z_CASE_BACK - h * (1 - a), RING_W + h * (1 - v)) for a, v in quarter()]
         part += loft([[(x, y, z) for x, y in grow(opening, d)] for z, d in prof]) & body(Z_RING, PROUD)
     if LEATHER:
@@ -736,6 +739,8 @@ def build(name="17e", style="case", **knobs):
                        for lx, ly, d in p["lenses"] for t in np.linspace(0, 2 * math.pi, 180, endpoint=False)],
         "back glass": [(x, y, Z_BACK) for x in np.linspace(5, W - 5, 30) for y in np.linspace(-5, 5 - L, 60)],
     }
+    if not RING:
+        del glass["lens cover"]   # an open camera leaves the lens to the phone's own bump
     if not COUPON:
         GLASS[made["part"].name] = glass
     for n in p["notes"]:

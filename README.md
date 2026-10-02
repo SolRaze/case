@@ -25,11 +25,12 @@ styles
 - sides | top and bottom walls open between the corners
 - corners | held at the four corners, full back, walls open between them and rounded at the ends
 - frame | back kept as an 8 mm band round the edge, the camera ring on an island swept into it
+- edge | edge only: the walls and a 1.5 mm lip of back round the edge, the camera open
 - plateframe | frame with a rebate for the swap-in back plate
 - plate | 1 mm swap-in back plate for plateframe, dropped in from the phone side and held by the phone
 - spine | 1.5 mm band and a full-width strip across the fitted camera ring carrying slider rails
 - slider | lens cover for spine, printed flat on its outside face, slides down clear of the lens and flash keepouts
-- leather | printed core for a 0.6 mm leather skin glued over the back and walls: 0.95 mm walls, an 8 mm band of 1.4 mm back the skin bridges, 1.8 and 2.0 with the skin on; camera ring and a 1.5 mm rim band stand flush with the skin and cover its edges
+- leather | printed core for a 0.6 mm leather skin glued over the full back and walls: 0.95 mm walls, 1.4 mm back, 1.8 and 2.0 with the skin on; camera ring and a 1.5 mm rim band stand flush with the skin and cover its edges
 - cig | snap clip for one unlit cigarette along the right edge of the back; PETG softens near 80 C
 - corner | bottom-right corner only, 45 mm of each edge: squircle corner, USB-C edge and speaker group, a fit test that prints in minutes
 - ribs | full case, ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs
@@ -42,6 +43,7 @@ knobs
 - KEYS | default [] | button names; names a phone lacks are dropped
 - CLOSED | default [] | button names, none shared with KEYS
 - BACK_BAND | default null | null (full back) or mm of back kept round the edge
+- RING | default true | false true
 - PLATE | default false | false true
 - WALLS | default "full" | "full" "sides" "corners"
 - MAGSAFE | default null | null "ring" "open"
@@ -72,6 +74,7 @@ rules | build skips a phone and style that break one, and says which
 - Ribs pocket the full back; the magnets need it solid.
 - The hinge knuckles stand on the left wall, so the flip cover needs it.
 - A leather skin needs a plain outside: full walls, no ribs, bumpers or MagSafe magnets.
+- Leaving the camera without a ring needs a banded back, and no slider or leather skin.
 - Phones whose sheet has no corner profile can't be built. Ruled out: 5s.
 - The slider can't cover a full-width camera plateau. Fits only se-2-3, 12, 16e, 17e.
 - The slider needs room for its right rail beside the camera. Fits only se-2-3, 12, 16e, 17e.
@@ -90,11 +93,11 @@ limits | from the apple accessory design guidelines and the phone sheets, checke
 
 checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass
-- 460 of 540 phone x style build and pass | the rest are in rules.json invalid
+- 489 of 570 phone x style build and pass | the rest are in rules.json invalid
 
 previews | from the back, grid in previews/README.md
 - 5s | none, sheet has no corner profile
-- [se-2-3](previews/README.md#se-2-3) | 16 styles
+- [se-2-3](previews/README.md#se-2-3) | 17 styles
 - [12-mini](previews/README.md#12-mini) | 13 styles
 - [12](previews/README.md#12) | 16 styles
 - [12-pro](previews/README.md#12-pro) | 14 styles
@@ -116,10 +119,10 @@ previews | from the back, grid in previews/README.md
 - [16e](previews/README.md#16e) | 18 styles
 - [16-pro](previews/README.md#16-pro) | 16 styles
 - [16-pro-max](previews/README.md#16-pro-max) | 16 styles
-- [17](previews/README.md#17) | 16 styles
-- [17e](previews/README.md#17e) | 18 styles
-- [air](previews/README.md#air) | 16 styles
-- [17-pro](previews/README.md#17-pro) | 16 styles
+- [17](previews/README.md#17) | 17 styles
+- [17e](previews/README.md#17e) | 19 styles
+- [air](previews/README.md#air) | 17 styles
+- [17-pro](previews/README.md#17-pro) | 17 styles
 - [17-pro-max](previews/README.md#17-pro-max) | 16 styles
 - [18-pro](previews/README.md#18-pro) | 16 styles
 - [18-pro-max](previews/README.md#18-pro-max) | 16 styles

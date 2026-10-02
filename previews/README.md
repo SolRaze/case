@@ -4,9 +4,9 @@ one section per phone, every style that builds, seen from the back | python case
 
 <a name="se-2-3"></a>se-2-3
 
-| base | case | slot | magsafe | sides | corners | frame | plateframe | plate | spine | slider | leather | cig | corner | ribs | ribcorner |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ![base](se-2-3/base.png) | ![case](se-2-3/case.png) | ![slot](se-2-3/slot.png) | ![magsafe](se-2-3/magsafe.png) | ![sides](se-2-3/sides.png) | ![corners](se-2-3/corners.png) | ![frame](se-2-3/frame.png) | ![plateframe](se-2-3/plateframe.png) | ![plate](se-2-3/plate.png) | ![spine](se-2-3/spine.png) | ![slider](se-2-3/slider.png) | ![leather](se-2-3/leather.png) | ![cig](se-2-3/cig.png) | ![corner](se-2-3/corner.png) | ![ribs](se-2-3/ribs.png) | ![ribcorner](se-2-3/ribcorner.png) |
+| base | case | slot | magsafe | sides | corners | frame | edge | plateframe | plate | spine | slider | leather | cig | corner | ribs | ribcorner |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ![base](se-2-3/base.png) | ![case](se-2-3/case.png) | ![slot](se-2-3/slot.png) | ![magsafe](se-2-3/magsafe.png) | ![sides](se-2-3/sides.png) | ![corners](se-2-3/corners.png) | ![frame](se-2-3/frame.png) | ![edge](se-2-3/edge.png) | ![plateframe](se-2-3/plateframe.png) | ![plate](se-2-3/plate.png) | ![spine](se-2-3/spine.png) | ![slider](se-2-3/slider.png) | ![leather](se-2-3/leather.png) | ![cig](se-2-3/cig.png) | ![corner](se-2-3/corner.png) | ![ribs](se-2-3/ribs.png) | ![ribcorner](se-2-3/ribcorner.png) |
 
 <a name="12-mini"></a>12-mini
 
@@ -136,27 +136,27 @@ one section per phone, every style that builds, seen from the back | python case
 
 <a name="17"></a>17
 
-| base | case | slot | magsafe | sides | corners | frame | plateframe | plate | leather | cig | corner | ribs | ribcorner | flip | cover |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ![base](17/base.png) | ![case](17/case.png) | ![slot](17/slot.png) | ![magsafe](17/magsafe.png) | ![sides](17/sides.png) | ![corners](17/corners.png) | ![frame](17/frame.png) | ![plateframe](17/plateframe.png) | ![plate](17/plate.png) | ![leather](17/leather.png) | ![cig](17/cig.png) | ![corner](17/corner.png) | ![ribs](17/ribs.png) | ![ribcorner](17/ribcorner.png) | ![flip](17/flip.png) | ![cover](17/cover.png) |
+| base | case | slot | magsafe | sides | corners | frame | edge | plateframe | plate | leather | cig | corner | ribs | ribcorner | flip | cover |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ![base](17/base.png) | ![case](17/case.png) | ![slot](17/slot.png) | ![magsafe](17/magsafe.png) | ![sides](17/sides.png) | ![corners](17/corners.png) | ![frame](17/frame.png) | ![edge](17/edge.png) | ![plateframe](17/plateframe.png) | ![plate](17/plate.png) | ![leather](17/leather.png) | ![cig](17/cig.png) | ![corner](17/corner.png) | ![ribs](17/ribs.png) | ![ribcorner](17/ribcorner.png) | ![flip](17/flip.png) | ![cover](17/cover.png) |
 
 <a name="17e"></a>17e
 
-| base | case | slot | magsafe | sides | corners | frame | plateframe | plate | spine | slider | leather | cig | corner | ribs | ribcorner | flip | cover |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ![base](17e/base.png) | ![case](17e/case.png) | ![slot](17e/slot.png) | ![magsafe](17e/magsafe.png) | ![sides](17e/sides.png) | ![corners](17e/corners.png) | ![frame](17e/frame.png) | ![plateframe](17e/plateframe.png) | ![plate](17e/plate.png) | ![spine](17e/spine.png) | ![slider](17e/slider.png) | ![leather](17e/leather.png) | ![cig](17e/cig.png) | ![corner](17e/corner.png) | ![ribs](17e/ribs.png) | ![ribcorner](17e/ribcorner.png) | ![flip](17e/flip.png) | ![cover](17e/cover.png) |
+| base | case | slot | magsafe | sides | corners | frame | edge | plateframe | plate | spine | slider | leather | cig | corner | ribs | ribcorner | flip | cover |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ![base](17e/base.png) | ![case](17e/case.png) | ![slot](17e/slot.png) | ![magsafe](17e/magsafe.png) | ![sides](17e/sides.png) | ![corners](17e/corners.png) | ![frame](17e/frame.png) | ![edge](17e/edge.png) | ![plateframe](17e/plateframe.png) | ![plate](17e/plate.png) | ![spine](17e/spine.png) | ![slider](17e/slider.png) | ![leather](17e/leather.png) | ![cig](17e/cig.png) | ![corner](17e/corner.png) | ![ribs](17e/ribs.png) | ![ribcorner](17e/ribcorner.png) | ![flip](17e/flip.png) | ![cover](17e/cover.png) |
 
 <a name="air"></a>air
 
-| base | case | slot | magsafe | sides | corners | frame | plateframe | plate | leather | cig | corner | ribs | ribcorner | flip | cover |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ![base](air/base.png) | ![case](air/case.png) | ![slot](air/slot.png) | ![magsafe](air/magsafe.png) | ![sides](air/sides.png) | ![corners](air/corners.png) | ![frame](air/frame.png) | ![plateframe](air/plateframe.png) | ![plate](air/plate.png) | ![leather](air/leather.png) | ![cig](air/cig.png) | ![corner](air/corner.png) | ![ribs](air/ribs.png) | ![ribcorner](air/ribcorner.png) | ![flip](air/flip.png) | ![cover](air/cover.png) |
+| base | case | slot | magsafe | sides | corners | frame | edge | plateframe | plate | leather | cig | corner | ribs | ribcorner | flip | cover |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ![base](air/base.png) | ![case](air/case.png) | ![slot](air/slot.png) | ![magsafe](air/magsafe.png) | ![sides](air/sides.png) | ![corners](air/corners.png) | ![frame](air/frame.png) | ![edge](air/edge.png) | ![plateframe](air/plateframe.png) | ![plate](air/plate.png) | ![leather](air/leather.png) | ![cig](air/cig.png) | ![corner](air/corner.png) | ![ribs](air/ribs.png) | ![ribcorner](air/ribcorner.png) | ![flip](air/flip.png) | ![cover](air/cover.png) |
 
 <a name="17-pro"></a>17-pro
 
-| base | case | slot | magsafe | sides | corners | frame | plateframe | plate | leather | cig | corner | ribs | ribcorner | flip | cover |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ![base](17-pro/base.png) | ![case](17-pro/case.png) | ![slot](17-pro/slot.png) | ![magsafe](17-pro/magsafe.png) | ![sides](17-pro/sides.png) | ![corners](17-pro/corners.png) | ![frame](17-pro/frame.png) | ![plateframe](17-pro/plateframe.png) | ![plate](17-pro/plate.png) | ![leather](17-pro/leather.png) | ![cig](17-pro/cig.png) | ![corner](17-pro/corner.png) | ![ribs](17-pro/ribs.png) | ![ribcorner](17-pro/ribcorner.png) | ![flip](17-pro/flip.png) | ![cover](17-pro/cover.png) |
+| base | case | slot | magsafe | sides | corners | frame | edge | plateframe | plate | leather | cig | corner | ribs | ribcorner | flip | cover |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ![base](17-pro/base.png) | ![case](17-pro/case.png) | ![slot](17-pro/slot.png) | ![magsafe](17-pro/magsafe.png) | ![sides](17-pro/sides.png) | ![corners](17-pro/corners.png) | ![frame](17-pro/frame.png) | ![edge](17-pro/edge.png) | ![plateframe](17-pro/plateframe.png) | ![plate](17-pro/plate.png) | ![leather](17-pro/leather.png) | ![cig](17-pro/cig.png) | ![corner](17-pro/corner.png) | ![ribs](17-pro/ribs.png) | ![ribcorner](17-pro/ribcorner.png) | ![flip](17-pro/flip.png) | ![cover](17-pro/cover.png) |
 
 <a name="17-pro-max"></a>17-pro-max
 

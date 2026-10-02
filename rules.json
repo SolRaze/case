@@ -20,6 +20,13 @@
       "default": null,
       "values": "null (full back) or mm of back kept round the edge"
     },
+    "RING": {
+      "default": true,
+      "values": [
+        false,
+        true
+      ]
+    },
     "PLATE": {
       "default": false,
       "values": [
@@ -190,6 +197,19 @@
         "MAGSAFE": null
       },
       "why": "the skin needs the whole outside, plain"
+    },
+    {
+      "id": "open-camera-band",
+      "text": "Leaving the camera without a ring needs a banded back, and no slider or leather skin.",
+      "if": {
+        "RING": false
+      },
+      "require": {
+        "BACK_BAND": "set",
+        "SLIDER": false,
+        "LEATHER": null
+      },
+      "why": "only a banded back leaves the camera open"
     }
   ],
   "phones": [
@@ -383,6 +403,7 @@
       "sides": "sheet has no corner profile",
       "corners": "sheet has no corner profile",
       "frame": "sheet has no corner profile",
+      "edge": "sheet has no corner profile",
       "plateframe": "sheet has no corner profile",
       "plate": "sheet has no corner profile",
       "spine": "sheet has no corner profile",

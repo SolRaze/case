@@ -34,6 +34,11 @@
     "output": "part",
     "about": "back kept as an 8 mm band round the edge, the camera ring on an island swept into it"
   },
+  "edge": {
+    "knobs": {"BUTTONS": "slot", "BACK_BAND": 1.5, "RING": false},
+    "output": "part",
+    "about": "edge only: the walls and a 1.5 mm lip of back round the edge, the camera open"
+  },
   "plateframe": {
     "knobs": {"BUTTONS": "slot", "BACK_BAND": 8.0, "PLATE": true},
     "output": "part",
@@ -55,9 +60,9 @@
     "about": "lens cover for spine, printed flat on its outside face, slides down clear of the lens and flash keepouts"
   },
   "leather": {
-    "knobs": {"LEATHER": 0.6, "BACK_BAND": 8.0},
+    "knobs": {"LEATHER": 0.6},
     "output": "part",
-    "about": "printed core for a 0.6 mm leather skin glued over the back and walls: 0.95 mm walls, an 8 mm band of 1.4 mm back the skin bridges, 1.8 and 2.0 with the skin on; camera ring and a 1.5 mm rim band stand flush with the skin and cover its edges"
+    "about": "printed core for a 0.6 mm leather skin glued over the full back and walls: 0.95 mm walls, 1.4 mm back, 1.8 and 2.0 with the skin on; camera ring and a 1.5 mm rim band stand flush with the skin and cover its edges"
   },
   "cig": {
     "knobs": {"CIG": true},
