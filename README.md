@@ -24,6 +24,7 @@ styles
 - magsafe | pockets for the ADG 42.1 magnet array, glued in from the phone side; action and side buttons as flexure keys where the phone has them
 - sides | top and bottom walls open between the corners
 - corners | held at the four corners only, walls open between them
+- skeleton | back cut to a 3 mm band, the camera ring and the MagSafe magnet ring on struts, the phone's back open to air between them; 1.5 mm corner bumpers; carries magpack
 - frame | back kept as an 8 mm band round the edge, universal top-band camera window
 - backless | side walls with a 1.5 mm band of back, universal top-band camera rim
 - plateframe | frame with a rebate for the swap-in back plate
@@ -60,7 +61,7 @@ design
 rules | build skips a phone and style that break one, and says which
 - The slider needs the fitted camera ring; it slides over that window.
 - The slider and MagSafe don't mix: the rails run down to y -52 and the charger's top edge sits at -45.
-- MagSafe needs the full back, since the magnets and the charger both sit on it.
+- The open charger hole needs the full back round it; on a banded back the magnet ring keeps only its annulus and struts.
 - A back plate needs a banded back to sit in.
 - Keys need side walls, so they don't work with corner-only walls.
 - A button is either a key or closed over, never both.
@@ -83,39 +84,39 @@ limits | from the apple accessory design guidelines and the phone sheets, checke
 
 checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass
-- 367 of 480 phone x style build and pass | the rest are in rules.json invalid
+- 396 of 510 phone x style build and pass | the rest are in rules.json invalid
 
 previews | from the back, grid in previews/README.md
 - 5s | none, sheet has no corner profile
-- [se-2-3](previews/README.md#se-2-3) | 16 styles
-- [12-mini](previews/README.md#12-mini) | 13 styles
-- [12](previews/README.md#12) | 16 styles
-- [12-pro](previews/README.md#12-pro) | 14 styles
-- [12-pro-max](previews/README.md#12-pro-max) | 14 styles
-- [13-mini](previews/README.md#13-mini) | 13 styles
-- [13](previews/README.md#13) | 14 styles
-- [13-pro](previews/README.md#13-pro) | 14 styles
-- [13-pro-max](previews/README.md#13-pro-max) | 14 styles
-- [14](previews/README.md#14) | 14 styles
-- [14-plus](previews/README.md#14-plus) | 14 styles
-- [14-pro](previews/README.md#14-pro) | 14 styles
-- [14-pro-max](previews/README.md#14-pro-max) | 14 styles
-- [15](previews/README.md#15) | 14 styles
-- [15-plus](previews/README.md#15-plus) | 14 styles
-- [15-pro](previews/README.md#15-pro) | 14 styles
-- [15-pro-max](previews/README.md#15-pro-max) | 14 styles
-- [16](previews/README.md#16) | 14 styles
-- [16-plus](previews/README.md#16-plus) | 14 styles
-- [16e](previews/README.md#16e) | 16 styles
-- [16-pro](previews/README.md#16-pro) | 14 styles
-- [16-pro-max](previews/README.md#16-pro-max) | 14 styles
-- [17](previews/README.md#17) | 14 styles
-- [17e](previews/README.md#17e) | 16 styles
-- [air](previews/README.md#air) | 5 styles
-- [17-pro](previews/README.md#17-pro) | 5 styles
-- [17-pro-max](previews/README.md#17-pro-max) | 5 styles
-- [18-pro](previews/README.md#18-pro) | 5 styles
-- [18-pro-max](previews/README.md#18-pro-max) | 5 styles
+- [se-2-3](previews/README.md#se-2-3) | 17 styles
+- [12-mini](previews/README.md#12-mini) | 14 styles
+- [12](previews/README.md#12) | 17 styles
+- [12-pro](previews/README.md#12-pro) | 15 styles
+- [12-pro-max](previews/README.md#12-pro-max) | 15 styles
+- [13-mini](previews/README.md#13-mini) | 14 styles
+- [13](previews/README.md#13) | 15 styles
+- [13-pro](previews/README.md#13-pro) | 15 styles
+- [13-pro-max](previews/README.md#13-pro-max) | 15 styles
+- [14](previews/README.md#14) | 15 styles
+- [14-plus](previews/README.md#14-plus) | 15 styles
+- [14-pro](previews/README.md#14-pro) | 15 styles
+- [14-pro-max](previews/README.md#14-pro-max) | 15 styles
+- [15](previews/README.md#15) | 15 styles
+- [15-plus](previews/README.md#15-plus) | 15 styles
+- [15-pro](previews/README.md#15-pro) | 15 styles
+- [15-pro-max](previews/README.md#15-pro-max) | 15 styles
+- [16](previews/README.md#16) | 15 styles
+- [16-plus](previews/README.md#16-plus) | 15 styles
+- [16e](previews/README.md#16e) | 17 styles
+- [16-pro](previews/README.md#16-pro) | 15 styles
+- [16-pro-max](previews/README.md#16-pro-max) | 15 styles
+- [17](previews/README.md#17) | 15 styles
+- [17e](previews/README.md#17e) | 17 styles
+- [air](previews/README.md#air) | 6 styles
+- [17-pro](previews/README.md#17-pro) | 6 styles
+- [17-pro-max](previews/README.md#17-pro-max) | 6 styles
+- [18-pro](previews/README.md#18-pro) | 6 styles
+- [18-pro-max](previews/README.md#18-pro-max) | 6 styles
 
 requirements
 - `pip install -r requirements.txt` | blender's python module, numpy, pymupdf | libegl for headless previews

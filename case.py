@@ -17,7 +17,9 @@ Knobs, defaults in rules.json; a style in styles.json is a named knob set.
   BACK_BAND  None full back | mm of back kept round the edge
   PLATE      the band carries an inside rebate for a swap-in back plate, `plate`
   WALLS      "full" | "sides" top and bottom walls open | "corners" corners only
-  MAGSAFE    None | "ring" pockets for the ADG 42.1 magnet array | "open" hole
+  MAGSAFE    None | "ring" pockets for the ADG 42.1 magnet array | "open" hole.
+             "ring" on a banded back keeps only the magnet ring, its clocking tab
+             and struts out to the band; the centre stays open to the phone
   SLIDER     lens cover sliding down rails on a raised track, `slider`
   CIG        cigarette clip along the right edge of the back
   COUPON     None | mm of each edge kept round the bottom-right corner, a fit test
@@ -102,6 +104,8 @@ MS_FLOOR = 0.80        # magnet to case outside: 0.85 max (ADG 42.1 fig 42-3), 0
 MS_T = 0.55            # magnet thickness (ADG fig 42-3)
 MS_CLR = 0.1           # magnet pocket, each side
 MS_OPEN_D = 60.0       # "open" hole, a MagSafe charger puck seats on the phone
+MS_RIM = 1.6           # banded back: solid round the magnet and clocking pockets
+STRUT_W = 5.0          # banded back: struts from the magnet ring out to the band
 RIB_W = 1.2            # RIBS: rib across the back, and the solid rim round every pocket
 RIB_PITCH = 10.0       # RIBS: rib centre to centre, stretched to divide each side evenly
 VENT_L = 4.0           # RIB_SIDE "in": vent slot through the back at each channel end
@@ -267,7 +271,7 @@ def build(name="17e", style="case", **knobs):
     assert not set(KEYS) & set(CLOSED)
     assert not (KEYS and WALLS == "corners"), "corner walls leave no wall for a key"
     assert not PLATE or BACK_BAND, "the plate sits in a banded back"
-    assert not MAGSAFE or BACK_BAND is None, "magnets and the charger need the full back"
+    assert MAGSAFE != "open" or BACK_BAND is None, "the charger hole needs the full back round it"
     assert not SLIDER or CAMERA == "fitted", "the slider covers a fitted window"
     assert not RIBS or (BACK_BAND is None and not MAGSAFE), "ribs pocket the full back, magnets need it solid"
     assert not RIBS or BACK - RIBS >= MIN_GAP, "back between the ribs under the glass gap"
@@ -465,6 +469,17 @@ def build(name="17e", style="case", **knobs):
         if CAMERA == "fitted":
             spine_bot = (rail_bot if SLIDER else cam_y - cam_l / 2 - RING_W) - SPINE_W
             part += span(-10, W + 10, 10, spine_bot, Z_CASE_BACK, Z_BACK) & body(Z_CASE_BACK, PROUD)
+        if MAGSAFE == "ring":
+            # Back reduced to the magnet ring: annulus, the clocking tab below it, struts
+            # left, right and up to the band, the bottom strut as wide as the tab.
+            mx, my = p["magsafe"]
+            tab = 3 + MS_CLR + MS_RIM
+            web = cylinder(mx, my, 54.10 / 2 + MS_CLR + MS_RIM, Z_CASE_BACK - 1, Z_BACK)
+            web += span(mx - tab, mx + tab, my, -L - 10, Z_CASE_BACK - 1, Z_BACK)
+            web += span(-10, W + 10, my + STRUT_W / 2, my - STRUT_W / 2, Z_CASE_BACK - 1, Z_BACK)
+            web += span(mx - STRUT_W / 2, mx + STRUT_W / 2, 10, my, Z_CASE_BACK - 1, Z_BACK)
+            web -= cylinder(mx, my, 46.00 / 2 - MS_CLR - MS_RIM, Z_CASE_BACK - 2, Z_BACK + 1)
+            part += web & body(Z_CASE_BACK, PROUD)
 
     def top_band(depth):
         return span(-10, W + 10, 10, -depth, -50, 50)

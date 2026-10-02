@@ -109,18 +109,15 @@
       "why": "slider rails reach y -52, a charger's top edge is at -45"
     },
     {
-      "id": "magsafe-full-back",
-      "text": "MagSafe needs the full back, since the magnets and the charger both sit on it.",
+      "id": "magsafe-open-full-back",
+      "text": "The open charger hole needs the full back round it; on a banded back the magnet ring keeps only its annulus and struts.",
       "if": {
-        "MAGSAFE": [
-          "ring",
-          "open"
-        ]
+        "MAGSAFE": "open"
       },
       "require": {
         "BACK_BAND": null
       },
-      "why": "magnets and the charger need the full back"
+      "why": "the charger hole needs the full back round it"
     },
     {
       "id": "plate-band",
@@ -359,6 +356,7 @@
       "magsafe": "sheet has no corner profile",
       "sides": "sheet has no corner profile",
       "corners": "sheet has no corner profile",
+      "skeleton": "sheet has no corner profile",
       "frame": "sheet has no corner profile",
       "backless": "sheet has no corner profile",
       "plateframe": "sheet has no corner profile",

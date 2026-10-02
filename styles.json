@@ -29,6 +29,11 @@
     "output": "part",
     "about": "held at the four corners only, walls open between them"
   },
+  "skeleton": {
+    "knobs": {"BACK_BAND": 3.0, "MAGSAFE": "ring", "KEYS": ["action", "side_power"], "BUMPER": 1.5, "CAMERA": "auto"},
+    "output": "part",
+    "about": "back cut to a 3 mm band, the camera ring and the MagSafe magnet ring on struts, the phone's back open to air between them; 1.5 mm corner bumpers; carries magpack"
+  },
   "frame": {
     "knobs": {"BUTTONS": "slot", "CAMERA": "universal", "BACK_BAND": 8.0},
     "output": "part",
