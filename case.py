@@ -23,6 +23,10 @@ Knobs, defaults in rules.json; a style in styles.json is a named knob set.
   SLIDER     lens cover sliding down rails on a raised track, `slider`
   CIG        cigarette clip along the right edge of the back
   COUPON     None | mm of each edge kept round the bottom-right corner, a fit test
+  FLIP       front cover, `cover`, on a 3DS-style hinge along the left edge: the
+             case carries the two end knuckles, the cover the barrel between
+             them, the axis on the rim-top plane where the two meet. Opens 180
+             onto a stop shelf under each knuckle
 A fitted camera on a banded back stands on a spine, a full-width strip of back
 across the camera, which also carries the slider rails. rules.json lists the
 valid combinations; the asserts in build() are the same rules.
@@ -116,6 +120,13 @@ CIG_WALL = 1.4
 CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
 CIG_LEN = 30.0
 CIG_Y = -120.0         # clip centre, below the MagSafe charger and clocking magnet
+FLIP_R = 2.5           # FLIP: barrel and knuckle radius, the axis on the rim-top plane
+FLIP_GAP = 0.3         # barrel to knuckle and to the case
+FLIP_PIN = 1.75        # 1.75 filament pin, pressed in the knuckles, free in the barrel
+FLIP_PIN_FREE = 0.3
+FLIP_T = 2.0           # cover plate
+FLIP_KNUCKLE = 9.0     # each knuckle, starting 1 mm past the corner arc
+FLIP_STOP = 4.0        # stop shelf under the fully open cover, past the knuckle
 
 KNOBS = rules.knob_defaults()
 
@@ -279,6 +290,7 @@ def build(name="17e", style="case", **knobs):
     assert not (SLIDER and MAGSAFE), "slider rails reach y -52, a charger's top edge is at -45"
     assert not (CAMERA == "fitted" and p["plateau"] == "full"), "full-width camera plateau, use CAMERA universal"
     assert not CIG or CIG_Y - CIG_LEN / 2 > -L, "cigarette clip runs off the bottom"
+    assert not (FLIP and WALLS == "corners"), "the knuckles stand on the left wall"
 
     SCRATCH = bpy.data.collections.new("case-scratch")
     bpy.context.scene.collection.children.link(SCRATCH)
@@ -579,6 +591,31 @@ def build(name="17e", style="case", **knobs):
                      CIG_Y + CIG_LEN, CIG_Y - CIG_LEN, ccz - r_out - 1, ccz)
         part += tube & prism(outer, Z_CASE_BACK - 30, Z_CASE_BACK + 0.5)
 
+    # Flip cover hinge along the left edge, axis along y at the rim top.
+    cover = None
+    if FLIP:
+        ax, az = -OUT - FLIP_R - FLIP_GAP, PROUD
+        k_top = min(y for x, y in p["corner"] if x < 1e-3) - 1.0
+        knuckles = [(k_top, k_top - FLIP_KNUCKLE), (-L - k_top + FLIP_KNUCKLE, -L - k_top)]
+        for b in p["buttons"]:
+            top, bot = b["center_y"] + b["length"] / 2 + BUTTON_MARGIN, b["center_y"] - b["length"] / 2 - BUTTON_MARGIN
+            assert b["side"] != "left" or all(bot > y0 or top < y1 for y0, y1 in knuckles), "knuckle over a left button"
+
+        def axle(r, y0, y1):
+            return loft([[(ax + u, y, az + v) for u, v in circle(r)] for y in (y0, y1)])
+        for y0, y1 in knuckles:
+            k = axle(FLIP_R, y0, y1) + span(ax, -CLEAR - 0.3, y0, y1, az - FLIP_R, az)
+            # The open cover lies on this shelf, x < ax, its face on az - FLIP_T.
+            k += span(ax - FLIP_R - FLIP_GAP - FLIP_STOP, ax, y0, y1, az - FLIP_T - 1.5, az - FLIP_T)
+            part += k
+            part -= axle(FLIP_PIN / 2, y0 + 1, y1 - 1)
+        b0, b1 = knuckles[0][1] - FLIP_GAP, knuckles[1][0] + FLIP_GAP
+        cover = prism(offset(ring, -OUT), az, az + FLIP_T)
+        cover += axle(FLIP_R, b0, b1) + span(ax, -OUT + 1, b0, b1, az, az + FLIP_T)
+        for y0, y1 in knuckles:
+            cover -= axle(FLIP_R + FLIP_GAP, y0 + FLIP_GAP, y1 - FLIP_GAP)
+        cover -= axle((FLIP_PIN + FLIP_PIN_FREE) / 2, 10, -L - 10)
+
     if COUPON:
         part &= span(W - COUPON, W + COUPON, -L + COUPON, -L - COUPON, Z_CASE_BACK - 30, PROUD + 30)
 
@@ -596,7 +633,7 @@ def build(name="17e", style="case", **knobs):
     if col.name not in bpy.context.scene.collection.children:
         bpy.context.scene.collection.children.link(col)
     made = {}
-    for key, s in (("part", part), ("plate", plate), ("slider", slider)):
+    for key, s in (("part", part), ("plate", plate), ("slider", slider), ("cover", cover)):
         if s is None:
             continue
         label = f"case-{name}-{style}" + ("" if key == "part" else f"-{key}")

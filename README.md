@@ -35,6 +35,8 @@ styles
 - corner | bottom-right corner only, 45 mm of each edge: squircle corner, USB-C edge and speaker group, a fit test that prints in minutes
 - ribs | full case, ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs
 - ribcorner | the corner coupon with a ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs
+- flip | full case carrying a front cover on a 3DS-style hinge along the left edge: two end knuckles, stop shelves for the cover open flat at 180, 1.5 mm corner bumpers
+- cover | 2 mm front cover for flip, its barrel runs between the case's knuckles on a 1.75 filament pin
 
 knobs
 - BUTTONS | default "windows" | "windows" "slot"
@@ -48,6 +50,7 @@ knobs
 - SLIDER | default false | false true
 - CIG | default false | false true
 - COUPON | default null | null or mm of each edge kept round the bottom-right corner
+- FLIP | default false | false true
 - RIBS | default null | null (solid back) or mm pocketed out of the back between ribs
 - RIB_SIDE | default "out" | "out" "in"
 - BUMPER | default null | null or mm the outside bulges out round each corner
@@ -66,11 +69,13 @@ rules | build skips a phone and style that break one, and says which
 - Keys need side walls, so they don't work with corner-only walls.
 - A button is either a key or closed over, never both.
 - Ribs pocket the full back; the magnets need it solid.
+- The hinge knuckles stand on the left wall, so the flip cover needs it.
 - Phones whose sheet has no corner profile can't be built. Ruled out: 5s.
 - Phones with a full-width camera plateau need the universal camera window. Ruled out: air, 17-pro, 17-pro-max, 18-pro, 18-pro-max.
 - The slider needs room for its right rail beside the camera. Fits only se-2-3, 12, 16e, 17e.
 - The cigarette clip needs a phone long enough to hold it. Ruled out: 12-mini, 13-mini.
 - The universal window only works when the camera sits within 48 mm of the top. Ruled out: none.
+- The flip cover's top knuckle starts 1 mm past the corner arc and must clear the left buttons. Ruled out: 12-mini, 12, 12-pro, 13-mini, se-2-3.
 
 limits | from the apple accessory design guidelines and the phone sheets, checked on every build
 - Any exposed glass stays at least 0.85 mm, ideally 1.0, off a flat table; the rim and camera ring stand 1.0 proud. (ADG 5.1.1)
@@ -84,7 +89,7 @@ limits | from the apple accessory design guidelines and the phone sheets, checke
 
 checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass
-- 396 of 510 phone x style build and pass | the rest are in rules.json invalid
+- 444 of 570 phone x style build and pass | the rest are in rules.json invalid
 
 previews | from the back, grid in previews/README.md
 - 5s | none, sheet has no corner profile
@@ -92,31 +97,31 @@ previews | from the back, grid in previews/README.md
 - [12-mini](previews/README.md#12-mini) | 14 styles
 - [12](previews/README.md#12) | 17 styles
 - [12-pro](previews/README.md#12-pro) | 15 styles
-- [12-pro-max](previews/README.md#12-pro-max) | 15 styles
+- [12-pro-max](previews/README.md#12-pro-max) | 17 styles
 - [13-mini](previews/README.md#13-mini) | 14 styles
-- [13](previews/README.md#13) | 15 styles
-- [13-pro](previews/README.md#13-pro) | 15 styles
-- [13-pro-max](previews/README.md#13-pro-max) | 15 styles
-- [14](previews/README.md#14) | 15 styles
-- [14-plus](previews/README.md#14-plus) | 15 styles
-- [14-pro](previews/README.md#14-pro) | 15 styles
-- [14-pro-max](previews/README.md#14-pro-max) | 15 styles
-- [15](previews/README.md#15) | 15 styles
-- [15-plus](previews/README.md#15-plus) | 15 styles
-- [15-pro](previews/README.md#15-pro) | 15 styles
-- [15-pro-max](previews/README.md#15-pro-max) | 15 styles
-- [16](previews/README.md#16) | 15 styles
-- [16-plus](previews/README.md#16-plus) | 15 styles
-- [16e](previews/README.md#16e) | 17 styles
-- [16-pro](previews/README.md#16-pro) | 15 styles
-- [16-pro-max](previews/README.md#16-pro-max) | 15 styles
-- [17](previews/README.md#17) | 15 styles
-- [17e](previews/README.md#17e) | 17 styles
-- [air](previews/README.md#air) | 6 styles
-- [17-pro](previews/README.md#17-pro) | 6 styles
-- [17-pro-max](previews/README.md#17-pro-max) | 6 styles
-- [18-pro](previews/README.md#18-pro) | 6 styles
-- [18-pro-max](previews/README.md#18-pro-max) | 6 styles
+- [13](previews/README.md#13) | 17 styles
+- [13-pro](previews/README.md#13-pro) | 17 styles
+- [13-pro-max](previews/README.md#13-pro-max) | 17 styles
+- [14](previews/README.md#14) | 17 styles
+- [14-plus](previews/README.md#14-plus) | 17 styles
+- [14-pro](previews/README.md#14-pro) | 17 styles
+- [14-pro-max](previews/README.md#14-pro-max) | 17 styles
+- [15](previews/README.md#15) | 17 styles
+- [15-plus](previews/README.md#15-plus) | 17 styles
+- [15-pro](previews/README.md#15-pro) | 17 styles
+- [15-pro-max](previews/README.md#15-pro-max) | 17 styles
+- [16](previews/README.md#16) | 17 styles
+- [16-plus](previews/README.md#16-plus) | 17 styles
+- [16e](previews/README.md#16e) | 19 styles
+- [16-pro](previews/README.md#16-pro) | 17 styles
+- [16-pro-max](previews/README.md#16-pro-max) | 17 styles
+- [17](previews/README.md#17) | 17 styles
+- [17e](previews/README.md#17e) | 19 styles
+- [air](previews/README.md#air) | 8 styles
+- [17-pro](previews/README.md#17-pro) | 8 styles
+- [17-pro-max](previews/README.md#17-pro-max) | 8 styles
+- [18-pro](previews/README.md#18-pro) | 8 styles
+- [18-pro-max](previews/README.md#18-pro-max) | 8 styles
 
 requirements
 - `pip install -r requirements.txt` | blender's python module, numpy, pymupdf | libegl for headless previews

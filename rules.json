@@ -69,6 +69,13 @@
       "default": null,
       "values": "null or mm of each edge kept round the bottom-right corner"
     },
+    "FLIP": {
+      "default": false,
+      "values": [
+        false,
+        true
+      ]
+    },
     "RIBS": {
       "default": null,
       "values": "null (solid back) or mm pocketed out of the back between ribs"
@@ -170,6 +177,20 @@
         "MAGSAFE": null
       },
       "why": "ribs pocket the full back, magnets need it solid"
+    },
+    {
+      "id": "flip-walls",
+      "text": "The hinge knuckles stand on the left wall, so the flip cover needs it.",
+      "if": {
+        "FLIP": true
+      },
+      "require": {
+        "WALLS": [
+          "full",
+          "sides"
+        ]
+      },
+      "why": "the knuckles stand on the left wall"
     }
   ],
   "phones": [
@@ -251,6 +272,22 @@
       "phones": [],
       "why": "camera reaches past the universal window",
       "test": "camera cluster bottom >= -UNI_L"
+    },
+    {
+      "id": "flip-knuckles",
+      "text": "The flip cover's top knuckle starts 1 mm past the corner arc and must clear the left buttons.",
+      "if": {
+        "FLIP": true
+      },
+      "phones": [
+        "12-mini",
+        "12",
+        "12-pro",
+        "13-mini",
+        "se-2-3"
+      ],
+      "why": "knuckle over a left button",
+      "test": "no left button window within the knuckles' y ranges"
     }
   ],
   "limits": [
@@ -366,16 +403,30 @@
       "cig": "sheet has no corner profile",
       "corner": "sheet has no corner profile",
       "ribs": "sheet has no corner profile",
-      "ribcorner": "sheet has no corner profile"
+      "ribcorner": "sheet has no corner profile",
+      "flip": "sheet has no corner profile",
+      "cover": "sheet has no corner profile"
+    },
+    "se-2-3": {
+      "flip": "knuckle over a left button",
+      "cover": "knuckle over a left button"
     },
     "12-mini": {
       "spine": "right rail falls off the case",
       "slider": "right rail falls off the case",
-      "cig": "cigarette clip runs off the bottom"
+      "cig": "cigarette clip runs off the bottom",
+      "flip": "knuckle over a left button",
+      "cover": "knuckle over a left button"
+    },
+    "12": {
+      "flip": "knuckle over a left button",
+      "cover": "knuckle over a left button"
     },
     "12-pro": {
       "spine": "right rail falls off the case",
-      "slider": "right rail falls off the case"
+      "slider": "right rail falls off the case",
+      "flip": "knuckle over a left button",
+      "cover": "knuckle over a left button"
     },
     "12-pro-max": {
       "spine": "right rail falls off the case",
@@ -384,7 +435,9 @@
     "13-mini": {
       "spine": "right rail falls off the case",
       "slider": "right rail falls off the case",
-      "cig": "cigarette clip runs off the bottom"
+      "cig": "cigarette clip runs off the bottom",
+      "flip": "knuckle over a left button",
+      "cover": "knuckle over a left button"
     },
     "13": {
       "spine": "right rail falls off the case",

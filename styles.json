@@ -83,5 +83,15 @@
     "knobs": {"COUPON": 45.0, "RIBS": 0.8},
     "output": "part",
     "about": "the corner coupon with a ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs"
+  },
+  "flip": {
+    "knobs": {"FLIP": true, "BUMPER": 1.5, "CAMERA": "auto"},
+    "output": "part",
+    "about": "full case carrying a front cover on a 3DS-style hinge along the left edge: two end knuckles, stop shelves for the cover open flat at 180, 1.5 mm corner bumpers"
+  },
+  "cover": {
+    "knobs": {"FLIP": true, "BUMPER": 1.5, "CAMERA": "auto"},
+    "output": "cover",
+    "about": "2 mm front cover for flip, its barrel runs between the case's knuckles on a 1.75 filament pin"
   }
 }
