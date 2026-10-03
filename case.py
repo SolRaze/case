@@ -25,6 +25,9 @@ Knobs, defaults in rules.json; a style in styles.json is a named knob set.
   LEATHER    None | mm of skin glued over the outside; the print is the core under it,
              the camera ring and a band at the rim top stand flush with the skin;
              on a banded back the skin bridges the openings
+  PORT       "split" USB-C and each speaker group apart | "merged" one chamfered opening
+             from speaker to speaker, room for a cable boot
+  VENT       inner channels run out through the bottom wall, RIBS with RIB_SIDE "in"
   FLIP       front cover, `cover`, on a 3DS-style hinge along the left edge: the
              case carries the two end knuckles, the cover the barrel between
              them, the axis on the rim-top plane where the two meet. Opens 180
@@ -98,10 +101,15 @@ PLATEAU_R = 7.0        # plateau corner radius. ponytail: no sheet prints it, re
                        # and 17 Pro renders; a sheet that dimensions it replaces this
 
 KEY_GAP = 0.2          # button top to the relieved wall face
-KEY_NUB = 0.15         # nub on a key, reaches KEY_GAP - KEY_NUB from the button top
-KEY_SLOT = 0.6         # cut round a key tab
+KEY_NUB = KEY_GAP      # nub on a key, touching the button top
+KEY_NUB_L = 6.0        # nub along the button, less on a short button
+KEY_SLOT = 0.4         # cut round a key tab
 KEY_HINGE = 6.0        # key tab length past the window, less where the next button is close;
-                       # 0.35 press at the nub strains the 0.9 tab about 0.4 %
+                       # the relief runs under it, so the hinge is the tab's own thickness
+KEY_RIB = 0.8          # wall left between a key's cuts and the next button's
+KEY_RIDGE = 0.4        # ridge standing off the key's outside face, found by feel
+KEY_RIDGE_W = 0.8
+USB_BOOT = (0.25, 0.2)  # PORT "merged": cable boot room past the USB-C keepout, each side in x, z
 CORNER_L = 24.0        # WALLS "sides"/"corners": wall kept this far along each edge from a corner
 WALL_END_R = 5.0       # where it rounds into the back, so it reaches CORNER_L + this at the back
 WALL_END_TOP = 2.0     # round over the rim top at each wall end
@@ -339,6 +347,8 @@ def build(name="17e", style="case", **knobs):
     assert not RIBS or (BACK_BAND is None and not MAGSAFE), "ribs pocket the full back, magnets need it solid"
     assert not RIBS or BACK - RIBS >= MIN_GAP, "back between the ribs under the glass gap"
     assert RIB_SIDE in ("out", "in")
+    assert PORT in ("split", "merged")
+    assert not VENT or (RIBS and RIB_SIDE == "in"), "vents run out of the inner channels"
     assert not (SLIDER and MAGSAFE), "slider rails reach y -52, a charger's top edge is at -45"
     assert not (SLIDER and p["plateau"] == "full"), "the slider can't cover a full-width plateau"
     assert not CIG or CIG_Y - CIG_LEN / 2 > -L, "cigarette clip runs off the bottom"
@@ -415,13 +425,22 @@ def build(name="17e", style="case", **knobs):
 
     # USB-C connector keepout, grown by CLEAR.
     ux, uz, kw, kh = p["usb"]
-    a = WALL + CLEAR + 2
-    part -= loft([[(ux + u, -L + t, uz + v) for u, v in slot(kw + 2 * CLEAR, kh + 2 * CLEAR)] for t in (-a, a)])
-
-    # Speaker / mic ports: one opening per group.
     sd, sz, groups = p["speakers"]
-    for x0, x1 in groups:
-        part -= edge_port(x1 - x0 + 2 * PORT_OFFSET, sd + 2 * PORT_OFFSET, (x0 + x1) / 2, sz, top=False)
+    if PORT == "merged":
+        # One opening along the bottom from speaker to speaker, chamfered outside, the
+        # USB-C part grown by USB_BOOT for a cable boot.
+        uw, uh = kw + 2 * (CLEAR + USB_BOOT[0]), kh + 2 * (CLEAR + USB_BOOT[1])
+        x0 = min([g[0] for g in groups] + [ux - uw / 2 + PORT_OFFSET]) - PORT_OFFSET
+        x1 = max([g[1] for g in groups] + [ux + uw / 2 - PORT_OFFSET]) + PORT_OFFSET
+        part -= edge_port(x1 - x0, sd + 2 * PORT_OFFSET, (x0 + x1) / 2, sz, top=False)
+        part -= edge_port(uw, uh, ux, uz, top=False)
+    else:
+        a = WALL + CLEAR + 2
+        part -= loft([[(ux + u, -L + t, uz + v) for u, v in slot(kw + 2 * CLEAR, kh + 2 * CLEAR)] for t in (-a, a)])
+
+        # Speaker / mic ports: one opening per group.
+        for x0, x1 in groups:
+            part -= edge_port(x1 - x0 + 2 * PORT_OFFSET, sd + 2 * PORT_OFFSET, (x0 + x1) / 2, sz, top=False)
 
     # Receiver: a dip in the top rim, flat over the slot and easing back up to the rim top.
     rw, rz = p["receiver"]
@@ -448,27 +467,46 @@ def build(name="17e", style="case", **knobs):
         x0, x1 = (W - thru, W + thru) if side == "right" else (thru, -thru)
         length = top - bot + 2 * BUTTON_MARGIN
         part -= loft([[(x, (top + bot) / 2 + u, zc + v) for u, v in slot(length, 2 * half)] for x in (x0, x1)])
+    def nearest(b, u):
+        """(gap, neighbour) to the next button on b's side, up (u 1) or down (u -1)."""
+        cy, bl = b["center_y"], b["length"]
+        near = [(u * (o["center_y"] - cy) - (o["length"] + bl) / 2, o) for o in p["buttons"]
+                if o["side"] == b["side"] and o is not b and u * (o["center_y"] - cy) > 0]
+        return min(near, key=lambda g: g[0]) if near else (99, None)
+
+    # A key hinges toward the larger gap to the next button on its side.
+    hinge_u = {b["name"]: 1 if nearest(b, 1)[0] >= nearest(b, -1)[0] else -1
+               for b in p["buttons"] if b["name"] in KEYS}
     for b in p["buttons"]:
         if b["name"] not in KEYS + CLOSED:
             continue
         side, cy, bl = b["side"], b["center_y"], b["length"]
         relief = b["protrusion"] + KEY_GAP
-        part -= side_box(side, 0, relief, cy + bl / 2 + 0.5, cy - bl / 2 - 0.5, zc - bw / 2 - 0.3, zc + bw / 2 + 0.3)
         if b["name"] in CLOSED:
+            part -= side_box(side, 0, relief, cy + bl / 2 + 0.5, cy - bl / 2 - 0.5, zc - bw / 2 - 0.3, zc + bw / 2 + 0.3)
             continue
-        # Hinged toward the larger gap to the next button on this side, taking at most
-        # half of it so the neighbour's tab keeps the other half.
-        ends = [(o["center_y"] - o["length"] / 2, o["center_y"] + o["length"] / 2)
-                for o in p["buttons"] if o["side"] == side and o is not b]
-        gaps = [min([lo - cy - bl / 2 for lo, _ in ends if lo > cy] + [99]),
-                min([cy - bl / 2 - hi for _, hi in ends if hi < cy] + [99])]
-        u = 1 if gaps[0] >= gaps[1] else -1
-        hinge = min(KEY_HINGE, max(gaps) / 2 - BUTTON_MARGIN - KEY_SLOT)
+        # The hinge stops KEY_RIB short of the neighbour's cuts: its free-end slot or window,
+        # or half the gap when the neighbour's hinge runs into it too.
+        u = hinge_u[b["name"]]
+        gap, o = nearest(b, u)
+        if o is None:
+            room = gap
+        elif o["name"] in hinge_u and hinge_u[o["name"]] == -u:
+            room = (gap - KEY_RIB) / 2
+        elif o["name"] in hinge_u:
+            room = gap - BUTTON_MARGIN - KEY_SLOT - KEY_RIB
+        else:
+            room = gap - BUTTON_MARGIN - KEY_RIB
+        hinge = min(KEY_HINGE, room - BUTTON_MARGIN)
         free, root = cy - u * (bl / 2 + BUTTON_MARGIN), cy + u * (bl / 2 + BUTTON_MARGIN + hinge)
+        part -= side_box(side, 0, relief, free, root, zc - bw / 2 - 0.3, zc + bw / 2 + 0.3)
         for z in (zc - half, zc + half):
             part -= side_box(side, -thru, thru, free - u * KEY_SLOT, root, z - KEY_SLOT / 2, z + KEY_SLOT / 2)
         part -= side_box(side, -thru, thru, free - u * KEY_SLOT, free, zc - half, zc + half)
-        part += side_box(side, relief - KEY_NUB, relief + 0.01, cy + 1.5, cy - 1.5, zc - 1.0, zc + 1.0)
+        nub = min(KEY_NUB_L, bl - 1.0) / 2
+        part += side_box(side, relief - KEY_NUB, relief + 0.01, cy + nub, cy - nub, zc - 1.0, zc + 1.0)
+        part += side_box(side, OUT - 0.01, OUT + KEY_RIDGE, cy + nub, cy - nub,
+                         zc - KEY_RIDGE_W / 2, zc + KEY_RIDGE_W / 2)
 
     # Wall styles: each opening's ends round into the back and over the rim top.
     def wall_cut(length):
@@ -644,6 +682,18 @@ def build(name="17e", style="case", **knobs):
             c0 = RIB_W + i * (W - RIB_W) / n
             chan -= span(c0 - RIB_W, c0, 10, -L - 10, z0 - 1, Z_BACK + 1)
         part -= chan
+        if VENT:
+            # Channels clear of the corner bumps run out through the bottom wall; one under a
+            # merged port opens up into it.
+            for i in range(n):
+                a = max(RIB_W + i * (W - RIB_W) / n, BUMP_R + BUMP_FALL)
+                b = min(RIB_W + (i + 1) * (W - RIB_W) / n - RIB_W, W - BUMP_R - BUMP_FALL)
+                if b - a < 3:
+                    continue
+                top = Z_BACK
+                if PORT == "merged" and a < ux + uw / 2 and b > ux - uw / 2:
+                    top = uz - uh / 2 + 0.05
+                part -= span(a, b, -L + 1, -L - OUT - 2, z0, top)
     elif RIBS:
         keep = prism(offset(ring, -1), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS) - prism(offset(ring, RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)
         keep += prism(grow(opening, foot + RIB_W), Z_CASE_BACK - 1, Z_CASE_BACK + RIBS)

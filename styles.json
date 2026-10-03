@@ -1,8 +1,8 @@
 {
   "base": {
-    "knobs": {"RIBS": 1.0, "RIB_SIDE": "in", "BUMPER": 1.0, "KEYS": ["action", "side_power", "volume_up", "volume_down"]},
+    "knobs": {"RIBS": 1.0, "RIB_SIDE": "in", "VENT": true, "BUMPER": 1.5, "PORT": "merged", "KEYS": ["action", "side_power", "volume_up", "volume_down"]},
     "output": "part",
-    "about": "the template every phone gets: flat outside, 1.0 mm back skin under lengthwise channels on the phone side that run out into the camera window; every button a flexure key; 1.0 mm corner bumpers"
+    "about": "the template every phone gets: flat outside, 1.0 mm back skin under lengthwise channels on the phone side that run out into the camera window and through the bottom wall; every button a flexure key with a ridge to find it by; one chamfered bottom opening from speaker to speaker with room for a cable boot; 1.5 mm corner bumpers"
   },
   "case": {
     "knobs": {},

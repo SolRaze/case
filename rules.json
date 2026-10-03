@@ -93,6 +93,20 @@
     "LEATHER": {
       "default": null,
       "values": "null or mm of leather glued over the outside"
+    },
+    "PORT": {
+      "default": "split",
+      "values": [
+        "split",
+        "merged"
+      ]
+    },
+    "VENT": {
+      "default": false,
+      "values": [
+        false,
+        true
+      ]
     }
   },
   "combinations": [
@@ -210,6 +224,18 @@
         "LEATHER": null
       },
       "why": "only a banded back leaves the camera open"
+    },
+    {
+      "id": "vent-channels",
+      "text": "Vents run out of the inner channels, so they need ribs on the phone side.",
+      "if": {
+        "VENT": true
+      },
+      "require": {
+        "RIBS": "set",
+        "RIB_SIDE": "in"
+      },
+      "why": "vents run out of the inner channels"
     }
   ],
   "phones": [
