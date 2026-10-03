@@ -107,8 +107,9 @@ KEY_SLOT = 0.4         # cut round a key tab
 KEY_HINGE = 6.0        # key tab length past the window, less where the next button is close;
                        # the relief runs under it, so the hinge is the tab's own thickness
 KEY_RIB = 0.8          # wall left between a key's cuts and the next button's
-KEY_RIDGE = 0.4        # ridge standing off the key's outside face, found by feel
-KEY_RIDGE_W = 0.8
+KEY_RIDGE = 0.4        # obround ridge standing off the key's outside face, found by feel,
+KEY_RIDGE_W = 0.8      # this wide on top, its sides at 45 deg like the port chamfers
+KEY_CHAMFER = 0.3      # 45 deg chamfer on the outside edges of the cut round a key
 USB_BOOT = (0.25, 0.2)  # PORT "merged": cable boot room past the USB-C keepout, each side in x, z
 CORNER_L = 24.0        # WALLS "sides"/"corners": wall kept this far along each edge from a corner
 WALL_END_R = 5.0       # where it rounds into the back, so it reaches CORNER_L + this at the back
@@ -423,6 +424,16 @@ def build(name="17e", style="case", **knobs):
             return span(W + d0, W + d1, y0, y1, z0, z1)
         return span(-d0, -d1, y0, y1, z0, z1)
 
+    def side_loft(side, cy, cz, rings):
+        """Loft through a side wall: rings of (d out from the phone outline, (y, z) offsets)."""
+        return loft([[(W + d if side == "right" else -d, cy + u, cz + v) for u, v in r] for d, r in rings])
+
+    def side_pill(side, cy, cz, w, h, d0, d1):
+        """Obround pill along y from d0 to d1, its sides at 45 deg, h across at d1."""
+        grow_ = abs(d1 - d0)
+        return side_loft(side, cy, cz, [(d0 - 0.01 * (d1 - d0) / grow_, slot(w + 2 * grow_, h + 2 * grow_)),
+                                        (d0, slot(w + 2 * grow_, h + 2 * grow_)), (d1, slot(w, h))])
+
     # USB-C connector keepout, grown by CLEAR.
     ux, uz, kw, kh = p["usb"]
     sd, sz, groups = p["speakers"]
@@ -500,13 +511,23 @@ def build(name="17e", style="case", **knobs):
         hinge = min(KEY_HINGE, room - BUTTON_MARGIN)
         free, root = cy - u * (bl / 2 + BUTTON_MARGIN), cy + u * (bl / 2 + BUTTON_MARGIN + hinge)
         part -= side_box(side, 0, relief, free, root, zc - bw / 2 - 0.3, zc + bw / 2 + 0.3)
-        for z in (zc - half, zc + half):
-            part -= side_box(side, -thru, thru, free - u * KEY_SLOT, root, z - KEY_SLOT / 2, z + KEY_SLOT / 2)
-        part -= side_box(side, -thru, thru, free - u * KEY_SLOT, free, zc - half, zc + half)
+        # The cut round the tab is an obround rounded at the free end, chamfered outside
+        # like the ports, and stopped square at the root.
+        th, c = half - KEY_SLOT / 2, KEY_CHAMFER
+        far = root + u * (th + KEY_SLOT + c + 1)
+        yc, lt = (free + far) / 2, abs(far - free)
+
+        def obround(grow_):
+            return slot(lt + 2 * grow_, 2 * th + 2 * grow_)
+        outer = side_loft(side, yc, zc, [(-thru, obround(KEY_SLOT)), (OUT - c, obround(KEY_SLOT)),
+                                         (OUT + 0.01, obround(KEY_SLOT + c + 0.01)), (thru, obround(KEY_SLOT + c + 0.01))])
+        tab = side_loft(side, yc, zc, [(-thru - 1, obround(0)), (OUT - c, obround(0)),
+                                       (OUT + 0.01, obround(-c - 0.01)), (thru + 1, obround(-c - 0.01))])
+        part -= (outer - tab) & side_box(side, -thru, thru, free - u * (KEY_SLOT + c + 1), root,
+                                         zc - half - 2, zc + half + 2)
         nub = min(KEY_NUB_L, bl - 1.0) / 2
-        part += side_box(side, relief - KEY_NUB, relief + 0.01, cy + nub, cy - nub, zc - 1.0, zc + 1.0)
-        part += side_box(side, OUT - 0.01, OUT + KEY_RIDGE, cy + nub, cy - nub,
-                         zc - KEY_RIDGE_W / 2, zc + KEY_RIDGE_W / 2)
+        part += side_pill(side, cy, zc, 2 * nub - 2 * KEY_NUB, 2.0 - 2 * KEY_NUB, relief + 0.01, relief - KEY_NUB)
+        part += side_pill(side, cy, zc, 2 * nub, KEY_RIDGE_W, OUT - 0.01, OUT + KEY_RIDGE)
 
     # Wall styles: each opening's ends round into the back and over the rim top.
     def wall_cut(length):
