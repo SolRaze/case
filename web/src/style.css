@@ -1,43 +1,32 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; background: #000; font-family: var(--font); color: var(--white); }
+html, body { height: 100%; overflow: hidden; background: #000; font-family: var(--font); color: var(--ink); }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 
-/* backgrounds: one layer per view, crossfaded */
-#bg, #bg::before, #bg::after { position: fixed; inset: 0; transition: opacity .5s; }
-#bg { background: radial-gradient(120% 90% at 50% 40%, var(--boot2), var(--boot1) 45%, var(--boot0)); }
-#bg::before {
-  content: ''; opacity: 0;
-  background: linear-gradient(160deg, var(--field0), var(--field1) 30%, var(--field2) 70%, var(--field3));
-}
+/* the browser's lit grey, light top left to dark bottom right; the detail view dims it */
+#bg, #bg::after { position: fixed; inset: 0; transition: opacity .5s; }
+#bg { background: linear-gradient(115deg, var(--field0), var(--field1) 40%, var(--field2) 70%, var(--field3)); }
 #bg::after {
   content: ''; opacity: 0;
   background: radial-gradient(100% 80% at 30% 30%, var(--detail0), var(--detail1));
 }
-[data-view=grid] #bg::before { opacity: 1; }
-[data-view=detail] #bg::before { opacity: 1; }
 [data-view=detail] #bg::after { opacity: .85; }
-/* drifting haze on the boot screen */
-[data-view=boot] #bg { animation: haze 14s ease-in-out infinite alternate; background-size: 160% 160%; }
-@keyframes haze { from { background-position: 30% 40%; } to { background-position: 70% 60%; } }
 
 #view { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
 /* the boot card renders at theme.lowres and is scaled up hard-edged */
 [data-view=boot] #view { image-rendering: pixelated; }
 
-/* the console's text: bold white with a black border */
+/* the console's text: one light tone, bold, with a black border */
 .ink {
   font-weight: 700; letter-spacing: .02em;
   -webkit-text-stroke: 4px #000; paint-order: stroke fill;
-  text-shadow: 0 2px 3px #0008;
 }
-.yellow { color: var(--yellow); }
 .small { font-size: .8em; }
 
 header {
   position: fixed; top: calc(14px + env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left));
   pointer-events: none; font-size: clamp(18px, 4.6vw, 26px); line-height: 1.25;
 }
-.brand { display: flex; align-items: center; gap: 8px; font-size: .8em; margin-bottom: 6px; }
+.brand { display: flex; align-items: center; gap: 8px; font-size: clamp(14px, 3.7vw, 21px); margin-bottom: 6px; }
 .brand img { width: 1.5em; height: 1.5em; }
 #maker {
   position: fixed; top: calc(14px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
@@ -50,19 +39,19 @@ header {
 }
 #d-data { font-size: .75em; margin-bottom: 14px; }
 #commands { list-style: none; display: flex; flex-direction: column; gap: 4px; }
-#commands button { min-height: 44px; font-size: 1.05em; color: var(--charcoal); -webkit-text-stroke-color: #000; }
-#commands button.on { color: var(--cyan); text-shadow: 0 0 10px var(--cyan), 0 0 22px var(--cyan); }
+#commands button { min-height: 44px; font-size: 1.05em; }
+#commands button.on { text-shadow: 0 0 10px var(--glow), 0 0 22px var(--glow); }
 @media (min-aspect-ratio: 1/1) {
   #detail { left: 50%; bottom: auto; top: 30%; }
 }
 
 footer {
-  position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: flex-end; gap: 18px;
+  position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 28px;
   padding: 10px max(20px, env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) 20px;
   font-size: clamp(14px, 3.8vw, 18px);
 }
 footer button { display: flex; align-items: center; gap: 6px; min-height: 44px; }
-footer svg { width: 1.6em; height: 1.6em; }
+footer svg { width: 1.3em; height: 1.3em; }
 
 /* what shows where */
 #name, #sub, #detail { transition: opacity .35s; }
@@ -74,5 +63,3 @@ footer svg { width: 1.6em; height: 1.6em; }
 
 #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .28s; }
 #fade.on { opacity: 1; }
-
-@media (prefers-reduced-motion: reduce) { [data-view=boot] #bg { animation: none; } }

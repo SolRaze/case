@@ -1,16 +1,12 @@
 {
   "name": "memcard",
   "colors": {
-    "boot": ["#060606", "#111111", "#1e1e1e"],
-    "field": ["#8c8c8c", "#5c5c5c", "#242424", "#0d0d0d"],
+    "field": ["#c4c4c4", "#8c8c8c", "#5a5a5a", "#363636"],
     "detail": ["#262626", "#0e0e0e"],
-    "white": "#f2f2f2",
-    "yellow": "#d6d6d6",
-    "cyan": "#ffffff",
-    "charcoal": "#3b3b3b",
-    "glow": "#f4f4f4"
+    "ink": "#e4e4e4",
+    "glow": "#ffffff"
   },
-  "font": "'FOT-Rodin Pro', 'Rodin Pro', 'Helvetica Neue', Arimo, Arial, sans-serif",
+  "font": "Arial, Arimo, sans-serif",
   "buttons": { "cross": "#707070", "circle": "#7f7f7f", "triangle": "#979797" },
   "finishes": [
     { "body": "#3a3a3a", "frame": "#8c8c8c", "plateau": "#484848" },
@@ -21,7 +17,8 @@
     { "body": "#cfcfcf", "frame": "#c2c2c2", "plateau": "#dddddd" }
   ],
   "card": "17e",
-  "cardPose": [-0.95, 0, 0.45],
+  "cardFinish": { "body": "#121212", "frame": "#2c2c2c", "plateau": "#1a1a1a" },
+  "cardPose": [-0.95, 0, 0],
   "lowres": 0.35,
   "spin": 0.9,
   "strings": {

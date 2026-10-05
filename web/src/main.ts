@@ -1,14 +1,14 @@
 import * as THREE from 'three';
+import '@fontsource/arimo/latin-700.css';
 import theme from '../themes/memcard.json';
 import specs from '../phones.json';
-import { buildPhone, label, type PhoneSpec } from './phone';
+import { buildPhone, label, type Finish, type PhoneSpec } from './phone';
 
 const S = theme.strings;
 const C = theme.colors;
 const css = document.documentElement.style;
 css.setProperty('--font', theme.font);
 for (const [k, v] of Object.entries(C)) if (typeof v === 'string') css.setProperty(`--${k}`, v);
-C.boot.forEach((v, i) => css.setProperty(`--boot${i}`, v));
 C.field.forEach((v, i) => css.setProperty(`--field${i}`, v));
 C.detail.forEach((v, i) => css.setProperty(`--detail${i}`, v));
 
@@ -34,21 +34,30 @@ rim.position.set(3, -1, -2);
 camera.add(key, rim);
 scene.add(camera);
 
-/** the light behind the selected phone: a soft additive disc */
+/** the glare on the selected icon: a hot white dot whose light bleeds past the object's edges */
 function glowSprite() {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
   const g = c.getContext('2d')!;
   const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
   r.addColorStop(0, C.glow);
-  r.addColorStop(0.35, C.glow + '99');
+  r.addColorStop(0.1, C.glow);
+  r.addColorStop(0.2, C.glow + 'bb');
+  r.addColorStop(0.4, C.glow + '44');
+  r.addColorStop(0.7, C.glow + '12');
   r.addColorStop(1, C.glow + '00');
   g.fillStyle = r;
   g.fillRect(0, 0, 128, 128);
   const s = new THREE.Sprite(
-    new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }),
+    new THREE.SpriteMaterial({
+      map: new THREE.CanvasTexture(c),
+      blending: THREE.AdditiveBlending,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+    }),
   );
-  s.renderOrder = -1;
+  s.renderOrder = 1;
   return s;
 }
 const glow = glowSprite();
@@ -64,17 +73,19 @@ type Item = {
   spin: number;
   tilt: number;
 };
-const item = (spec: PhoneSpec, i: number, seg?: number): Item => {
-  const { object, materials } = buildPhone(spec, theme.finishes[i % theme.finishes.length], seg);
+const item = (spec: PhoneSpec, finish: Finish, seg?: number): Item => {
+  const { object, materials } = buildPhone(spec, finish, seg);
   const holder = new THREE.Group();
   object.scale.setScalar(MM);
   holder.add(object);
   scene.add(holder);
   return { spec, holder, materials, pos: new THREE.Vector3(), scale: 1, opacity: 0, spin: REST.y, tilt: REST.x };
 };
-const items = phones.map((p, i) => item(p, i));
-// the boot card: low detail, held still, lying back up like the console's memory card
-const card = item(phones.find((p) => p.id === theme.card) ?? phones[0], 1, 6);
+const items = phones.map((p, i) => item(p, theme.finishes[i % theme.finishes.length]));
+// the boot card: a low detail black phone, held still, lying back up like the console's memory card
+const card = item(phones.find((p) => p.id === theme.card) ?? phones[0], theme.cardFinish, 6);
+// the glare's own pose, so it glides between icons rather than jumping
+const glare = { pos: new THREE.Vector3(), scale: 0 };
 
 type View = 'boot' | 'grid' | 'detail';
 let view: View = 'boot';
@@ -175,31 +186,27 @@ renderer.setAnimationLoop((t) => {
   card.holder.rotation.set(...(theme.cardPose as [number, number, number]));
 
   const lit = boot ? card : items[sel];
-  glow.position.copy(lit.pos).add(new THREE.Vector3(0, 0, -0.35));
-  glow.scale.setScalar(1.9 * lit.scale);
-  glow.material.opacity = (boot ? 0.45 : 0.55 + 0.2 * Math.sin(now * 2.2)) * lit.opacity;
+  glare.pos.x = damp(glare.pos.x, lit.pos.x, 9, dt);
+  glare.pos.y = damp(glare.pos.y, lit.pos.y, 9, dt);
+  glare.pos.z = damp(glare.pos.z, lit.pos.z, 9, dt);
+  glare.scale = damp(glare.scale, lit.scale, 9, dt);
+  glow.position.copy(glare.pos);
+  glow.scale.setScalar(1.3 * glare.scale);
+  glow.material.opacity = (0.85 + 0.15 * Math.sin(now * 2.4)) * lit.opacity;
 
   camera.position.set(0, damp(camera.position.y, camY, 8, dt), dist);
   renderer.render(scene, camera);
 });
 
 // text and buttons
-/** a low-res button: the mark in its official colour's grey, inside a black disc, on a 13 px grid */
-function pixels(on: (x: number, y: number) => boolean, color: string) {
-  let r = '';
-  for (let y = 0; y < 13; y++)
-    for (let x = 0; x < 13; x++) {
-      const dx = x - 6, dy = y - 6;
-      if (dx * dx + dy * dy > 42) continue;
-      r += `<rect x="${x}" y="${y}" width="1" height="1" fill="${on(dx, dy) ? color : '#000'}"/>`;
-    }
-  return `<svg viewBox="0 0 13 13" shape-rendering="crispEdges">${r}</svg>`;
-}
-const ring = (dx: number, dy: number) => Math.abs(Math.hypot(dx, dy) - 3.2) < 0.8;
+/** a button: the mark drawn in straight strokes, in its official colour's grey, inside a black disc */
+const disc = (mark: string, color: string) =>
+  `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#000"/>` +
+  `<g fill="none" stroke="${color}" stroke-width="2.4">${mark}</g></svg>`;
 const glyph = {
-  cross: pixels((dx, dy) => Math.abs(dx) <= 3 && (dx === dy || dx === -dy), theme.buttons.cross),
-  circle: pixels(ring, theme.buttons.circle),
-  triangle: pixels((dx, dy) => dy >= -3 && dy <= 2 && (dy === 2 ? Math.abs(dx) <= 3 : Math.abs(dx) === Math.round((dy + 3) * 0.6)), theme.buttons.triangle),
+  cross: disc('<path d="M7.5 7.5 16.5 16.5M16.5 7.5 7.5 16.5"/>', theme.buttons.cross),
+  circle: disc('<circle cx="12" cy="12" r="5"/>', theme.buttons.circle),
+  triangle: disc('<path d="M12 6.6 17.4 16H6.6Z" stroke-linejoin="miter"/>', theme.buttons.triangle),
 };
 type Press = keyof typeof glyph;
 const bars: Record<View, [Press, string][]> = {
@@ -333,5 +340,8 @@ canvas.addEventListener('pointerup', (e) => {
 addEventListener('resize', layout);
 layout();
 items.forEach((it, i) => it.pos.copy(slot(i).setZ(-2)));
+card.pos.set(0, camY + visH * 0.04, 1);
+glare.pos.copy(card.pos);
+glare.scale = 1.4;
 camera.position.set(0, camY, dist);
 paint();
