@@ -1,44 +1,80 @@
-* { box-sizing: border-box; margin: 0; }
-html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font); }
-main { display: flex; flex-direction: column; height: 100dvh; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: #000; font-family: var(--font); color: var(--white); }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 
-#stage { position: relative; flex: 1 1 50%; min-height: 0; background: var(--stage); }
-#view { width: 100%; height: 100%; display: block; touch-action: none; object-fit: contain; }
-#loading { position: absolute; bottom: 12px; width: 100%; text-align: center; color: var(--muted); }
+/* backgrounds: one layer per view, crossfaded */
+#bg, #bg::before, #bg::after { position: fixed; inset: 0; transition: opacity .5s; }
+#bg { background: radial-gradient(120% 90% at 50% 40%, var(--boot2), var(--boot1) 45%, var(--boot0)); }
+#bg::before {
+  content: ''; opacity: 0;
+  background: linear-gradient(160deg, var(--field0), var(--field1) 30%, var(--field2) 70%, var(--field3));
+}
+#bg::after {
+  content: ''; opacity: 0;
+  background: radial-gradient(100% 80% at 30% 30%, var(--detail0), var(--detail1));
+}
+[data-view=grid] #bg::before { opacity: 1; }
+[data-view=detail] #bg::before { opacity: 1; }
+[data-view=detail] #bg::after { opacity: .85; }
+/* drifting haze on the boot screen */
+[data-view=boot] #bg { animation: haze 14s ease-in-out infinite alternate; background-size: 160% 160%; }
+@keyframes haze { from { background-position: 30% 40%; } to { background-position: 70% 60%; } }
 
-#sheet {
-  flex: 1 1 50%; min-height: 0; overflow-y: auto;
-  background: var(--sheet); border-radius: var(--radius) var(--radius) 0 0;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
-  padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right));
-  box-shadow: 0 -4px 20px #0001;
-}
-#tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-#tabs button {
-  flex: 1; min-height: 44px; border: 0; border-radius: 999px; font: inherit; font-weight: 600;
-  background: var(--tile); color: var(--muted);
-}
-#tabs button.on { background: var(--accent); color: #fff; }
-h2 { font-size: 1.1rem; }
-#about { min-height: 2.6em; margin: 4px 0 12px; color: var(--muted); font-size: .9rem; }
-#about.warn { color: var(--ink); }
+#view { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
 
-#grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
-.tile {
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px;
-  min-height: 44px; padding: 8px 4px; border: 3px solid transparent; border-radius: var(--radius);
-  background: var(--tile); color: var(--ink); font: inherit; font-size: .8rem;
-  box-shadow: 0 2px 6px #0001; transition: transform .35s var(--spring), border-color .2s;
+/* the console's text: bold white with a black border */
+.ink {
+  font-weight: 700; letter-spacing: .02em;
+  -webkit-text-stroke: 4px #000; paint-order: stroke fill;
+  text-shadow: 0 2px 3px #0008;
 }
-.tile:active { transform: scale(.92); }
-.tile.locked { border-color: var(--lock); transform: scale(1.04); }
-.tile.invalid { background: var(--invalid); color: var(--muted); }
-.tile.invalid > :not(.label) { opacity: .35; }
-.tile svg { width: 100%; height: 72px; fill: var(--phone); }
-.tile img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+.yellow { color: var(--yellow); }
+.small { font-size: .8em; }
 
-@media (min-aspect-ratio: 4/3) {
-  main { flex-direction: row; }
-  #sheet { flex: 0 0 380px; border-radius: 0; }
+header {
+  position: fixed; top: calc(14px + env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left));
+  pointer-events: none; font-size: clamp(18px, 4.6vw, 26px); line-height: 1.25;
 }
-@media (prefers-reduced-motion: reduce) { .tile { transition: none; } .tile:active, .tile.locked { transform: none; } }
+.brand { display: flex; align-items: center; gap: 8px; font-size: .8em; margin-bottom: 6px; }
+.brand img { width: 1.5em; height: 1.5em; }
+#count {
+  position: fixed; top: calc(18px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
+  font-size: clamp(13px, 3.4vw, 17px); pointer-events: none;
+}
+#card {
+  position: fixed; left: 0; right: 0; top: 66%; text-align: center; pointer-events: none;
+  font-size: clamp(20px, 5vw, 30px);
+}
+
+#detail {
+  position: fixed; left: 0; right: 0; bottom: calc(80px + env(safe-area-inset-bottom));
+  padding: 0 24px; font-size: clamp(18px, 4.6vw, 26px); line-height: 1.4;
+}
+#d-data { font-size: .75em; margin-bottom: 14px; }
+#commands { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+#commands button { min-height: 44px; font-size: 1.05em; color: var(--charcoal); -webkit-text-stroke-color: #000; }
+#commands button.on { color: var(--cyan); text-shadow: 0 0 10px var(--cyan), 0 0 22px var(--cyan); }
+@media (min-aspect-ratio: 1/1) {
+  #detail { left: 50%; bottom: auto; top: 30%; }
+}
+
+footer {
+  position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: flex-end; gap: 18px;
+  padding: 10px max(20px, env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) 20px;
+  font-size: clamp(14px, 3.8vw, 18px);
+}
+footer button { display: flex; align-items: center; gap: 6px; min-height: 44px; }
+footer svg { width: 1.6em; height: 1.6em; filter: drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000); }
+
+/* what shows where */
+header, #count, #detail, #card { transition: opacity .35s; }
+[data-view=boot] header, [data-view=boot] #count, [data-view=boot] #detail { opacity: 0; }
+[data-view=grid] #detail, [data-view=grid] #card, [data-view=detail] #card { opacity: 0; }
+[data-view=detail] #name, [data-view=detail] #sub, [data-view=detail] #count { opacity: 0; }
+#detail { pointer-events: none; }
+[data-view=detail] #detail { pointer-events: auto; }
+
+#fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .28s; }
+#fade.on { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) { [data-view=boot] #bg { animation: none; } }

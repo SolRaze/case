@@ -19,14 +19,14 @@ L += ["case", "",
       "- ref/ | drawing data per product, one json per model, index in ref/README.md",
       "- laptop/ | MS-16W1 mainboard measured off a pegboard, findings in laptop/README.md",
       "- previews/ | every build seen from the back | tools/ | drawing fetch and reading, phone body check, readme writer",
-      "- web/ | configurator: roster, style picker, three.js preview of the prebuilt builds | reads rules.json, styles.json, sizes.json at build time", "",
+      "- web/ | memory card browser: every phone with a case, modelled from its drawing | phones.py reads phone.py and rules.json at dev and build", "",
       "run",
       "- `python case.py` 17e, every style | `python case.py magsafe frame` | `--phone 16 --phone air` | `--all`",
       "- `--check` no output files | `--no-png` stl only | stl to out/, not committed",
       "- `python rules.py` phone x style table | `--write` refresh the invalid table | `--verify`",
       "- `python tools/fetch.py` drawings and guidelines into pdf/, not committed",
       "- `python tools/readme.py` rewrite the readmes",
-      "- web/ `npm install` | `npm run glb` out/ stl to meshopt glb plus previews into web/public/glb, after a build | `npm run dev`", "",
+      "- web/ `npm install` | `npm run phones` writes web/phones.json, `npm run glb` packs out/ stl into web/public/glb | `npm run dev`", "",
       "styles"]
 L += [f"- {n} | {s['about']}" for n, s in styles.items()]
 L += ["", "knobs"]

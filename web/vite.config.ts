@@ -1,6 +1,4 @@
 import { defineConfig } from 'vite';
 
-// src/data.ts imports ../rules.json, ../styles.json and ../ref/iphone/sizes.json at build time
-export default defineConfig({
-  server: { fs: { allow: ['..'] }, host: true },
-});
+// phones.json is written by phones.py before dev and build
+export default defineConfig({ server: { host: true } });

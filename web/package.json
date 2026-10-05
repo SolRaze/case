@@ -3,8 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "phones": "../.venv/bin/python phones.py",
     "glb": "node glb.mjs",
+    "predev": "npm run phones",
     "dev": "vite",
+    "prebuild": "npm run phones",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },
