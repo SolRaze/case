@@ -111,13 +111,17 @@ export function buildPhone(p: PhoneSpec, finish: Finish, seg = 24) {
     g.add(new THREE.Mesh(box, frame));
   }
 
-  // centre, then turn so the back faces the camera
+  const materials = [glass, frame, frosted, ringMetal, lensGlass, flashLens, dark];
+  return { object: framed(p, g), frame: g, materials };
+}
+
+/** wraps a group drawn in the drawing frame: centred on the phone, turned so the back faces the camera */
+export function framed(p: PhoneSpec, g: THREE.Object3D) {
   const inner = new THREE.Group();
   inner.add(g);
   g.position.set(-p.W / 2, p.L / 2, p.T / 2);
   inner.rotation.y = Math.PI;
-  const materials = [glass, frame, frosted, ringMetal, lensGlass, flashLens, dark];
-  return { object: inner, materials };
+  return inner;
 }
 
 /** "16-pro-max" -> "16 Pro Max", "se-2-3" -> "SE 2/3": the model without the product name */

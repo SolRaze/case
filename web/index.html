@@ -10,17 +10,23 @@
 <body data-view="boot">
   <div id="bg"></div>
   <canvas id="view"></canvas>
-  <header>
-    <div class="brand"><img src="/icon.svg" alt=""><span class="ink" id="brand"></span></div>
-  </header>
-  <p class="ink" id="name"></p>
-  <section id="detail">
-    <p class="ink" id="d-name"></p>
-    <p class="ink" id="d-size"></p>
-    <p class="ink" id="d-data"></p>
-    <ul id="commands"></ul>
-  </section>
-  <footer id="bar"></footer>
+  <canvas id="hi"></canvas>
+  <canvas id="ink"></canvas>
+  <div id="ui">
+    <header>
+      <img class="px" src="/icon.svg" alt="">
+      <div><p class="ink" id="brand"></p><p class="ink" id="sub"></p></div>
+    </header>
+    <div id="name"><p class="ink" id="n1"></p><p class="ink" id="n2"></p></div>
+    <section id="detail">
+      <p class="ink" id="d-maker"></p>
+      <p class="ink" id="d-name"></p>
+      <p class="ink" id="d-case"></p>
+      <p class="ink" id="d-size"></p>
+      <ul id="commands"></ul>
+    </section>
+    <footer id="bar"></footer>
+  </div>
   <div id="fade"></div>
   <script type="module" src="/src/main.ts"></script>
 </body>
