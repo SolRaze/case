@@ -20,7 +20,11 @@ const body = async (p: any) => {
 const phones = sizes.phones as Record<string, any>;
 // roster in file order: a parsed object puts integer keys ("12") first, so the order comes from the text,
 // every phone key sits at two spaces of indent
-const order = [...sizesText.matchAll(/^  "([^"]+)": \{/gm)].map((m) => m[1]).filter((id) => id in phones);
+// ponytail: roster pinned to 17e, the one phone with a full drawing transcription; drop ROSTER to list every phone
+const ROSTER = ['17e'];
+const order = [...sizesText.matchAll(/^  "([^"]+)": \{/gm)]
+  .map((m) => m[1])
+  .filter((id) => id in phones && ROSTER.includes(id));
 export const PHONES: Phone[] = await Promise.all(
   order.map(async (id) => {
     const p = phones[id];

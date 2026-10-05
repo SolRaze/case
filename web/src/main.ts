@@ -26,9 +26,9 @@ try {
 const built: Record<string, string[]> = await fetch('glb/index.json').then((r) => (r.ok ? r.json() : {}));
 const has = (p: string, s: string) => built[p]?.includes(s) ?? false;
 
-let phone = '17';
+let phone = PHONES[0].id;
 let style = 'base';
-let tab: 'phone' | 'style' = 'phone';
+let tab: 'phone' | 'style' = PHONES.length > 1 ? 'phone' : 'style';
 /** #<phone>/<style> picks both, as written by render() */
 function fromHash() {
   const [hp, hs] = location.hash.slice(1).split('/');
