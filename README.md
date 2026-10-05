@@ -9,6 +9,7 @@ layout
 - ref/ | drawing data per product, one json per model, index in ref/README.md
 - laptop/ | MS-16W1 mainboard measured off a pegboard, findings in laptop/README.md
 - previews/ | every build seen from the back | tools/ | drawing fetch and reading, phone body check, readme writer
+- web/ | configurator: roster, style picker, three.js preview of the prebuilt builds | reads rules.json, styles.json, sizes.json at build time
 
 run
 - `python case.py` 17e, every style | `python case.py magsafe frame` | `--phone 16 --phone air` | `--all`
@@ -16,6 +17,7 @@ run
 - `python rules.py` phone x style table | `--write` refresh the invalid table | `--verify`
 - `python tools/fetch.py` drawings and guidelines into pdf/, not committed
 - `python tools/readme.py` rewrite the readmes
+- web/ `npm install` | `npm run glb` out/ stl to meshopt glb plus previews into web/public/glb, after a build | `npm run dev`
 
 styles
 - base | the template every phone gets: flat outside, 1.0 mm back skin under lengthwise channels on the phone side that run out into the camera window and through the bottom wall; every button a flexure key with a ridge to find it by; one chamfered bottom opening from speaker to speaker with room for a cable boot; 1.5 mm corner bumpers

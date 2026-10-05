@@ -1,0 +1,44 @@
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font); }
+main { display: flex; flex-direction: column; height: 100dvh; }
+
+#stage { position: relative; flex: 1 1 50%; min-height: 0; background: var(--stage); }
+#view { width: 100%; height: 100%; display: block; touch-action: none; object-fit: contain; }
+#loading { position: absolute; bottom: 12px; width: 100%; text-align: center; color: var(--muted); }
+
+#sheet {
+  flex: 1 1 50%; min-height: 0; overflow-y: auto;
+  background: var(--sheet); border-radius: var(--radius) var(--radius) 0 0;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right));
+  box-shadow: 0 -4px 20px #0001;
+}
+#tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+#tabs button {
+  flex: 1; min-height: 44px; border: 0; border-radius: 999px; font: inherit; font-weight: 600;
+  background: var(--tile); color: var(--muted);
+}
+#tabs button.on { background: var(--accent); color: #fff; }
+h2 { font-size: 1.1rem; }
+#about { min-height: 2.6em; margin: 4px 0 12px; color: var(--muted); font-size: .9rem; }
+#about.warn { color: var(--ink); }
+
+#grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+.tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px;
+  min-height: 44px; padding: 8px 4px; border: 3px solid transparent; border-radius: var(--radius);
+  background: var(--tile); color: var(--ink); font: inherit; font-size: .8rem;
+  box-shadow: 0 2px 6px #0001; transition: transform .35s var(--spring), border-color .2s;
+}
+.tile:active { transform: scale(.92); }
+.tile.locked { border-color: var(--lock); transform: scale(1.04); }
+.tile.invalid { background: var(--invalid); color: var(--muted); }
+.tile.invalid > :not(.label) { opacity: .35; }
+.tile svg { width: 100%; height: 72px; fill: var(--phone); }
+.tile img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+
+@media (min-aspect-ratio: 4/3) {
+  main { flex-direction: row; }
+  #sheet { flex: 0 0 380px; border-radius: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .tile { transition: none; } .tile:active, .tile.locked { transform: none; } }

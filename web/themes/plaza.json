@@ -1,0 +1,28 @@
+{
+  "name": "plaza",
+  "colors": {
+    "bg": "#eef6fb",
+    "stage": "#ffffff",
+    "sheet": "#f7fbfd",
+    "tile": "#ffffff",
+    "ink": "#3a4a57",
+    "muted": "#8a9aa7",
+    "accent": "#4fb7e8",
+    "lock": "#7fd36b",
+    "invalid": "#e9edf0",
+    "model": "#f4f6f8",
+    "phone": "#c9d3db"
+  },
+  "font": "ui-rounded, 'SF Pro Rounded', system-ui, sans-serif",
+  "radius": "18px",
+  "spring": "cubic-bezier(.34, 1.56, .64, 1)",
+  "camera": { "fov": 30, "distance": 1.05, "turn": 3.7 },
+  "strings": {
+    "phone": "pick your phone",
+    "style": "pick a style",
+    "tabPhone": "phone",
+    "tabStyle": "style",
+    "loading": "loading…",
+    "missing": "not prebuilt yet"
+  }
+}
