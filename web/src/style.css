@@ -20,24 +20,20 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   font-weight: 700; letter-spacing: .02em;
   -webkit-text-stroke: 4px #000; paint-order: stroke fill;
 }
-.small { font-size: .8em; }
 
-header {
-  position: fixed; top: calc(14px + env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left));
-  pointer-events: none; font-size: clamp(18px, 4.6vw, 26px); line-height: 1.25;
-}
-.brand { display: flex; align-items: center; gap: 8px; font-size: clamp(14px, 3.7vw, 21px); margin-bottom: 6px; }
+/* top left the site, top right the selected phone, same size like the console's header */
+header, #name { position: fixed; top: calc(14px + env(safe-area-inset-top)); font-size: clamp(14px, 3.7vw, 21px); pointer-events: none; }
+header { left: max(16px, env(safe-area-inset-left)); }
+#name { right: max(16px, env(safe-area-inset-right)); line-height: 1.5em; }
+.brand { display: flex; align-items: center; gap: 8px; }
 .brand img { width: 1.5em; height: 1.5em; }
-#maker {
-  position: fixed; top: calc(14px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
-  font-size: clamp(14px, 3.7vw, 21px); line-height: 1.5em; pointer-events: none;
-}
 
 #detail {
   position: fixed; left: 0; right: 0; bottom: calc(80px + env(safe-area-inset-bottom));
   padding: 0 24px; font-size: clamp(18px, 4.6vw, 26px); line-height: 1.4;
 }
-#d-data { font-size: .75em; margin-bottom: 14px; }
+#d-size, #d-data { font-size: .75em; }
+#d-data { margin-bottom: 14px; }
 #commands { list-style: none; display: flex; flex-direction: column; gap: 4px; }
 #commands button { min-height: 44px; font-size: 1.05em; }
 #commands button.on { text-shadow: 0 0 10px var(--glow), 0 0 22px var(--glow); }
@@ -54,10 +50,10 @@ footer button { display: flex; align-items: center; gap: 6px; min-height: 44px; 
 footer svg { width: 1.3em; height: 1.3em; }
 
 /* what shows where */
-#name, #sub, #detail { transition: opacity .35s; }
-[data-view=boot] #name, [data-view=boot] #sub, [data-view=boot] #detail { opacity: 0; }
+#name, #detail { transition: opacity .35s; }
+[data-view=boot] #name, [data-view=boot] #detail { opacity: 0; }
 [data-view=grid] #detail { opacity: 0; }
-[data-view=detail] #name, [data-view=detail] #sub { opacity: 0; }
+[data-view=detail] #name { opacity: 0; }
 #detail { pointer-events: none; }
 [data-view=detail] #detail { pointer-events: auto; }
 

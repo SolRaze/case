@@ -3,7 +3,7 @@
   "colors": {
     "field": ["#c4c4c4", "#8c8c8c", "#5a5a5a", "#363636"],
     "detail": ["#262626", "#0e0e0e"],
-    "ink": "#e4e4e4",
+    "ink": "#cfcfcf",
     "glow": "#ffffff"
   },
   "font": "Arial, Arimo, sans-serif",
@@ -23,7 +23,6 @@
   "spin": 0.9,
   "strings": {
     "title": "CASE",
-    "maker": "Apple",
     "noData": "no data",
     "edit": "Edit",
     "delete": "Delete",

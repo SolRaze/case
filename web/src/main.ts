@@ -18,8 +18,8 @@ const phones = specs as unknown as PhoneSpec[];
 // scene: 1 unit = 100 mm
 const MM = 0.01;
 const CELL = { w: 0.95, h: 1.8 };
-const FOV = 30;
-const REST = { x: -0.12, y: 0.32 }; // grid pose: the back, turned a little to show the side buttons
+const FOV = 40;
+const REST = { x: 0.45, y: 0 }; // grid pose: upright and square, top leaning toward the camera so the tops read wider
 
 const canvas = $('view') as HTMLCanvasElement;
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -41,10 +41,10 @@ function glowSprite() {
   const g = c.getContext('2d')!;
   const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
   r.addColorStop(0, C.glow);
-  r.addColorStop(0.1, C.glow);
-  r.addColorStop(0.2, C.glow + 'bb');
-  r.addColorStop(0.4, C.glow + '44');
-  r.addColorStop(0.7, C.glow + '12');
+  r.addColorStop(0.08, C.glow);
+  r.addColorStop(0.18, C.glow + 'aa');
+  r.addColorStop(0.36, C.glow + '33');
+  r.addColorStop(0.65, C.glow + '0c');
   r.addColorStop(1, C.glow + '00');
   g.fillStyle = r;
   g.fillRect(0, 0, 128, 128);
@@ -138,25 +138,25 @@ function follow() {
 
 // targets per view
 function targets(it: Item, i: number) {
-  if (view === 'boot') return { pos: slot(i).setZ(-2), scale: 0.6, opacity: 0, selected: false };
-  if (view === 'grid') return { pos: slot(i), scale: i === sel ? 1.06 : 1, opacity: 1, selected: i === sel };
-  if (i !== sel) return { pos: slot(i).setZ(-1), scale: 1, opacity: 0, selected: false };
+  if (view === 'boot') return { pos: slot(i).setZ(-2), scale: 0.6, opacity: 0, spin: false };
+  if (view === 'grid') return { pos: slot(i), scale: i === sel ? 1.06 : 1, opacity: 1, spin: false };
+  if (i !== sel) return { pos: slot(i).setZ(-1), scale: 1, opacity: 0, spin: false };
   // detail: the selected phone comes forward, upper middle in portrait, left in landscape
   const portrait = camera.aspect < 1;
   const p = new THREE.Vector3(portrait ? 0 : -visW * 0.2, camY + (portrait ? visH * 0.12 : 0), 1.2);
-  return { pos: p, scale: 1.25, opacity: 1, selected: true };
+  return { pos: p, scale: 1.25, opacity: 1, spin: true };
 }
 
 const damp = (a: number, b: number, k: number, dt: number) => a + (b - a) * (1 - Math.exp(-k * dt));
 const unwind = (a: number, rest: number) => rest + (((a - rest) % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
 
-function pose(it: Item, t: { pos: THREE.Vector3; scale: number; opacity: number; selected: boolean }, dt: number) {
+function pose(it: Item, t: { pos: THREE.Vector3; scale: number; opacity: number; spin: boolean }, dt: number) {
   it.pos.x = damp(it.pos.x, t.pos.x, 7, dt);
   it.pos.y = damp(it.pos.y, t.pos.y, 7, dt);
   it.pos.z = damp(it.pos.z, t.pos.z, 7, dt);
   it.scale = damp(it.scale, t.scale, 7, dt);
   it.opacity = damp(it.opacity, t.opacity, 6, dt);
-  if (t.selected) {
+  if (t.spin) {
     it.spin += dt * (theme.spin + fling);
     it.tilt = damp(it.tilt, -0.05, 4, dt);
   } else {
@@ -182,7 +182,7 @@ renderer.setAnimationLoop((t) => {
   fling = damp(fling, 0, 1.5, dt);
   items.forEach((it, i) => pose(it, targets(it, i), dt));
   const boot = view === 'boot';
-  pose(card, { pos: new THREE.Vector3(0, camY + visH * 0.04, boot ? 1 : 3), scale: 1.4, opacity: boot ? 1 : 0, selected: false }, dt);
+  pose(card, { pos: new THREE.Vector3(0, camY + visH * 0.04, boot ? 1 : 3), scale: 1.4, opacity: boot ? 1 : 0, spin: false }, dt);
   card.holder.rotation.set(...(theme.cardPose as [number, number, number]));
 
   const lit = boot ? card : items[sel];
@@ -191,7 +191,7 @@ renderer.setAnimationLoop((t) => {
   glare.pos.z = damp(glare.pos.z, lit.pos.z, 9, dt);
   glare.scale = damp(glare.scale, lit.scale, 9, dt);
   glow.position.copy(glare.pos);
-  glow.scale.setScalar(1.3 * glare.scale);
+  glow.scale.setScalar(0.9 * glare.scale);
   glow.material.opacity = (0.85 + 0.15 * Math.sin(now * 2.4)) * lit.opacity;
 
   camera.position.set(0, damp(camera.position.y, camY, 8, dt), dist);
@@ -222,9 +222,8 @@ function paint() {
   const p = items[sel].spec;
   $('brand').textContent = S.title;
   $('name').textContent = label(p.id);
-  $('sub').textContent = `${p.W} × ${p.L} × ${p.T} mm`;
-  $('maker').textContent = S.maker;
   $('d-name').textContent = label(p.id);
+  $('d-size').textContent = `${p.W} × ${p.L} × ${p.T} mm`;
   $('d-data').textContent = S.noData;
   const ul = $('commands');
   ul.innerHTML = '';
