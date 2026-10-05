@@ -21,6 +21,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @keyframes haze { from { background-position: 30% 40%; } to { background-position: 70% 60%; } }
 
 #view { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
+/* the boot card renders at theme.lowres and is scaled up hard-edged */
+[data-view=boot] #view { image-rendering: pixelated; }
 
 /* the console's text: bold white with a black border */
 .ink {
@@ -37,13 +39,9 @@ header {
 }
 .brand { display: flex; align-items: center; gap: 8px; font-size: .8em; margin-bottom: 6px; }
 .brand img { width: 1.5em; height: 1.5em; }
-#count {
-  position: fixed; top: calc(18px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
-  font-size: clamp(13px, 3.4vw, 17px); pointer-events: none;
-}
-#card {
-  position: fixed; left: 0; right: 0; top: 66%; text-align: center; pointer-events: none;
-  font-size: clamp(20px, 5vw, 30px);
+#maker {
+  position: fixed; top: calc(14px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
+  font-size: clamp(14px, 3.7vw, 21px); line-height: 1.5em; pointer-events: none;
 }
 
 #detail {
@@ -64,13 +62,13 @@ footer {
   font-size: clamp(14px, 3.8vw, 18px);
 }
 footer button { display: flex; align-items: center; gap: 6px; min-height: 44px; }
-footer svg { width: 1.6em; height: 1.6em; filter: drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000); }
+footer svg { width: 1.6em; height: 1.6em; }
 
 /* what shows where */
-header, #count, #detail, #card { transition: opacity .35s; }
-[data-view=boot] header, [data-view=boot] #count, [data-view=boot] #detail { opacity: 0; }
-[data-view=grid] #detail, [data-view=grid] #card, [data-view=detail] #card { opacity: 0; }
-[data-view=detail] #name, [data-view=detail] #sub, [data-view=detail] #count { opacity: 0; }
+#name, #sub, #detail { transition: opacity .35s; }
+[data-view=boot] #name, [data-view=boot] #sub, [data-view=boot] #detail { opacity: 0; }
+[data-view=grid] #detail { opacity: 0; }
+[data-view=detail] #name, [data-view=detail] #sub { opacity: 0; }
 #detail { pointer-events: none; }
 [data-view=detail] #detail { pointer-events: auto; }
 

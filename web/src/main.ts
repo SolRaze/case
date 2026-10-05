@@ -23,14 +23,13 @@ const REST = { x: -0.12, y: 0.32 }; // grid pose: the back, turned a little to s
 
 const canvas = $('view') as HTMLCanvasElement;
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 100);
-scene.add(new THREE.HemisphereLight(0xffffff, 0x404038, 1.6));
+scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 1.6));
 const key = new THREE.DirectionalLight(0xffffff, 2.2);
 key.position.set(-2, 3, 4);
-const rim = new THREE.DirectionalLight(0xbfd8ff, 1.2);
+const rim = new THREE.DirectionalLight(0xffffff, 1.2);
 rim.position.set(3, -1, -2);
 camera.add(key, rim);
 scene.add(camera);
@@ -65,16 +64,17 @@ type Item = {
   spin: number;
   tilt: number;
 };
-const item = (spec: PhoneSpec, i: number): Item => {
-  const { object, materials } = buildPhone(spec, theme.finishes[i % theme.finishes.length]);
+const item = (spec: PhoneSpec, i: number, seg?: number): Item => {
+  const { object, materials } = buildPhone(spec, theme.finishes[i % theme.finishes.length], seg);
   const holder = new THREE.Group();
   object.scale.setScalar(MM);
   holder.add(object);
   scene.add(holder);
   return { spec, holder, materials, pos: new THREE.Vector3(), scale: 1, opacity: 0, spin: REST.y, tilt: REST.x };
 };
-const items = phones.map(item);
-const card = item(phones.find((p) => p.id === theme.card) ?? phones[0], 1);
+const items = phones.map((p, i) => item(p, i));
+// the boot card: low detail, held still, lying back up like the console's memory card
+const card = item(phones.find((p) => p.id === theme.card) ?? phones[0], 1, 6);
 
 type View = 'boot' | 'grid' | 'detail';
 let view: View = 'boot';
@@ -171,22 +171,35 @@ renderer.setAnimationLoop((t) => {
   fling = damp(fling, 0, 1.5, dt);
   items.forEach((it, i) => pose(it, targets(it, i), dt));
   const boot = view === 'boot';
-  pose(card, { pos: new THREE.Vector3(0, camY + visH * 0.04, boot ? 1 : 3), scale: 1.4, opacity: boot ? 1 : 0, selected: true }, dt);
+  pose(card, { pos: new THREE.Vector3(0, camY + visH * 0.04, boot ? 1 : 3), scale: 1.4, opacity: boot ? 1 : 0, selected: false }, dt);
+  card.holder.rotation.set(...(theme.cardPose as [number, number, number]));
 
   const lit = boot ? card : items[sel];
   glow.position.copy(lit.pos).add(new THREE.Vector3(0, 0, -0.35));
   glow.scale.setScalar(1.9 * lit.scale);
-  glow.material.opacity = (0.55 + 0.2 * Math.sin(now * 2.2)) * lit.opacity;
+  glow.material.opacity = (boot ? 0.45 : 0.55 + 0.2 * Math.sin(now * 2.2)) * lit.opacity;
 
   camera.position.set(0, damp(camera.position.y, camY, 8, dt), dist);
   renderer.render(scene, camera);
 });
 
 // text and buttons
+/** a low-res button: the mark in its official colour's grey, inside a black disc, on a 13 px grid */
+function pixels(on: (x: number, y: number) => boolean, color: string) {
+  let r = '';
+  for (let y = 0; y < 13; y++)
+    for (let x = 0; x < 13; x++) {
+      const dx = x - 6, dy = y - 6;
+      if (dx * dx + dy * dy > 42) continue;
+      r += `<rect x="${x}" y="${y}" width="1" height="1" fill="${on(dx, dy) ? color : '#000'}"/>`;
+    }
+  return `<svg viewBox="0 0 13 13" shape-rendering="crispEdges">${r}</svg>`;
+}
+const ring = (dx: number, dy: number) => Math.abs(Math.hypot(dx, dy) - 3.2) < 0.8;
 const glyph = {
-  cross: `<svg viewBox="0 0 20 20"><path d="M5 5l10 10M15 5L5 15" stroke="${theme.buttons.cross}" stroke-width="2.6" stroke-linecap="round"/></svg>`,
-  circle: `<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="5.6" fill="none" stroke="${theme.buttons.circle}" stroke-width="2.4"/></svg>`,
-  triangle: `<svg viewBox="0 0 20 20"><path d="M10 4.5l6 10.5H4z" fill="none" stroke="${theme.buttons.triangle}" stroke-width="2.2" stroke-linejoin="round"/></svg>`,
+  cross: pixels((dx, dy) => Math.abs(dx) <= 3 && (dx === dy || dx === -dy), theme.buttons.cross),
+  circle: pixels(ring, theme.buttons.circle),
+  triangle: pixels((dx, dy) => dy >= -3 && dy <= 2 && (dy === 2 ? Math.abs(dx) <= 3 : Math.abs(dx) === Math.round((dy + 3) * 0.6)), theme.buttons.triangle),
 };
 type Press = keyof typeof glyph;
 const bars: Record<View, [Press, string][]> = {
@@ -197,12 +210,13 @@ const bars: Record<View, [Press, string][]> = {
 
 function paint() {
   document.body.dataset.view = view;
+  const pr = view === 'boot' ? theme.lowres : Math.min(devicePixelRatio, 2);
+  if (renderer.getPixelRatio() !== pr) renderer.setPixelRatio(pr);
   const p = items[sel].spec;
   $('brand').textContent = S.title;
   $('name').textContent = label(p.id);
   $('sub').textContent = `${p.W} × ${p.L} × ${p.T} mm`;
-  $('count').textContent = S.count.replace('{n}', String(items.length));
-  $('card').textContent = S.card;
+  $('maker').textContent = S.maker;
   $('d-name').textContent = label(p.id);
   $('d-data').textContent = S.noData;
   const ul = $('commands');

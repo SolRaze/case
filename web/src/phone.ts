@@ -40,22 +40,22 @@ function roundedRect(x0: number, x1: number, y0: number, y1: number, r: number) 
 }
 
 /** extruded slab from z0 outward (toward -z, the back) by depth, bevelled by b on both faces */
-function slab(s: THREE.Shape, z0: number, depth: number, b: number) {
+function slab(s: THREE.Shape, z0: number, depth: number, b: number, seg: number) {
   const g = new THREE.ExtrudeGeometry(s, {
     depth: Math.max(depth - 2 * b, 0.01),
     bevelEnabled: b > 0,
     bevelThickness: b,
     bevelSize: b,
     bevelOffset: -b,
-    bevelSegments: 3,
-    curveSegments: 24,
+    bevelSegments: seg > 8 ? 3 : 1,
+    curveSegments: seg,
   });
   g.translate(0, 0, -(z0 + depth) + b);
   return g;
 }
 
-function disc(x: number, y: number, r: number, z0: number, h: number) {
-  const g = new THREE.CylinderGeometry(r, r, h, 40);
+function disc(x: number, y: number, r: number, z0: number, h: number, seg: number) {
+  const g = new THREE.CylinderGeometry(r, r, h, seg * 2);
   g.rotateX(Math.PI / 2);
   g.translate(x, y, z0 - h / 2);
   return g;
@@ -64,22 +64,25 @@ function disc(x: number, y: number, r: number, z0: number, h: number) {
 /**
  * The phone as drawn, back facing +z, centred on its bounding box, 1 unit = 1 mm.
  * Every material is its own so one phone can fade while the others stay.
+ * seg is the curve resolution; a low one gives the faceted, flat-shaded console look.
  */
-export function buildPhone(p: PhoneSpec, finish: Finish) {
+export function buildPhone(p: PhoneSpec, finish: Finish, seg = 24) {
   const m = (color: string, o: Partial<THREE.MeshStandardMaterialParameters> = {}) =>
-    new THREE.MeshStandardMaterial({ color, transparent: true, ...o });
+    new THREE.MeshStandardMaterial({ color, transparent: true, flatShading: seg <= 8, ...o });
   const glass = m(finish.body, { roughness: 0.35, metalness: 0.05 });
   const frame = m(finish.frame, { roughness: 0.3, metalness: 0.8 });
   const frosted = m(finish.plateau, { roughness: 0.5, metalness: 0.1 });
   const ringMetal = m('#b9bec4', { roughness: 0.25, metalness: 0.9 });
   const lensGlass = m('#07080c', { roughness: 0.05, metalness: 0.3 });
-  const flashLens = m('#f3ecd2', { roughness: 0.4, emissive: '#2a2618' });
+  const flashLens = m('#ececec', { roughness: 0.4, emissive: '#262626' });
   const dark = m('#1a1a1a', { roughness: 0.8 });
 
   const g = new THREE.Group();
   const back = -p.T;
 
-  const body = slab(shape(p.ring), 0, p.T, Math.min(EDGE, p.T / 3));
+  // the ring arrives dense from phone.py; thin it for a low seg so the corners facet too
+  const step = Math.max(1, Math.round(24 / seg));
+  const body = slab(shape(p.ring.filter((_, i) => i % step === 0)), 0, p.T, Math.min(EDGE, p.T / 3), seg);
   // ExtrudeGeometry groups: 0 front and back faces, 1 the side wall and its bevels
   g.add(new THREE.Mesh(body, [glass, frame]));
 
@@ -89,16 +92,16 @@ export function buildPhone(p: PhoneSpec, finish: Finish) {
       'rect' in p.plateau
         ? (([x0, x1, y0, y1]) => roundedRect(x0, x1, y0, y1, Math.min(x1 - x0, y1 - y0) * PLATEAU_R))(p.plateau.rect)
         : shape(p.plateau.ring);
-    g.add(new THREE.Mesh(slab(s, p.T, p.flash_z, Math.min(0.4, p.flash_z / 3)), frosted));
+    g.add(new THREE.Mesh(slab(s, p.T, p.flash_z, Math.min(0.4, p.flash_z / 3), seg), frosted));
     base = back - p.flash_z;
   }
   const rise = Math.max(p.lens_z - (base === back ? 0 : p.flash_z), 0.3);
   for (const [x, y, d] of p.lenses) {
-    g.add(new THREE.Mesh(disc(x, y, d / 2, base, rise), ringMetal));
-    g.add(new THREE.Mesh(disc(x, y, d * 0.36, base - rise, 0.05), lensGlass));
+    g.add(new THREE.Mesh(disc(x, y, d / 2, base, rise, seg), ringMetal));
+    g.add(new THREE.Mesh(disc(x, y, d * 0.36, base - rise, 0.05, seg), lensGlass));
   }
-  if (p.flash) g.add(new THREE.Mesh(disc(p.flash[0], p.flash[1], p.flash[2] / 2, base, 0.08), flashLens));
-  for (const [x, y, d] of p.others) g.add(new THREE.Mesh(disc(x, y, Math.max(d / 2, 0.4), base, 0.06), dark));
+  if (p.flash) g.add(new THREE.Mesh(disc(p.flash[0], p.flash[1], p.flash[2] / 2, base, 0.08, seg), flashLens));
+  for (const [x, y, d] of p.others) g.add(new THREE.Mesh(disc(x, y, Math.max(d / 2, 0.4), base, 0.06, seg), dark));
 
   const [bw, bz] = p.bx;
   for (const b of p.buttons) {
