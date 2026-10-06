@@ -26,8 +26,8 @@ const card = spec(theme.card);
 
 // scene: 1 unit = 100 mm
 const MM = 0.01;
-const COLS = 4;
-const CELL = { w: 0.9, h: 1.6 }; // under TILT a row's lower third tucks behind the next row, so three rows clear the footer
+const COLS = 3;
+const CELL = { w: 1.2, h: 1.6 }; // under TILT a row's lower third tucks behind the next row, so three rows clear the footer
 const FOV = 40;
 const T = Math.tan(THREE.MathUtils.degToRad(FOV / 2));
 const TILT = 0.3; // the grid's plane leans back by this: lower rows sit nearer the camera and read bigger

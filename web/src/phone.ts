@@ -115,10 +115,9 @@ export function buildPhone(p: PhoneSpec, finish: Finish, seg = 24) {
   return { object: framed(p, g), frame: g, materials };
 }
 
-/** a phone without a finished case: its outline as a flat black slab, a low-poly padlock standing on the back */
-/** a phone with no finished case yet: the body's outline and a padlock's, no fill */
+/** a phone with no finished case yet: the body's outline and a solid padlock */
 export function buildLocked(p: PhoneSpec, seg = 8) {
-  const ink = new THREE.LineBasicMaterial({ color: '#d8d8d8', transparent: true });
+  const ink = new THREE.LineBasicMaterial({ color: '#000000', transparent: true });
   const lines = (geo: THREE.BufferGeometry) => new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), ink);
   const g = new THREE.Group();
   const step = Math.max(1, Math.round(24 / seg));
@@ -132,10 +131,11 @@ export function buildLocked(p: PhoneSpec, seg = 8) {
   const z = -p.T - d / 2;
   const body = new THREE.BoxGeometry(w, h, d);
   body.translate(cx, cy, z);
-  const shackle = new THREE.TorusGeometry(w * 0.3, w * 0.075, 4, 6, Math.PI);
+  const shackle = new THREE.TorusGeometry(w * 0.3, w * 0.075, 8, 16, Math.PI);
   shackle.translate(cx, cy + h / 2, z);
-  g.add(lines(body), lines(shackle));
-  return { object: framed(p, g), frame: g, materials: [ink] };
+  const fill = new THREE.MeshBasicMaterial({ color: '#000000', transparent: true });
+  g.add(new THREE.Mesh(body, fill), new THREE.Mesh(shackle, fill));
+  return { object: framed(p, g), frame: g, materials: [ink, fill] };
 }
 
 /** wraps a group drawn in the drawing frame: centred on the phone, turned so the back faces the camera */
