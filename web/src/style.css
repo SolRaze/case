@@ -79,11 +79,9 @@ body:not([data-view=detail]) #detail > p { display: none; }
 /* blue markers: more rows above or below; 2:1 like the svg main.ts draws */
 #up, #down {
   position: fixed; left: 50%; width: clamp(22px, 4vh, 44px); margin-left: calc(clamp(22px, 4vh, 44px) / -2);
-  animation: bob 1s ease-in-out infinite alternate;
 }
 #up { top: calc(12vh + env(safe-area-inset-top)); }
-#down { bottom: calc(9vh + env(safe-area-inset-bottom)); animation-direction: alternate-reverse; }
-@keyframes bob { to { transform: translateY(25%); } }
+#down { bottom: calc(9vh + env(safe-area-inset-bottom)); }
 
 footer {
   position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 1.6em;
