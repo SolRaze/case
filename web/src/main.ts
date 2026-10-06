@@ -843,16 +843,6 @@ function press(k: Press) {
   paint();
 }
 
-/** edit: the next or previous template on the phone */
-function swap(d: number) {
-  const n = store.list.length;
-  if (!n) return;
-  store.cur = (store.cur + d + n) % n;
-  wear();
-  sfx.tick();
-  paint();
-}
-
 function move(dx: number, dy: number) {
   if (busy || flip) return;
   if (view === 'boot') {
@@ -864,10 +854,7 @@ function move(dx: number, dy: number) {
     if (n < 0 || n >= models.length || (dx && rowOf(n) !== rowOf(msel))) return;
     msel = n;
     follow();
-  } else if (view === 'edit') {
-    if (!dx) return;
-    return swap(dx);
-  } else if (view === 'info' || menu === 4) return;
+  } else if (view === 'edit' || view === 'info' || menu === 4) return;
   else if (menu === 3) yes = !yes;
   else if (menu) {
     // up and down step over the rows that cannot be picked
@@ -925,8 +912,7 @@ addEventListener('pointerdown', sfx.unlock, { capture: true, once: true });
 addEventListener('keydown', sfx.unlock, { capture: true, once: true });
 
 // touch: tap picks, a second tap on the picked icon is ✕; vertical drag scrolls the grid,
-// on the cases and detail pages a touch holds the phone and a drag turns and tips it, let go mid-swipe and it flings on;
-// a horizontal swipe in edit changes the case
+// on the cases and detail pages a touch holds the phone and a drag turns and tips it, let go mid-swipe and it flings on
 const ray = new THREE.Raycaster();
 const canvas = $('view');
 /** radians per pixel dragged across the open phone */
@@ -969,7 +955,6 @@ canvas.addEventListener('pointerup', (e) => {
     if (e.timeStamp - d.t < 80) fling = clamp(d.v - theme.spin, -30, 30);
   }
   const dx = e.clientX - d.x;
-  if (view === 'edit' && Math.abs(dx) > 40) return swap(dx < 0 ? 1 : -1);
   if (Math.hypot(dx, e.clientY - d.y) > 8) return;
   const list = view === 'boot' ? fronts().map((i) => front[i]) : view === 'models' ? models : view === 'cases' && !menu ? shown() : [];
   if (!list.length) return;
