@@ -499,7 +499,7 @@ const ink$ = (tag: string, s: string, cls = '') => {
 /** the command list's rows and whether each can be picked; a phone with no design only edits */
 function rows(): [string, boolean][] {
   const has = shown().length > 0;
-  if (menu === 1 && view === 'detail') return [[S.copy, store.worn >= 0], [S.delete, !!store.list[store.worn]?.edited]];
+  if (menu === 1 && view === 'detail') return [[store.worn >= 0 ? S.copy : S.new, true], [S.delete, !!store.list[store.worn]?.edited]];
   if (menu === 1) return [[S.edit, true], [S.print, has], [S.delete, has]];
   if (menu === 2) return [[S.export, true], [S.order, !!theme.order]];
   return [];
@@ -755,7 +755,9 @@ function command(k: Press) {
   if (menu === 1 && cmd === 0) {
     back = view === 'detail' ? 'detail' : 'cases';
     undo = store.worn;
-    if (tpl() >= 0) store.cur = tpl();
+    // New on a bare phone starts from a style not yet made, else the first
+    if (view === 'detail' && store.worn < 0) store.cur = Math.max(store.list.findIndex((t) => !t.edited), 0);
+    else if (tpl() >= 0) store.cur = tpl();
     wear();
     menu = 0;
     view = 'edit';
