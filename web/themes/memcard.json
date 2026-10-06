@@ -8,13 +8,15 @@
     "pick": "#44c8ff",
     "title": "#e8c547",
     "brand": "#ffffff",
-    "dim": "#5e5e62"
+    "dim": "#5e5e62",
+    "del": "#d23c3c"
   },
   "font": "Arial, Arimo, sans-serif",
   "buttons": { "cross": "#707070", "circle": "#7f7f7f", "triangle": "#979797" },
   "finish": { "body": "#121212", "frame": "#2c2c2c", "plateau": "#1a1a1a" },
   "case": { "color": "#e4ecf2", "opacity": 0.38, "grid": "#d2d2d2" },
   "card": "17e",
+  "order": "",
   "front": [
     { "icon": "17e", "pose": [-0.95, 0, 0], "seg": 6 },
     { "icon": "logo", "pose": [-0.95, 0, 0], "seg": 6, "size": 0.7 }
@@ -31,6 +33,10 @@
     "loading": "Loading...",
     "edit": "Edit",
     "print": "Print",
+    "export": "Export",
+    "order": "Order",
+    "delete": "Delete",
+    "pick": "Pick",
     "sure": "Are you sure?",
     "yes": "Yes",
     "no": "No",

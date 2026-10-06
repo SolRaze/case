@@ -10,7 +10,7 @@ ul { list-style: none; }
   content: ''; opacity: 0;
   background: radial-gradient(100% 80% at 30% 30%, var(--detail0), var(--detail1));
 }
-[data-view=detail] #bg::after, [data-view=edit] #bg::after, [data-view=info] #bg::after { opacity: .85; }
+[data-view=cases] #bg::after, [data-view=edit] #bg::after, [data-view=info] #bg::after { opacity: .85; }
 
 /* #view and #ink render at the console's line count and are scaled up hard-edged; #hi is the case at full resolution */
 canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
@@ -39,13 +39,12 @@ header { color: var(--brand); }
   position: fixed; left: 0; right: 0; bottom: calc(9vh + env(safe-area-inset-bottom));
   padding: 0 6vw; text-align: center; font-size: clamp(14px, min(4.2vw, 2.5vh), 26px); line-height: 1.3;
 }
-#d-maker, #d-size, #d-case { font-size: .82em; }
-#d-name { font-size: 1.3em; }
-#d-size { margin-bottom: .6em; }
 #commands { display: flex; flex-direction: column; align-items: center; }
 #commands button, #commands p { min-height: 1.7em; font-size: 1.1em; }
 #commands button { color: var(--dim); }
 #commands button.on { color: var(--pick); }
+#commands :is(button, p).del { color: var(--del); }
+#commands .off { opacity: .35; }
 @media (min-aspect-ratio: 1/1) {
   #detail { left: 50%; bottom: auto; top: 24%; }
 }
@@ -70,10 +69,8 @@ footer img { width: 1.5em; height: 1.5em; }
 
 /* what shows where */
 header, #name, #detail, #info, footer { transition: opacity .35s; }
-[data-view=detail] #name, [data-view=boot] #detail, [data-view=models] #detail,
-[data-view=cases] #detail, [data-view=edit] #detail, [data-view=info] #detail,
-[data-view=info] #name, body:not([data-view=info]) #info { opacity: 0; }
-body:not([data-view=detail]) #detail button { pointer-events: none; }
+body:not([data-menu]) #detail, [data-view=info] #name, body:not([data-view=info]) #info { opacity: 0; }
+body:not([data-menu]) #detail button { pointer-events: none; }
 /* the flip into a page: the hud goes first */
 [data-busy] :is(header, #name, #detail, footer) { opacity: 0; transition: opacity .12s; }
 

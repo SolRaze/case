@@ -95,7 +95,7 @@ type Item = {
   opacity: number;
   spin: number;
   tilt: number;
-  born: number; // when it pops in on a grid
+  born: number; // when it pops in on a page
   ready: boolean;
 };
 function item(object: THREE.Object3D, materials: THREE.Material[], h: number): Item {
@@ -131,15 +131,14 @@ const centre = new THREE.Vector3(card.W / 2, -card.L / 2, -card.T / 2);
   g.add(caseMesh);
 }
 
-// the front page: the phone opens the cases the user edited, the apple opens the models
-const OPENS = ['cases', 'models'] as const;
+// the front page: a phone opens its cases page, the apple opens the models
 const front = theme.front.map((f) => {
   const { object, materials } =
     f.icon === 'logo' ? buildLogo(LOGO_H, card.T, theme.finish, f.seg) : buildPhone(spec(f.icon), theme.finish, f.seg);
   return item(object, materials, f.icon === 'logo' ? LOGO_H : spec(f.icon).L);
 });
 
-// one grid item per built style, once the built cases are known; the cases page shows the edited ones
+// one ring item per built style, once the built cases are known; the cases page shows the edited ones
 let caseItems: Item[] = [];
 let styles: string[] = [];
 let store = loadTemplates([]);
@@ -174,15 +173,19 @@ built(card.id).then((list) => {
   paint();
 });
 
-type View = 'boot' | 'models' | 'cases' | 'detail' | 'edit' | 'info';
-type Grid = 'models' | 'cases';
+type View = 'boot' | 'models' | 'cases' | 'edit' | 'info';
 let view: View = 'boot';
-let from: Grid = 'models'; // the grid the open phone came from
-const sel: Record<Grid, number> = { models: 0, cases: 0 };
-let fsel = 0; // front page icon
-let cmd = 0; // detail: 0 edit, 1 print
-let ask = 0; // print: 0 not asked, 1 are you sure, 2 printing
+let from: 'boot' | 'models' = 'boot'; // where ○ on the cases page goes
+let msel = 0; // models grid
+let fsel = 0; // front page, an index into fronts()
+let entered = 0; // the theme.front icon the open page came from
+let ring = 0; // cases page: the picked design, counted across ring pages
+let turn = 0; // the ring's eased rotation, in slots
+// the command list: 0 shut, 1 Edit Print Delete, 2 Export Order, 3 are you sure, 4 printing
+let menu = 0;
+let cmd = 0;
 let yes = false;
+let undo = -1; // edit: the worn template ○ puts back
 let printAt = -1;
 let flip: { i: number; t0: number; dir: 1 | -1 } | null = null;
 let busy = false;
@@ -191,10 +194,14 @@ let fling = 0; // extra spin from a swipe, decays to the theme's spin
 let dist = 4;
 let loading = false;
 
-const isGrid = (v: View): v is Grid => v === 'models' || v === 'cases';
+const RING = 8; // designs on one ring page
 const edited = () => styles.filter((s) => store.list.some((t) => t.style === s && t.edited));
-const gridOf = (g: Grid) => (g === 'cases' ? edited().map((s) => caseItems[styles.indexOf(s)]) : models);
-const here = (): Grid => (isGrid(view) ? view : from);
+const shown = () => edited().map((s) => caseItems[styles.indexOf(s)]);
+/** the picked design's template, -1 with none */
+const tpl = () => store.list.findIndex((t) => t.style === edited()[ring]);
+/** the front page's icons, as theme.front indices: the phones with a design, then the apple */
+const fronts = () => theme.front.flatMap((f, i) => (f.icon === 'logo' || (f.icon === card.id && edited().length) ? [i] : []));
+const opens = (i: number) => (theme.front[i].icon === 'logo' ? 'models' : 'cases');
 const portrait = () => camera.aspect < 1;
 
 const rowOf = (i: number) => Math.floor(i / COLS);
@@ -228,13 +235,12 @@ function solve(i: number, y: number) {
 const TOP = 0.5 - 0.24;
 const BOTTOM = -0.5 + 0.3;
 const camLimits = () => {
-  const n = gridOf(here()).length;
   const max = solve(0, TOP);
-  return { min: Math.min(max, solve(Math.max(n - 1, 0), BOTTOM)), max };
+  return { min: Math.min(max, solve(models.length - 1, BOTTOM)), max };
 };
 /** scroll just enough to keep the selected row inside the band */
 function follow() {
-  const i = sel[here()];
+  const i = msel;
   camV = clamp(camV, solve(i, TOP), solve(i, BOTTOM));
   const { min, max } = camLimits();
   camV = clamp(camV, min, max);
@@ -261,26 +267,44 @@ const gone = (i: number): Target => ({ pos: slot(i).setZ(slot(i).z - 2), scale: 
 
 // the picked icon keeps its slot and size, rocks gently about its upright axis and carries the glow
 // a row whose centre leaves the band fades out, so nothing sits under the header or the button bar
-function gridTarget(g: Grid, i: number): Target {
+const sway = (picked: boolean) => (picked ? 0.35 * Math.sin(clock() * 1.6) : 0);
+function gridTarget(i: number): Target {
   const y = screenY(i, camV);
   const opacity = clamp(Math.min(y - BOTTOM + 0.16, TOP + 0.16 - y) / 0.06, 0, 1);
-  const sway = i === sel[g] ? 0.35 * Math.sin(clock() * 1.6) : 0;
-  return view === g ? { pos: slot(i), scale: 1, opacity, spin: false, sway } : gone(i);
+  return view === 'models' ? { pos: slot(i), scale: 1, opacity, spin: false, sway: sway(i === msel) } : gone(i);
 }
-/** the open phone: upper middle in portrait, left in landscape; bigger and still, back to the camera, in edit */
+/** the cases page's middle, in fractions of the view: the ring sits round it */
+const hub = () => (portrait() ? { x: 0, y: 0.06 } : { x: -0.2, y: 0.02 });
+/** the open phone: in the ring's middle, turning; bigger and still, back to the camera, in edit */
 function openTarget(it: Item): Target {
   const pt = portrait();
   if (view === 'edit') return { pos: ahead(0, pt ? 0.04 : 0.02, D), scale: fill(pt ? 0.56 : 0.78, D, it.h), opacity: 1, spin: false, tilt: 0 };
-  return { pos: ahead(pt ? 0 : -0.2, pt ? 0.2 : 0.02, D), scale: fill(pt ? 0.36 : 0.62, D, it.h), opacity: 1, spin: true };
+  return { pos: ahead(hub().x, hub().y, D), scale: fill(pt ? 0.24 : 0.36, D, it.h), opacity: 1, spin: true };
+}
+const page = () => Math.floor(ring / RING);
+/** design j on the cases page: this page's designs evenly round the phone, the picked one at the bottom */
+function ringTarget(it: Item, j: number): Target {
+  const n = shown().length;
+  const k = j - page() * RING;
+  const m = Math.min(RING, n - page() * RING);
+  if (view !== 'cases' || k < 0 || k >= m) return gone(j);
+  const a = -Math.PI / 2 + ((k - turn) * 2 * Math.PI) / m;
+  const pt = portrait();
+  const pos = ahead(hub().x + Math.cos(a) * (pt ? 0.34 : 0.17), hub().y + Math.sin(a) * (pt ? 0.22 : 0.3), D);
+  return { pos, scale: fill(pt ? 0.1 : 0.13, D, it.h), opacity: 1, spin: false, sway: sway(j === ring) };
 }
 /** △ on a model: the phone small and still at the top, its details below */
 const infoTarget = (it: Item): Target => ({ pos: ahead(0, portrait() ? 0.26 : 0.22, D), scale: fill(portrait() ? 0.2 : 0.3, D, it.h), opacity: 1, spin: false });
-const frontTarget = (i: number): Target => ({
-  pos: ahead((i - (front.length - 1) / 2) * (portrait() ? 0.48 : 0.3), 0.02, D),
-  scale: fill((portrait() ? 0.26 : 0.36) * (theme.front[i].size ?? 1), D, front[i].h) * (i === fsel ? 1.12 : 1),
-  opacity: view === 'boot' ? 1 : 0,
-  spin: false,
-});
+function frontTarget(i: number): Target {
+  const shown = fronts();
+  const k = Math.max(shown.indexOf(i), 0);
+  return {
+    pos: ahead((k - (shown.length - 1) / 2) * (portrait() ? 0.48 : 0.3), 0.02, D),
+    scale: fill((portrait() ? 0.26 : 0.36) * (theme.front[i].size ?? 1), D, front[i].h) * (k === fsel ? 1.12 : 1),
+    opacity: view === 'boot' && shown.includes(i) ? 1 : 0,
+    spin: false,
+  };
+}
 
 const damp = (a: number, b: number, k: number, dt: number) => a + (b - a) * (1 - Math.exp(-k * dt));
 const unwind = (a: number, rest: number) => rest + (((a - rest) % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
@@ -321,13 +345,20 @@ low.setAnimationLoop((t) => {
   const dt = Math.min(timer.getDelta(), 0.05);
   const now = clock();
   fling = damp(fling, 0, 1.5, dt);
-  const open = view === 'detail' || view === 'edit';
+  const open = view === 'cases' || view === 'edit';
 
-  models.forEach((it, i) => pose(it, view === 'info' && i === sel.models ? infoTarget(it) : open && it === fit ? openTarget(it) : gridTarget('models', i), dt, view === 'models' ? pop(it, now) : 1));
-  const shown = gridOf('cases');
+  models.forEach((it, i) => pose(it, view === 'info' && i === msel ? infoTarget(it) : open && it === fit ? openTarget(it) : gridTarget(i), dt, view === 'models' ? pop(it, now) : 1));
+  // the ring turns the short way round to the picked design
+  const list = shown();
+  const m = Math.min(RING, list.length - page() * RING);
+  if (m > 0) {
+    const to = ring - page() * RING;
+    turn = (turn + m) % m;
+    turn += ((((to - turn) % m) + m * 1.5) % m - m / 2) * (1 - Math.exp(-8 * dt));
+  }
   caseItems.forEach((it, i) => {
-    const j = shown.indexOf(it);
-    pose(it, j < 0 ? gone(i) : gridTarget('cases', j), dt, view === 'cases' ? pop(it, now) : 1);
+    const j = list.indexOf(it);
+    pose(it, j < 0 ? gone(i) : ringTarget(it, j), dt, view === 'cases' ? pop(it, now) : 1);
   });
 
   // the front icons hold their own pose; the entered one flips toward the camera and blows up
@@ -344,7 +375,7 @@ low.setAnimationLoop((t) => {
     it.holder.scale.setScalar(it.scale * (1 + 8 * f));
   });
 
-  const grid = isGrid(view) ? gridOf(view) : [];
+  const grid = view === 'models' ? models : view === 'cases' ? list : [];
   const busyPop = grid.some((it) => !it.ready || now < it.born + 0.3);
   if (busyPop !== loading) {
     loading = busyPop;
@@ -366,9 +397,9 @@ low.setAnimationLoop((t) => {
   caseMesh.visible = alpha > 0.003;
 
   // front page: a centre dot in front of the icon and an underglow behind it on the same spot
-  // phone selection grid: one glow on the icon's lower part, depth-tested so the row in front covers it
+  // phone selection grid and the cases ring: one glow on the icon's lower part, depth-tested so a row in front covers it
   // both jump, never glide
-  const lit = view === 'boot' ? front[fsel] : isGrid(view) ? grid[sel[view]] : null;
+  const lit = view === 'boot' ? front[fronts()[fsel]] : view === 'models' ? models[msel] : view === 'cases' && !menu ? list[ring] : null;
   if (lit && !flip && !busy) {
     const g = view === 'boot' ? 1 : Math.min(pop(lit, now), 1);
     const h = lit.h * lit.scale;
@@ -422,8 +453,7 @@ type Press = keyof typeof glyph;
 const bars: Record<View, [Press, string][]> = {
   boot: [['cross', S.enter]],
   models: [['cross', S.enter], ['circle', S.back], ['triangle', S.options]],
-  cases: [['cross', S.enter], ['circle', S.back], ['triangle', S.options]],
-  detail: [['cross', S.enter], ['circle', S.back]],
+  cases: [['cross', S.pick], ['circle', S.back], ['triangle', S.options]],
   edit: [['cross', S.enter], ['circle', S.back]],
   info: [['circle', S.back]],
 };
@@ -436,73 +466,81 @@ const ink$ = (tag: string, s: string, cls = '') => {
   return e;
 };
 
+/** the command list's rows and whether each can be picked; a phone with no design only edits */
+function rows(): [string, boolean][] {
+  const has = shown().length > 0;
+  if (menu === 1) return [[S.edit, true], [S.print, has], [S.delete, has]];
+  if (menu === 2) return [[S.export, true], [S.order, !!theme.order]];
+  return [];
+}
+
 function paint() {
   document.body.dataset.view = view;
-  const p = phones[sel.models];
+  if (menu) document.body.dataset.menu = '';
+  else delete document.body.dataset.menu;
+  const p = phones[msel];
   const t = store.list[store.cur];
-  const shown = gridOf('cases');
+  const list = edited();
+  const pages = Math.ceil(list.length / RING);
   text('brand', S.brand);
-  text('sub', !isGrid(view) ? '' : loading ? S.loading : view === 'cases' ? `${shown.length} ${S.cases}` : `${models.length} ${S.models}`);
+  const count = view === 'models' ? `${models.length} ${S.models}` : view === 'cases' ? `${list.length} ${S.cases}` : '';
+  text('sub', count && loading ? S.loading : count);
 
   let n1 = '';
   let n2 = '';
   if (view === 'boot') {
-    const f = theme.front[fsel].icon;
+    const f = theme.front[fronts()[fsel]].icon;
     n1 = f === 'logo' ? S.title : label(f);
-    n2 = OPENS[fsel] === 'models' ? `${models.length} ${S.models}` : `${shown.length} ${S.cases}`;
+    n2 = f === 'logo' ? `${models.length} ${S.models}` : `${list.length} ${S.cases}`;
   } else if (view === 'models') {
     n1 = label(p.id);
     n2 = year(p.id);
-  } else if (view === 'cases' && shown.length) {
-    n1 = styleName(edited()[sel.cases]);
-    n2 = label(card.id);
+  } else if (view === 'cases') {
+    n1 = list.length ? styleName(list[ring]) : S.noCases;
+    n2 = pages > 1 ? `${label(card.id)} ${page() + 1}/${pages}` : label(card.id);
   } else if (view === 'edit' && t) {
     n1 = styleName(t.style);
   }
   text('n1', n1);
   text('n2', n2);
 
-  text('d-maker', S.title);
-  text('d-name', label(p.id));
-  const w = store.list[store.worn];
-  text('d-case', w ? `${styleName(w.style)} ${S.case}`.toUpperCase() : '');
-  text('d-size', `${p.W} × ${p.L} × ${p.T} mm`);
-
-  const made = p.id === card.id ? shown.length : 0;
+  const made = p.id === card.id ? list.length : 0;
   text('i-name', label(p.id));
   text('i-maker', S.title);
   text('i-year', `${S.released} ${year(p.id)}`);
   text('i-size', `${p.W} × ${p.L} × ${p.T} mm`);
   text('i-cases', made ? `${made} ${S.cases}` : S.noCases);
 
-  // the console's delete flow: the chosen option stays as the heading, then a question, then the work
+  // the console's flow: the chosen option stays as the heading, then a question or the work
   const ul = $('commands');
   const li = (e: HTMLElement) => {
     const l = document.createElement('li');
     l.append(e);
     return l;
   };
-  const button = (s: string, on: boolean, click: () => void) => {
-    const b = ink$('button', s, on ? 'on' : '');
+  const button = (s: string, on: boolean, click: () => void, cls = '') => {
+    const b = ink$('button', s, [on ? 'on' : '', cls].filter(Boolean).join(' '));
     b.onclick = click;
     return li(b);
   };
-  if (ask === 0) {
+  const row = ([s, ok]: [string, boolean], i: number) =>
+    button(s, ok && i === cmd, () => (!ok ? sfx.cancel() : cmd === i ? press('cross') : (sfx.tick(), (cmd = i), paint())), [ok ? '' : 'off', menu === 1 && i === 2 ? 'del' : ''].filter(Boolean).join(' '));
+  if (menu === 1) ul.replaceChildren(...rows().map(row));
+  else if (menu === 2) ul.replaceChildren(li(ink$('p', S.print)), ...rows().map(row));
+  else if (menu === 3) {
     ul.replaceChildren(
-      ...[S.edit, S.print].map((s, i) => button(s, i === cmd, () => (cmd === i ? press('cross') : (sfx.tick(), (cmd = i), paint())))),
-    );
-  } else if (ask === 1) {
-    ul.replaceChildren(
-      li(ink$('p', S.print)),
+      li(ink$('p', S.delete, 'del')),
       li(ink$('p', S.sure)),
       button(S.yes, yes, () => (yes ? press('cross') : (sfx.tick(), (yes = true), paint()))),
       button(S.no, !yes, () => (!yes ? press('cross') : (sfx.tick(), (yes = false), paint()))),
     );
-  } else ul.replaceChildren(li(ink$('p', S.print)), li(ink$('p', S.printing)), li(ink$('p', S.keep)));
+  } else if (menu === 4) ul.replaceChildren(li(ink$('p', S.print)), li(ink$('p', S.printing)), li(ink$('p', S.keep)));
+  else ul.replaceChildren();
 
   const bar = $('bar');
+  const keys: [Press, string][] = menu === 4 ? [] : menu ? [['cross', S.enter], ['circle', S.back]] : bars[view];
   bar.replaceChildren(
-    ...bars[view].map(([k, s]) => {
+    ...keys.map(([k, s]) => {
       const b = document.createElement('button');
       const img = document.createElement('img');
       img.className = 'px';
@@ -525,23 +563,44 @@ function lift(ms: number) {
   fade.style.opacity = '0';
 }
 
+/** the cases page; its designs pop in one by one after delay seconds */
+function openCases(delay: number) {
+  view = 'cases';
+  menu = 0;
+  ring = clamp(ring, 0, Math.max(shown().length - 1, 0));
+  turn = ring - page() * RING;
+  const now = clock();
+  shown().forEach((it, j) => {
+    it.pos.copy(ringTarget(it, j).pos);
+    it.born = now + delay + (j % RING) * 0.06;
+  });
+}
+
 /** the console's memory card select: the icon flips up into the camera, then the page fades in and its icons pop in one by one */
 function enterFront() {
   sfx.card();
   busy = true;
-  flip = { i: fsel, t0: clock(), dir: 1 };
+  const i = (entered = fronts()[fsel]);
+  flip = { i, t0: clock(), dir: 1 };
   document.body.dataset.busy = '';
   setTimeout(() => {
-    view = OPENS[fsel];
     flip = null;
     for (const it of front) it.opacity = 0;
-    follow();
-    camera.position.copy(camAt());
-    const now = clock();
-    gridOf(view).forEach((it, i) => {
-      it.pos.copy(gridTarget(view as Grid, i).pos);
-      it.born = now + 0.35 + i * 0.06;
-    });
+    if (opens(i) === 'cases') {
+      from = 'boot';
+      camera.position.copy(camAt());
+      fit.pos.copy(openTarget(fit).pos);
+      openCases(0.35);
+    } else {
+      view = 'models';
+      follow();
+      camera.position.copy(camAt());
+      const now = clock();
+      models.forEach((it, j) => {
+        it.pos.copy(gridTarget(j).pos);
+        it.born = now + 0.35 + j * 0.06;
+      });
+    }
     delete document.body.dataset.busy;
     busy = false;
     lift(500);
@@ -556,34 +615,101 @@ function leave() {
   fade.style.transition = 'opacity 180ms linear';
   fade.style.opacity = '1';
   setTimeout(() => {
-    for (const it of gridOf(view as Grid)) it.opacity = 0;
+    for (const it of view === 'models' ? models : [...shown(), fit]) it.opacity = 0;
     view = 'boot';
     camera.position.copy(camAt());
+    // back on the icon it came from; a phone whose last design went is off the front page
+    fsel = Math.max(fronts().indexOf(entered), 0);
     front.forEach((it, i) => {
       it.pos.copy(frontTarget(i).pos);
-      it.opacity = 1;
+      it.opacity = frontTarget(i).opacity;
     });
-    flip = { i: fsel, t0: clock(), dir: -1 };
+    flip = { i: fronts()[fsel], t0: clock(), dir: -1 };
     busy = false;
     lift(300);
     paint();
   }, 180);
 }
 
+/** Export: the picked design goes on the phone, blows away and downloads */
 function print() {
-  const t = store.list[store.worn];
+  const i = tpl();
+  const t = store.list[i];
   if (!t) return;
-  ask = 2;
+  store.cur = store.worn = i;
+  wear();
+  menu = 4;
   sfx.print();
   printAt = clock();
   geo(t.style).then((g) => exportStl(g, `iphone-${card.id}-${t.style}.stl`));
   t.printed = new Date().toISOString();
   saveTemplates(store);
   setTimeout(() => {
-    ask = 0;
+    menu = 0;
     printAt = -1;
     paint();
   }, 1800);
+}
+
+/** Order: a mail to theme.order naming the design, until a checkout exists */
+function mail() {
+  const t = store.list[tpl()];
+  if (!t) return;
+  menu = 0;
+  location.href = `mailto:${theme.order}?subject=${encodeURIComponent(`${label(card.id)} ${styleName(t.style)} ${S.case}`)}`;
+}
+
+/** Delete: that design only; its style stays to be designed again */
+function remove() {
+  const i = tpl();
+  const t = store.list[i];
+  if (!t) return;
+  delete t.edited;
+  delete t.printed;
+  if (store.worn === i) store.worn = -1;
+  saveTemplates(store);
+  menu = 0;
+  ring = clamp(ring, 0, Math.max(shown().length - 1, 0));
+  turn = ring - page() * RING;
+}
+
+/** a key while the command list is open */
+function command(k: Press) {
+  if (menu === 4) return;
+  if (k === 'circle') {
+    sfx.cancel();
+    // back one level, the cursor on the row that opened it
+    cmd = menu - 1;
+    menu = menu === 1 ? 0 : 1;
+    return paint();
+  }
+  if (k !== 'cross') return;
+  if (menu === 3) {
+    if (yes) {
+      sfx.confirm();
+      remove();
+    } else {
+      sfx.cancel();
+      menu = 1;
+      cmd = 2;
+    }
+    return paint();
+  }
+  if (!rows()[cmd]?.[1]) return sfx.cancel();
+  sfx.confirm();
+  if (menu === 1 && cmd === 0) {
+    undo = store.worn;
+    if (tpl() >= 0) store.cur = tpl();
+    wear();
+    menu = 0;
+    view = 'edit';
+  } else if (menu === 1) {
+    menu = cmd === 1 ? 2 : 3;
+    cmd = 0;
+    yes = false;
+  } else if (cmd === 0) print();
+  else mail();
+  paint();
 }
 
 function press(k: Press) {
@@ -592,63 +718,53 @@ function press(k: Press) {
     if (k === 'cross') enterFront();
     return;
   }
-  if (isGrid(view)) {
+  if (view === 'models') {
     if (k === 'circle') return leave();
-    if (k === 'triangle' && view === 'models') {
+    if (k === 'triangle') {
       sfx.confirm();
       view = 'info';
       return paint();
     }
     if (k !== 'cross') return;
-    if (view === 'models' && phones[sel.models].id !== card.id) return sfx.cancel();
-    if (view === 'cases') {
-      const style = edited()[sel.cases];
-      if (!style) return;
-      const i = store.list.findIndex((t) => t.style === style);
-      if (i >= 0) store.cur = store.worn = i;
+    if (models[msel] !== fit) return sfx.cancel();
+    sfx.confirm();
+    from = 'models';
+    openCases(0);
+  } else if (view === 'cases') {
+    if (menu) return command(k);
+    if (k === 'circle') {
+      if (from === 'boot') return leave();
+      sfx.cancel();
+      view = 'models';
+      follow();
+    } else if (k === 'triangle') {
+      sfx.confirm();
+      menu = 1;
+      cmd = 0;
+    } else {
+      // ✕ puts the picked design on the phone
+      const i = tpl();
+      if (i < 0) return sfx.cancel();
+      sfx.confirm();
+      store.cur = store.worn = i;
       saveTemplates(store);
       wear();
-      sel.models = models.indexOf(fit);
     }
-    sfx.confirm();
-    from = view;
-    view = 'detail';
-    cmd = 0;
-    ask = 0;
-  } else if (view === 'detail') {
-    if (ask === 2) return;
-    if (ask === 1) {
-      if (k === 'cross' && yes) print();
-      else if (k === 'cross' || k === 'circle') {
-        sfx.cancel();
-        ask = 0;
-      } else return;
-    } else if (k === 'circle') {
-      sfx.cancel();
-      view = from;
-      follow();
-    } else if (k === 'cross') {
-      // nothing to print on a bare phone
-      if (cmd === 1 && store.worn < 0) return sfx.cancel();
-      sfx.confirm();
-      if (cmd === 0) view = 'edit';
-      else {
-        ask = 1;
-        yes = false;
-      }
-    } else return;
   } else if (view === 'edit') {
-    if (k === 'cross') {
+    const t = store.list[store.cur];
+    if (k === 'cross' && t) {
       sfx.confirm();
-      const t = store.list[store.cur];
-      if (t) t.edited = new Date().toISOString();
+      t.edited = new Date().toISOString();
       store.worn = store.cur;
+      ring = edited().indexOf(t.style);
     } else if (k === 'circle') {
       sfx.cancel();
-      store.worn = -1;
+      store.worn = undo;
+      if (undo >= 0) store.cur = undo;
+      wear();
     } else return;
     saveTemplates(store);
-    view = 'detail';
+    view = 'cases';
   } else if (view === 'info') {
     if (k !== 'circle') return;
     sfx.cancel();
@@ -671,23 +787,45 @@ function swap(d: number) {
 function move(dx: number, dy: number) {
   if (busy || flip) return;
   if (view === 'boot') {
-    const n = clamp(fsel + dx, 0, front.length - 1);
+    const n = clamp(fsel + dx, 0, fronts().length - 1);
     if (n === fsel) return;
     fsel = n;
-  } else if (isGrid(view)) {
-    const list = gridOf(view);
-    const i = sel[view];
-    const n = i + dx + dy * COLS;
-    if (n < 0 || n >= list.length || (dx && rowOf(n) !== rowOf(i))) return;
-    sel[view] = n;
+  } else if (view === 'models') {
+    const n = msel + dx + dy * COLS;
+    if (n < 0 || n >= models.length || (dx && rowOf(n) !== rowOf(msel))) return;
+    msel = n;
     follow();
   } else if (view === 'edit') {
     if (!dx) return;
     return swap(dx);
-  } else if (view === 'info') return;
-  else if (ask === 1) yes = !yes;
-  else if (ask === 0 && dy) cmd = (cmd + 2 + dy) % 2;
-  else return;
+  } else if (view === 'info' || menu === 4) return;
+  else if (menu === 3) yes = !yes;
+  else if (menu) {
+    // up and down step over the rows that cannot be picked
+    const r = rows();
+    if (!dy) return;
+    let n = cmd;
+    do n = (n + dy + r.length) % r.length;
+    while (!r[n][1]);
+    if (n === cmd) return;
+    cmd = n;
+  } else {
+    // ←/→ turn the ring, ↑/↓ change its page
+    const n = shown().length;
+    const p = page();
+    const m = Math.min(RING, n - p * RING);
+    if (!n) return;
+    if (dx) {
+      const r = p * RING + ((ring - p * RING + dx + m) % m);
+      if (r === ring) return;
+      ring = r;
+    } else {
+      const q = clamp(p + dy, 0, Math.ceil(n / RING) - 1);
+      if (q === p) return;
+      ring = q * RING;
+      openCases(0);
+    }
+  }
   sfx.tick();
   paint();
 }
@@ -717,8 +855,8 @@ addEventListener('keydown', (e) => {
 addEventListener('pointerdown', sfx.unlock, { capture: true, once: true });
 addEventListener('keydown', sfx.unlock, { capture: true, once: true });
 
-// touch: tap picks, a second tap on the picked icon enters; vertical drag scrolls a grid,
-// horizontal drag flings the open phone round, a horizontal swipe in edit changes the case
+// touch: tap picks, a second tap on the picked icon is ✕; vertical drag scrolls the grid,
+// horizontal drag flings the cases page's phone round, a horizontal swipe in edit changes the case
 const ray = new THREE.Raycaster();
 const canvas = $('view');
 let down: { x: number; y: number; camV: number; last: number } | null = null;
@@ -728,10 +866,10 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 canvas.addEventListener('pointermove', (e) => {
   if (!down) return;
-  if (isGrid(view)) {
+  if (view === 'models') {
     const { min, max } = camLimits();
     camV = clamp(down.camV + ((e.clientY - down.y) / innerHeight) * 2 * dist * T, min, max);
-  } else if (view === 'detail') {
+  } else if (view === 'cases') {
     fling += (e.clientX - down.last) * 0.08;
     down.last = e.clientX;
   }
@@ -743,7 +881,7 @@ canvas.addEventListener('pointerup', (e) => {
   const dx = e.clientX - d.x;
   if (view === 'edit' && Math.abs(dx) > 40) return swap(dx < 0 ? 1 : -1);
   if (Math.hypot(dx, e.clientY - d.y) > 8) return;
-  const list = view === 'boot' ? front : isGrid(view) ? gridOf(view) : [];
+  const list = view === 'boot' ? fronts().map((i) => front[i]) : view === 'models' ? models : view === 'cases' && !menu ? shown() : [];
   if (!list.length) return;
   ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
   const hit = ray.intersectObjects(list.filter((it) => it.holder.visible).map((it) => it.holder), true)[0];
@@ -752,11 +890,12 @@ canvas.addEventListener('pointerup', (e) => {
   while (o.parent && o.parent !== scene) o = o.parent;
   const i = list.findIndex((it) => it.holder === o);
   if (i < 0) return;
-  const cur = view === 'boot' ? fsel : sel[view as Grid];
+  const cur = view === 'boot' ? fsel : view === 'models' ? msel : ring;
   if (i === cur) return press('cross');
   if (view === 'boot') fsel = i;
+  else if (view === 'cases') ring = i;
   else {
-    sel[view as Grid] = i;
+    msel = i;
     follow();
   }
   sfx.tick();
@@ -764,7 +903,7 @@ canvas.addEventListener('pointerup', (e) => {
 });
 
 addEventListener('resize', layout);
-sel.models = models.indexOf(fit);
+msel = models.indexOf(fit);
 layout();
 models.forEach((it, i) => it.pos.copy(gone(i).pos));
 front.forEach((it, i) => {
