@@ -57,7 +57,7 @@ for (const l of [key, rim]) {
 camera.add(key, rim);
 scene.add(camera, sky);
 
-/** the selected icon's underglow: a hot white core whose light bleeds past the icon's edges */
+/** a hot white core whose light bleeds past the icon's edges: the selected icon's underglow and its centre dot */
 function glowSprite() {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
@@ -83,7 +83,8 @@ function glowSprite() {
   return s;
 }
 const glow = glowSprite();
-scene.add(glow);
+const dot = glowSprite();
+scene.add(glow, dot);
 
 type Item = {
   holder: THREE.Group;
@@ -376,7 +377,11 @@ low.setAnimationLoop((t) => {
     glow.position.add(glow.position.clone().sub(camera.position).setLength(0.25));
     glow.scale.set(h * 1.9, h * 0.9, 1);
     glow.material.opacity = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * (view === 'boot' ? 1 : Math.min(g, 1));
-  } else glow.material.opacity = 0;
+    // the centre dot: on the icon's middle, pulled toward the camera so it sits in front of it
+    dot.position.copy(lit.pos).add(camera.position.clone().sub(lit.pos).setLength(0.3));
+    dot.scale.setScalar(h * 0.55);
+    dot.material.opacity = glow.material.opacity;
+  } else glow.material.opacity = dot.material.opacity = 0;
 
   const c = camAt();
   camera.position.set(damp(camera.position.x, c.x, 8, dt), damp(camera.position.y, c.y, 8, dt), damp(camera.position.z, c.z, 8, dt));
