@@ -8,6 +8,7 @@ import { READY, order, styleName, year } from './catalog';
 import { built, exportStl, load, loadTemplates, saveTemplates } from './cases';
 import { inkLayer } from './ink';
 import * as sfx from './sound';
+import { picker, screenRect } from './pick';
 
 const S = theme.strings;
 const C = theme.colors;
@@ -936,6 +937,24 @@ canvas.addEventListener('pointerup', (e) => {
   sfx.tick();
   paint();
 });
+
+if (import.meta.env.DEV)
+  picker(
+    () => (menu ? `${view} menu ${menu}` : view),
+    (x, y) => {
+      const named: [Item, string][] = [
+        ...models.map((it, i): [Item, string] => [it, `model ${phones[i].id}`]),
+        ...front.map((it, i): [Item, string] => [it, `front ${theme.front[i].icon}`]),
+        ...caseItems.map((it, i): [Item, string] => [it, `case ${styleName(styles[i])}`]),
+      ].filter(([it]) => it.holder.visible && it.opacity > 0.05);
+      ray.setFromCamera(new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1), camera);
+      const hit = ray.intersectObjects(named.map(([it]) => it.holder), true)[0];
+      let o = hit?.object;
+      while (o?.parent && o.parent !== scene) o = o.parent;
+      const n = named.find(([it]) => it.holder === o);
+      return n ? { name: `${n[1]} (3D)`, rect: screenRect(n[0].holder, camera) } : null;
+    },
+  );
 
 addEventListener('resize', layout);
 msel = models.indexOf(fit);
