@@ -27,7 +27,7 @@ const card = spec(theme.card);
 // scene: 1 unit = 100 mm
 const MM = 0.01;
 const COLS = 3;
-const CELL = { w: 0.9, h: 1.9 }; // under TILT a row's foot just tucks behind the next row's top, as on the console
+const CELL = { w: 0.9, h: 1.6 }; // under TILT a row's lower third tucks behind the next row, so three rows clear the footer
 const FOV = 40;
 const T = Math.tan(THREE.MathUtils.degToRad(FOV / 2));
 const TILT = 0.6; // the grid's plane leans back by this: lower rows sit nearer the camera and read bigger
@@ -225,7 +225,7 @@ function solve(i: number, y: number) {
 }
 // rows stay between the header and the button bar
 const TOP = 0.5 - 0.24;
-const BOTTOM = -0.5 + 0.22;
+const BOTTOM = -0.5 + 0.3;
 const camLimits = () => {
   const n = gridOf(here()).length;
   const max = solve(0, TOP);
@@ -250,7 +250,7 @@ function layout() {
   hi.setPixelRatio(Math.min(devicePixelRatio, 2));
   hi.setSize(w, h, false);
   ink.resize(pr);
-  // fit four columns across, and at least two rows of height
+  // fit the columns across, and at least two rows of height
   dist = Math.max((COLS * CELL.w + 0.4) / 2 / (T * camera.aspect), (CELL.h * 2.4) / 2 / T);
   follow();
 }
@@ -259,8 +259,11 @@ type Target = { pos: THREE.Vector3; scale: number; opacity: number; spin: boolea
 const gone = (i: number): Target => ({ pos: slot(i).setZ(slot(i).z - 2), scale: 0.6, opacity: 0, spin: false });
 
 // the picked icon keeps its slot, size and pose like the others; only the glow marks it
+// a row whose centre leaves the band fades out, so nothing sits under the header or the button bar
 function gridTarget(g: Grid, i: number): Target {
-  return view === g ? { pos: slot(i), scale: 1, opacity: 1, spin: false } : gone(i);
+  const y = screenY(i, camV);
+  const opacity = clamp(Math.min(y - BOTTOM + 0.16, TOP + 0.16 - y) / 0.06, 0, 1);
+  return view === g ? { pos: slot(i), scale: 1, opacity, spin: false } : gone(i);
 }
 /** the open phone: upper middle in portrait, left in landscape; bigger and still, back to the camera, in edit */
 function openTarget(it: Item): Target {
