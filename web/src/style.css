@@ -52,7 +52,7 @@ header { color: var(--brand); }
 /* △ on a model: main.ts infoTarget centres the phone over the label column, level with the name;
    --pw --ph are that phone's size, keep them in step with its fill */
 #info {
-  --pw: 6.3vh; --ph: 12.6vh;
+  --pw: 10.5vh; --ph: 21vh;
   position: fixed; left: 8vw; top: 13vh;
   display: grid; grid-template-columns: minmax(var(--pw), auto) auto; column-gap: 1.2em;
   font-size: clamp(14px, min(4.2vw, 2.5vh), 26px); line-height: 1.5;
@@ -64,7 +64,7 @@ header { color: var(--brand); }
 #i-list { display: contents; }
 #i-list dt { color: var(--dim); text-align: right; }
 @media (min-aspect-ratio: 1/1) {
-  #info { left: 14vw; top: 14vh; --pw: 10vh; --ph: 18.6vh; }
+  #info { left: 14vw; top: 14vh; --pw: 16.6vh; --ph: 31vh; }
 }
 
 footer {

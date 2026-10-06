@@ -266,12 +266,11 @@ type Target = { pos: THREE.Vector3; scale: number; opacity: number; spin: boolea
 const gone = (i: number): Target => ({ pos: slot(i).setZ(slot(i).z - 2), scale: 0.6, opacity: 0, spin: false });
 
 // the picked icon keeps its slot and size, rocks gently about its upright axis and carries the glow
-// a row whose centre leaves the band fades out, so nothing sits under the header or the button bar; under △ the grid stays, faint
+// a row whose centre leaves the band fades out, so nothing sits under the header or the button bar
 const sway = (picked: boolean) => (picked ? 0.35 * Math.sin(clock() * 1.6) : 0);
 function gridTarget(i: number): Target {
   const y = screenY(i, camV);
   const opacity = clamp(Math.min(y - BOTTOM + 0.16, TOP + 0.16 - y) / 0.06, 0, 1);
-  if (view === 'info') return { pos: slot(i), scale: 1, opacity: opacity * 0.15, spin: false };
   return view === 'models' ? { pos: slot(i), scale: 1, opacity, spin: false, sway: sway(i === msel) } : gone(i);
 }
 /** the cases page's middle, in fractions of the view: the ring sits round it */
@@ -300,7 +299,7 @@ function infoTarget(it: Item): Target {
   const row = $('i-name').getBoundingClientRect();
   const x = col ? (col.left + col.right) / 2 / innerWidth - 0.5 : -0.3;
   const y = 0.5 - (row.top + row.bottom) / 2 / innerHeight;
-  return { pos: ahead(x, y, D), scale: fill(portrait() ? 0.12 : 0.18, D, it.h), opacity: 1, spin: false, sway: sway(true) };
+  return { pos: ahead(x, y, D), scale: fill(portrait() ? 0.2 : 0.3, D, it.h), opacity: 1, spin: false, sway: sway(true) };
 }
 function frontTarget(i: number): Target {
   const shown = fronts();
