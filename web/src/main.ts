@@ -294,7 +294,13 @@ function ringTarget(it: Item, j: number): Target {
   return { pos, scale: fill(pt ? 0.1 : 0.13, D, it.h), opacity: 1, spin: false, sway: sway(j === ring) };
 }
 /** △ on a model: the phone small and still at the top, its details below */
-const infoTarget = (it: Item): Target => ({ pos: ahead(0, portrait() ? 0.26 : 0.22, D), scale: fill(portrait() ? 0.2 : 0.3, D, it.h), opacity: 1, spin: false });
+// style.css #info places the name beside this spot and the details under it; keep the two in step
+const infoTarget = (it: Item): Target => ({
+  pos: ahead(-0.3, portrait() ? 0.3 : 0.26, D),
+  scale: fill(portrait() ? 0.12 : 0.18, D, it.h),
+  opacity: 1,
+  spin: false,
+});
 function frontTarget(i: number): Target {
   const shown = fronts();
   const k = Math.max(shown.indexOf(i), 0);
@@ -506,10 +512,14 @@ function paint() {
 
   const made = p.id === card.id ? list.length : 0;
   text('i-name', label(p.id));
-  text('i-maker', S.title);
-  text('i-year', `${S.released} ${year(p.id)}`);
-  text('i-size', `${p.W} × ${p.L} × ${p.T} mm`);
-  text('i-cases', made ? `${made} ${S.cases}` : S.noCases);
+  $('i-list').replaceChildren(
+    ...[
+      [S.maker, S.title],
+      [S.released, year(p.id)],
+      [S.size, `${p.W} × ${p.L} × ${p.T} mm`],
+      [S.made, made ? String(made) : S.none],
+    ].flatMap(([k, v]) => [ink$('dt', k), ink$('dd', v)]),
+  );
 
   // the console's flow: the chosen option stays as the heading, then a question or the work
   const ul = $('commands');

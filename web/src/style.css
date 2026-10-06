@@ -49,14 +49,19 @@ header { color: var(--brand); }
   #detail { left: 50%; bottom: auto; top: 24%; }
 }
 
-/* △ on a model: its details under the phone, the name in the title yellow */
-#info {
-  position: fixed; left: 0; right: 0; top: 40%;
-  text-align: center; font-size: clamp(14px, min(4.2vw, 2.5vh), 26px); line-height: 1.5;
+/* △ on a model: the small phone top left (main.ts infoTarget), its name in the title yellow beside it,
+   then each detail with its label; the offsets follow the phone's spot and size */
+#info { font-size: clamp(14px, min(4.2vw, 2.5vh), 26px); line-height: 1.5; }
+#i-name { position: fixed; left: 30%; top: 20%; transform: translateY(-50%); font-size: 1.5em; color: var(--title); }
+#i-list {
+  position: fixed; left: 8vw; right: 8vw; top: 31%;
+  display: grid; grid-template-columns: auto 1fr; column-gap: 1.2em;
 }
-#i-name { font-size: 1.5em; color: var(--title); margin-bottom: .3em; }
+#i-list dt { color: var(--dim); }
+#i-list dd { text-align: right; }
 @media (min-aspect-ratio: 1/1) {
-  #info { top: 46%; }
+  #i-name { left: 26%; top: 24%; }
+  #i-list { left: 12%; right: auto; width: min(30em, 50%); top: 39%; }
 }
 
 footer {

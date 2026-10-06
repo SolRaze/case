@@ -46,6 +46,10 @@
     "back": "Back",
     "options": "Options",
     "released": "Released",
+    "maker": "Maker",
+    "size": "Size",
+    "made": "Cases",
+    "none": "None yet",
     "noCases": "No cases yet"
   }
 }
