@@ -465,14 +465,16 @@ const glyph = {
   triangle: disc('<path d="M12 4.6 18.6 16H5.4Z" stroke-linejoin="miter"/>', theme.buttons.triangle),
 };
 type Press = keyof typeof glyph;
-/** the console's more-this-way marker: a blue triangle with the black border the text has */
-const arrow = (d: string) =>
+/** the console's more-this-way marker: a flat borderless blue triangle, faded at its base and darkening to the tip */
+const arrow = (d: string, base: 0 | 1) =>
   'data:image/svg+xml,' +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 16"><path d="${d}" fill="${C.pick}" stroke="#000" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 12"><linearGradient id="g" x1="0" y1="${base}" x2="0" y2="${1 - base}">` +
+      `<stop offset="0" stop-color="${C.pick}" stop-opacity="0"/><stop offset=".4" stop-color="${C.pick}"/>` +
+      `<stop offset="1" stop-color="#${new THREE.Color(C.pick).multiplyScalar(0.45).getHexString()}"/></linearGradient><path d="${d}" fill="url(#g)"/></svg>`,
   );
-($('up') as HTMLImageElement).src = arrow('M12 2 22 14H2Z');
-($('down') as HTMLImageElement).src = arrow('M2 2H22L12 14Z');
+($('up') as HTMLImageElement).src = arrow('M12 0 24 12H0Z', 1);
+($('down') as HTMLImageElement).src = arrow('M0 0H24L12 12Z', 0);
 const bars: Record<View, [Press, string][]> = {
   boot: [['cross', S.enter]],
   models: [['cross', S.enter], ['circle', S.back], ['triangle', S.options]],
