@@ -259,13 +259,10 @@ function layout() {
 type Target = { pos: THREE.Vector3; scale: number; opacity: number; spin: boolean; tilt?: number };
 const gone = (i: number): Target => ({ pos: slot(i).setZ(slot(i).z - 2), scale: 0.6, opacity: 0, spin: false });
 
-// the picked icon keeps its slot and size like the others; picking it turns it once round its upright axis
+// the picked icon keeps its slot, size and pose like the others; only the glow marks it
 function gridTarget(g: Grid, i: number): Target {
   return view === g ? { pos: slot(i), scale: 1, opacity: 1, spin: false } : gone(i);
 }
-let turn = { it: null as Item | null, t0: 0 };
-const TURN = 0.6; // s
-const pick = (g: Grid) => (turn = { it: gridOf(g)[sel[g]] ?? null, t0: clock() });
 /** the open phone: upper middle in portrait, left in landscape; bigger and still, back to the camera, in edit */
 function openTarget(it: Item): Target {
   const pt = portrait();
@@ -341,12 +338,6 @@ low.setAnimationLoop((t) => {
     it.holder.scale.setScalar(it.scale * (1 + 8 * f));
   });
 
-  if (turn.it) {
-    const s = clamp((clock() - turn.t0) / TURN, 0, 1);
-    turn.it.holder.rotation.y += Math.PI * 2 * (1 - (1 - s) ** 3);
-    if (s >= 1) turn.it = null;
-  }
-
   const grid = isGrid(view) ? gridOf(view) : [];
   const busyPop = grid.some((it) => !it.ready || now < it.born + 0.3);
   if (busyPop !== loading) {
@@ -374,7 +365,7 @@ low.setAnimationLoop((t) => {
     const g = view === 'boot' ? 0 : pop(lit, now);
     // pulled toward the camera along the sight line, so it stays on the icon wherever the icon sits on screen
     glow.position.copy(lit.pos);
-    if (view !== 'boot') glow.position.y -= lit.h * lit.scale * 0.3;
+    if (view !== 'boot') glow.position.y -= lit.h * lit.scale * 0.42;
     glow.position.add(camera.position.clone().sub(glow.position).setLength(0.3));
     glow.scale.setScalar(lit.h * lit.scale * (view === 'boot' ? 0.55 : 1.2));
     glow.material.opacity = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * (view === 'boot' ? 1 : Math.min(g, 1));
@@ -651,7 +642,6 @@ function move(dx: number, dy: number) {
     if (n < 0 || n >= list.length || (dx && rowOf(n) !== rowOf(i))) return;
     sel[view] = n;
     follow();
-    pick(view);
   } else if (view === 'edit') {
     if (!dx) return;
     return swap(dx);
@@ -728,7 +718,6 @@ canvas.addEventListener('pointerup', (e) => {
   else {
     sel[view as Grid] = i;
     follow();
-    pick(view as Grid);
   }
   sfx.tick();
   paint();
