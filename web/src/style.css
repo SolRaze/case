@@ -49,11 +49,11 @@ header { color: var(--brand); }
   #detail { left: 50%; bottom: auto; top: 24%; }
 }
 
-/* △ on a model: one grid whose left edge is the small phone's (main.ts infoTarget); the name starts where the
-   values do, beside the phone; --px --py --pw --ph are that phone's centre and size, keep them in step */
+/* △ on a model: main.ts infoTarget centres the phone over the label column, level with the name;
+   --pw --ph are that phone's size, keep them in step with its fill */
 #info {
-  --px: 20vw; --py: 20vh; --pw: 6.3vh; --ph: 12.6vh;
-  position: fixed; left: calc(var(--px) - var(--pw) / 2); top: calc(var(--py) - var(--ph) / 2);
+  --pw: 6.3vh; --ph: 12.6vh;
+  position: fixed; left: 8vw; top: 13vh;
   display: grid; grid-template-columns: minmax(var(--pw), auto) auto; column-gap: 1.2em;
   font-size: clamp(14px, min(4.2vw, 2.5vh), 26px); line-height: 1.5;
 }
@@ -64,7 +64,7 @@ header { color: var(--brand); }
 #i-list { display: contents; }
 #i-list dt { color: var(--dim); text-align: right; }
 @media (min-aspect-ratio: 1/1) {
-  #info { --py: 24vh; --pw: 10vh; --ph: 18.6vh; }
+  #info { left: 14vw; top: 14vh; --pw: 10vh; --ph: 18.6vh; }
 }
 
 footer {

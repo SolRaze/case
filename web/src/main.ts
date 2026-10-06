@@ -266,11 +266,12 @@ type Target = { pos: THREE.Vector3; scale: number; opacity: number; spin: boolea
 const gone = (i: number): Target => ({ pos: slot(i).setZ(slot(i).z - 2), scale: 0.6, opacity: 0, spin: false });
 
 // the picked icon keeps its slot and size, rocks gently about its upright axis and carries the glow
-// a row whose centre leaves the band fades out, so nothing sits under the header or the button bar
+// a row whose centre leaves the band fades out, so nothing sits under the header or the button bar; under △ the grid stays, faint
 const sway = (picked: boolean) => (picked ? 0.35 * Math.sin(clock() * 1.6) : 0);
 function gridTarget(i: number): Target {
   const y = screenY(i, camV);
   const opacity = clamp(Math.min(y - BOTTOM + 0.16, TOP + 0.16 - y) / 0.06, 0, 1);
+  if (view === 'info') return { pos: slot(i), scale: 1, opacity: opacity * 0.15, spin: false };
   return view === 'models' ? { pos: slot(i), scale: 1, opacity, spin: false, sway: sway(i === msel) } : gone(i);
 }
 /** the cases page's middle, in fractions of the view: the ring sits round it */
@@ -293,14 +294,14 @@ function ringTarget(it: Item, j: number): Target {
   const pos = ahead(hub().x + Math.cos(a) * (pt ? 0.34 : 0.17), hub().y + Math.sin(a) * (pt ? 0.22 : 0.3), D);
   return { pos, scale: fill(pt ? 0.1 : 0.13, D, it.h), opacity: 1, spin: false, sway: sway(j === ring) };
 }
-/** △ on a model: the phone small and still at the top, its details below */
-// style.css #info places the name beside this spot and the details under it; keep the two in step
-const infoTarget = (it: Item): Target => ({
-  pos: ahead(-0.3, portrait() ? 0.3 : 0.26, D),
-  scale: fill(portrait() ? 0.12 : 0.18, D, it.h),
-  opacity: 1,
-  spin: false,
-});
+/** △ on a model: the phone small and rocking, centred over the labels and level with the name in style.css #info */
+function infoTarget(it: Item): Target {
+  const col = $('i-list').querySelector('dt')?.getBoundingClientRect();
+  const row = $('i-name').getBoundingClientRect();
+  const x = col ? (col.left + col.right) / 2 / innerWidth - 0.5 : -0.3;
+  const y = 0.5 - (row.top + row.bottom) / 2 / innerHeight;
+  return { pos: ahead(x, y, D), scale: fill(portrait() ? 0.12 : 0.18, D, it.h), opacity: 1, spin: false, sway: sway(true) };
+}
 function frontTarget(i: number): Target {
   const shown = fronts();
   const k = Math.max(shown.indexOf(i), 0);
