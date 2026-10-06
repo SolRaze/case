@@ -470,8 +470,8 @@ const arrow = (d: string, base: 0 | 1) =>
   'data:image/svg+xml,' +
   encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 12"><linearGradient id="g" x1="0" y1="${base}" x2="0" y2="${1 - base}">` +
-      `<stop offset="0" stop-color="${C.pick}" stop-opacity="0"/><stop offset=".4" stop-color="${C.pick}"/>` +
-      `<stop offset="1" stop-color="#${new THREE.Color(C.pick).multiplyScalar(0.45).getHexString()}"/></linearGradient><path d="${d}" fill="url(#g)"/></svg>`,
+      `<stop offset="0" stop-color="${C.more}" stop-opacity="0"/><stop offset=".4" stop-color="${C.more}"/>` +
+      `<stop offset="1" stop-color="#${new THREE.Color(C.more).multiplyScalar(0.45).getHexString()}"/></linearGradient><path d="${d}" fill="url(#g)"/></svg>`,
   );
 ($('up') as HTMLImageElement).src = arrow('M12 0 24 12H0Z', 1);
 ($('down') as HTMLImageElement).src = arrow('M0 0H24L12 12Z', 0);
