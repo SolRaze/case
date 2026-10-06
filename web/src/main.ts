@@ -57,7 +57,7 @@ for (const l of [key, rim]) {
 camera.add(key, rim);
 scene.add(camera, sky);
 
-/** the glare on the selected icon: a hot white dot whose light bleeds past the object's edges */
+/** the selected icon's underglow: a hot white core whose light bleeds past the icon's edges */
 function glowSprite() {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
@@ -364,18 +364,17 @@ low.setAnimationLoop((t) => {
   caseMat.opacity = alpha;
   caseMesh.visible = alpha > 0.003;
 
-  // the glare: over the lower half of the selected icon; it jumps, never glides
+  // the underglow: a wide flat pool of light behind the selected icon's bottom edge, the icon itself covers its top; it jumps, never glides
   const lit = view === 'boot' ? front[fsel] : isGrid(view) ? grid[sel[view]] : null;
   if (lit && !flip && !busy) {
     const g = view === 'boot' ? 0 : pop(lit, now);
-    // pulled toward the camera along the sight line, so it stays on the icon wherever the icon sits on screen
+    const h = lit.h * lit.scale;
     glow.position.copy(lit.pos);
-    // the front icons lie tilted back, so their lower half sits higher on screen
-    glow.position.y -= lit.h * lit.scale * (view === 'boot' ? 0.22 : 0.42);
-    glow.position.add(camera.position.clone().sub(glow.position).setLength(0.3));
-    // depth-tested in the grids so the row in front covers it
-    glow.material.depthTest = view !== 'boot';
-    glow.scale.setScalar(lit.h * lit.scale * 1.2);
+    // the front icons lie tilted back, so their bottom edge sits higher on screen
+    glow.position.y -= h * (view === 'boot' ? 0.36 : 0.55);
+    // pushed away from the camera along the sight line, so it sits behind the icon wherever the icon is on screen
+    glow.position.add(glow.position.clone().sub(camera.position).setLength(0.25));
+    glow.scale.set(h * 1.9, h * 0.9, 1);
     glow.material.opacity = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * (view === 'boot' ? 1 : Math.min(g, 1));
   } else glow.material.opacity = 0;
 
