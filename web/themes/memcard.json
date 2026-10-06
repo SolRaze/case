@@ -30,7 +30,7 @@
     "models": "models",
     "cases": "cases",
     "case": "CASE",
-    "loading": "Loading...",
+    "loading": "Now loading...",
     "edit": "Edit",
     "copy": "Copy",
     "print": "Print",

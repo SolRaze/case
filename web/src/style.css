@@ -71,6 +71,20 @@ body:not([data-view=detail]) #detail > p { display: none; }
   #info { left: 14vw; top: 14vh; --pw: 16.6vh; --ph: 31vh; }
 }
 
+/* over the page while its icons pop in, like the console's memory card load */
+#loading {
+  position: fixed; left: 0; right: 0; top: 40%; text-align: center;
+  font-size: clamp(15px, min(4.8vw, 2.9vh), 30px); color: var(--ink);
+}
+/* blue markers: more rows above or below */
+#up, #down {
+  position: fixed; left: 50%; width: clamp(18px, 3.2vh, 34px); margin-left: calc(clamp(18px, 3.2vh, 34px) / -2);
+  animation: bob 1s ease-in-out infinite alternate;
+}
+#up { top: calc(12vh + env(safe-area-inset-top)); }
+#down { bottom: calc(9vh + env(safe-area-inset-bottom)); animation-direction: alternate-reverse; }
+@keyframes bob { to { transform: translateY(25%); } }
+
 footer {
   position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 1.6em;
   padding: 0 4vw calc(2.2vh + env(safe-area-inset-bottom));
@@ -80,7 +94,8 @@ footer button { display: flex; align-items: center; gap: .3em; min-height: 44px;
 footer img { width: 1.5em; height: 1.5em; }
 
 /* what shows where */
-header, #name, #detail, #info, footer { transition: opacity .35s; }
+header, #name, #detail, #info, footer, #loading, #up, #down { transition: opacity .35s; }
+body:not([data-loading]) #loading, body:not([data-up]) #up, body:not([data-down]) #down { opacity: 0; }
 body:not([data-menu]) #detail, [data-view=info] #name, [data-view=detail] #name, body:not([data-view=info]) #info { opacity: 0; }
 body:not([data-menu]) #detail button { pointer-events: none; }
 /* the flip into a page: the hud goes first */

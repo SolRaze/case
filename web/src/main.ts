@@ -389,6 +389,13 @@ low.setAnimationLoop((t) => {
     loading = busyPop;
     paint();
   }
+  // more rows past the band on the models page, more ring pages on the cases page
+  const { min, max } = camLimits();
+  const pages = Math.ceil(list.length / RING);
+  const more = view === 'models' ? [camV < max - 1e-3, camV > min + 1e-3] : view === 'cases' && !menu ? [page() > 0, page() < pages - 1] : [false, false];
+  (['up', 'down'] as const).forEach((k, i) => {
+    if (more[i] !== k in document.body.dataset) more[i] ? (document.body.dataset[k] = '') : delete document.body.dataset[k];
+  });
 
   // the case on 17e: any template while editing, else the worn one, open or on the models page; printing blows it outward and away
   const caseOn = view === 'edit' || (store.worn >= 0 && (open || view === 'models' || view === 'info'));
@@ -458,6 +465,14 @@ const glyph = {
   triangle: disc('<path d="M12 4.6 18.6 16H5.4Z" stroke-linejoin="miter"/>', theme.buttons.triangle),
 };
 type Press = keyof typeof glyph;
+/** the console's more-this-way marker: a blue triangle with the black border the text has */
+const arrow = (d: string) =>
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 16"><path d="${d}" fill="${C.pick}" stroke="#000" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+  );
+($('up') as HTMLImageElement).src = arrow('M12 2 22 14H2Z');
+($('down') as HTMLImageElement).src = arrow('M2 2H22L12 14Z');
 const bars: Record<View, [Press, string][]> = {
   boot: [['cross', S.enter]],
   models: [['cross', S.enter], ['circle', S.back], ['triangle', S.options]],
@@ -494,7 +509,10 @@ function paint() {
   const pages = Math.ceil(list.length / RING);
   text('brand', S.brand);
   const count = view === 'models' ? `${models.length} ${S.models}` : view === 'cases' ? `${list.length} ${S.cases}` : '';
-  text('sub', count && loading ? S.loading : count);
+  text('sub', count);
+  text('loading', S.loading);
+  if (loading) document.body.dataset.loading = '';
+  else delete document.body.dataset.loading;
 
   let n1 = '';
   let n2 = '';
@@ -585,6 +603,8 @@ function lift(ms: number) {
   fade.style.opacity = '0';
 }
 
+/** seconds between one icon popping in and the next */
+const STAGGER = 0.14;
 /** the cases page; its designs pop in one by one after delay seconds */
 function openCases(delay: number) {
   view = 'cases';
@@ -594,7 +614,7 @@ function openCases(delay: number) {
   const now = clock();
   shown().forEach((it, j) => {
     it.pos.copy(ringTarget(it, j).pos);
-    it.born = now + delay + (j % RING) * 0.06;
+    it.born = now + delay + (j % RING) * STAGGER;
   });
 }
 
@@ -618,9 +638,12 @@ function enterFront() {
       follow();
       camera.position.copy(camAt());
       const now = clock();
+      // the rows in view come in one by one; the rest land with the last of them
+      let k = 0;
       models.forEach((it, j) => {
-        it.pos.copy(gridTarget(j).pos);
-        it.born = now + 0.35 + j * 0.06;
+        const t = gridTarget(j);
+        it.pos.copy(t.pos);
+        it.born = now + 0.35 + (t.opacity > 0 ? k++ : k) * STAGGER;
       });
     }
     delete document.body.dataset.busy;
