@@ -50,9 +50,13 @@ export function loadTemplates(built: string[]): Templates {
   } catch {
     // unreadable storage starts a fresh list
   }
+  // an unedited seed of a style no longer built is dropped; an edited one stays stored but is never picked
+  const have = (x?: Template) => !!x && built.includes(x.style);
+  const cur = t.list[t.cur], worn = t.list[t.worn];
+  t.list = t.list.filter((x) => x.edited || have(x));
   for (const style of built) if (!t.list.some((x) => x.style === style)) t.list.push({ style });
-  t.cur = Math.min(Math.max(t.cur | 0, 0), Math.max(t.list.length - 1, 0));
-  t.worn = t.list[t.worn] ? t.worn | 0 : -1;
+  t.cur = have(cur) ? t.list.indexOf(cur!) : Math.max(t.list.findIndex(have), 0);
+  t.worn = have(worn) ? t.list.indexOf(worn!) : -1;
   return t;
 }
 export const saveTemplates = (t: Templates) => localStorage.setItem(KEY, JSON.stringify(t));

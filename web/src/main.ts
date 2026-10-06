@@ -755,8 +755,11 @@ function command(k: Press) {
   if (menu === 1 && cmd === 0) {
     back = view === 'detail' ? 'detail' : 'cases';
     undo = store.worn;
-    // New on a bare phone starts from a style not yet made, else the first
-    if (view === 'detail' && store.worn < 0) store.cur = Math.max(store.list.findIndex((t) => !t.edited), 0);
+    // New on a bare phone starts from a style not yet made, else the first built one
+    if (view === 'detail' && store.worn < 0) {
+      const fresh = store.list.findIndex((t) => !t.edited);
+      store.cur = Math.max(fresh >= 0 ? fresh : store.list.findIndex((t) => t.style === styles[0]), 0);
+    }
     else if (tpl() >= 0) store.cur = tpl();
     wear();
     menu = 0;

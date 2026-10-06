@@ -1,6 +1,7 @@
 // out/<phone>/<style>.stl -> public/glb/<phone>/<style>.glb, meshopt compressed,
 // plus previews/<phone>/<style>.png beside it and public/glb/index.json listing what exists.
 // Skips a glb newer than its stl. Run after case.py --all: npm run glb
+// Only the styles in KEEP reach the web catalog; out/ keeps every style.
 import fs from 'node:fs';
 import path from 'node:path';
 import { Document, NodeIO } from '@gltf-transform/core';
@@ -8,6 +9,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { weld, meshopt } from '@gltf-transform/functions';
 import { MeshoptEncoder } from 'meshoptimizer';
 
+const KEEP = ['case'];
 const root = path.resolve(import.meta.dirname, '..');
 const dst = path.join(import.meta.dirname, 'public', 'glb');
 await MeshoptEncoder.ready;
@@ -40,7 +42,7 @@ let built = 0;
 for (const phone of fs.readdirSync(path.join(root, 'out')).sort()) {
   const dir = path.join(root, 'out', phone);
   if (!fs.statSync(dir).isDirectory()) continue;
-  for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.stl')).sort()) {
+  for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.stl') && KEEP.includes(f.slice(0, -4))).sort()) {
     const style = f.slice(0, -4);
     const stl = path.join(dir, f);
     const glb = path.join(dst, phone, `${style}.glb`);
