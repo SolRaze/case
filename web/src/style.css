@@ -61,8 +61,7 @@ header { color: var(--brand); }
   display: flex; align-items: center; justify-content: flex-end; font-size: 1.5em; color: var(--title);
 }
 #i-list { display: grid; grid-template-columns: auto 1fr; column-gap: 1.2em; }
-#i-list dt { color: var(--dim); }
-#i-list dd { text-align: right; }
+#i-list dt { color: var(--dim); text-align: right; }
 @media (min-aspect-ratio: 1/1) {
   #info { --py: 24vh; --pw: 10vh; --ph: 18.6vh; }
 }
