@@ -32,7 +32,8 @@ header { left: max(4vw, env(safe-area-inset-left)); display: flex; gap: .4em; al
 header img { width: 2.3em; height: 2.3em; }
 #name { right: max(4vw, env(safe-area-inset-right)); text-align: right; }
 #sub, #n2 { font-size: .8em; }
-header, #n1 { color: var(--title); }
+header { color: var(--brand); }
+#n1 { color: var(--title); }
 
 #detail {
   position: fixed; left: 0; right: 0; bottom: calc(9vh + env(safe-area-inset-bottom));

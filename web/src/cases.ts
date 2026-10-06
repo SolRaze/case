@@ -35,8 +35,8 @@ export async function load(phone: string, style: string) {
   return out;
 }
 
-/** a case the user keeps; styles seed the list, designs will add their own */
-export type Template = { style: string; printed?: string };
+/** a case the user keeps; styles seed the list, designs will add their own; edited is set when the user saves it from edit */
+export type Template = { style: string; edited?: string; printed?: string };
 export type Templates = { cur: number; list: Template[] };
 const KEY = 'case.templates';
 

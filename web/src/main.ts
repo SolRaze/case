@@ -27,7 +27,7 @@ const card = spec(theme.card);
 // scene: 1 unit = 100 mm
 const MM = 0.01;
 const COLS = 3;
-const CELL = { w: 0.9, h: 1.75 };
+const CELL = { w: 0.9, h: 2.05 }; // rows clear each other under TILT, the tallest phone included
 const FOV = 40;
 const T = Math.tan(THREE.MathUtils.degToRad(FOV / 2));
 const TILT = 0.6; // the grid's plane leans back by this: lower rows sit nearer the camera and read bigger
@@ -131,15 +131,15 @@ const centre = new THREE.Vector3(card.W / 2, -card.L / 2, -card.T / 2);
   g.add(caseMesh);
 }
 
-// the front page: the apple opens the models, the phone opens its cases
-const OPENS = ['models', 'cases'] as const;
+// the front page: the phone opens the cases the user edited, the apple opens the models
+const OPENS = ['cases', 'models'] as const;
 const front = theme.front.map((f) => {
   const { object, materials } =
     f.icon === 'logo' ? buildLogo(LOGO_H, card.T, theme.finish, f.seg) : buildPhone(spec(f.icon), theme.finish, f.seg);
   return item(object, materials, f.icon === 'logo' ? LOGO_H : spec(f.icon).L);
 });
 
-// the cases page and the templates, once the built cases are known
+// one grid item per built style, once the built cases are known; the cases page shows the edited ones
 let caseItems: Item[] = [];
 let styles: string[] = [];
 let store = loadTemplates([]);
@@ -193,7 +193,8 @@ let dist = 4;
 let loading = false;
 
 const isGrid = (v: View): v is Grid => v === 'models' || v === 'cases';
-const gridOf = (g: Grid) => (g === 'cases' ? caseItems : models);
+const edited = () => styles.filter((s) => store.list.some((t) => t.style === s && t.edited));
+const gridOf = (g: Grid) => (g === 'cases' ? edited().map((s) => caseItems[styles.indexOf(s)]) : models);
 const here = (): Grid => (isGrid(view) ? view : from);
 const portrait = () => camera.aspect < 1;
 
@@ -225,7 +226,7 @@ function solve(i: number, y: number) {
   return (lo + hi) / 2;
 }
 // rows stay between the header and the button bar
-const TOP = 0.5 - 0.3; // room for the picked icon's PULL growth under the header
+const TOP = 0.5 - 0.24;
 const BOTTOM = -0.5 + 0.22;
 const camLimits = () => {
   const n = gridOf(here()).length;
@@ -259,16 +260,13 @@ function layout() {
 type Target = { pos: THREE.Vector3; scale: number; opacity: number; spin: boolean; tilt?: number };
 const gone = (i: number): Target => ({ pos: slot(i).setZ(slot(i).z - 2), scale: 0.6, opacity: 0, spin: false });
 
-const PULL = 2.4; // the picked icon comes this far toward the camera along its sight line, clear of the nearer row
+// the picked icon keeps its slot and size like the others; picking it turns it once round its upright axis
 function gridTarget(g: Grid, i: number): Target {
-  if (view !== g) return gone(i);
-  if (i !== sel[g]) return { pos: slot(i), scale: 1, opacity: 1, spin: false };
-  // same place on screen, nearer: position and scale shrink together toward the camera
-  const c = camAt();
-  const p = slot(i).sub(c);
-  const f = 1 - PULL / p.length();
-  return { pos: p.multiplyScalar(f).add(c), scale: theme.pick * f, opacity: 1, spin: false };
+  return view === g ? { pos: slot(i), scale: 1, opacity: 1, spin: false } : gone(i);
 }
+let turn = { it: null as Item | null, t0: 0 };
+const TURN = 0.6; // s
+const pick = (g: Grid) => (turn = { it: gridOf(g)[sel[g]] ?? null, t0: clock() });
 /** the open phone: upper middle in portrait, left in landscape; bigger and still, back to the camera, in edit */
 function openTarget(it: Item): Target {
   const pt = portrait();
@@ -324,7 +322,11 @@ low.setAnimationLoop((t) => {
   const open = view === 'detail' || view === 'edit';
 
   models.forEach((it, i) => pose(it, open && it === fit ? openTarget(it) : gridTarget('models', i), dt, view === 'models' ? pop(it, now) : 1));
-  caseItems.forEach((it, i) => pose(it, gridTarget('cases', i), dt, view === 'cases' ? pop(it, now) : 1));
+  const shown = gridOf('cases');
+  caseItems.forEach((it, i) => {
+    const j = shown.indexOf(it);
+    pose(it, j < 0 ? gone(i) : gridTarget('cases', j), dt, view === 'cases' ? pop(it, now) : 1);
+  });
 
   // the front icons hold their own pose; the entered one flips toward the camera and blows up
   let k = 0;
@@ -339,6 +341,12 @@ low.setAnimationLoop((t) => {
     it.holder.rotation.set(theme.front[i].pose[0] + f * FLIP, theme.front[i].pose[1], theme.front[i].pose[2]);
     it.holder.scale.setScalar(it.scale * (1 + 8 * f));
   });
+
+  if (turn.it) {
+    const s = clamp((clock() - turn.t0) / TURN, 0, 1);
+    turn.it.holder.rotation.y += Math.PI * 2 * (1 - (1 - s) ** 3);
+    if (s >= 1) turn.it = null;
+  }
 
   const grid = isGrid(view) ? gridOf(view) : [];
   const busyPop = grid.some((it) => !it.ready || now < it.born + 0.3);
@@ -360,14 +368,14 @@ low.setAnimationLoop((t) => {
   caseMat.opacity = alpha;
   caseMesh.visible = alpha > 0.003;
 
-  // the glare: on the selected front icon, at the foot of the selected grid item; it jumps, never glides
+  // the glare: on the selected front icon, over the lower half of the selected grid item; it jumps, never glides
   const lit = view === 'boot' ? front[fsel] : isGrid(view) ? grid[sel[view]] : null;
   if (lit && !flip && !busy) {
     const g = view === 'boot' ? 0 : pop(lit, now);
     glow.position.copy(lit.pos);
-    if (view !== 'boot') glow.position.add(new THREE.Vector3(0, -lit.h * lit.scale * 0.48, 0.15));
+    if (view !== 'boot') glow.position.add(new THREE.Vector3(0, -lit.h * lit.scale * 0.3, 0.3));
     else glow.position.z += 0.3;
-    glow.scale.setScalar(lit.h * lit.scale * (view === 'boot' ? 0.55 : 0.32));
+    glow.scale.setScalar(lit.h * lit.scale * (view === 'boot' ? 0.55 : 0.75));
     glow.material.opacity = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * (view === 'boot' ? 1 : Math.min(g, 1));
   } else glow.material.opacity = 0;
 
@@ -418,20 +426,21 @@ function paint() {
   document.body.dataset.view = view;
   const p = phones[sel.models];
   const t = store.list[store.cur];
+  const shown = gridOf('cases');
   text('brand', S.brand);
-  text('sub', !isGrid(view) ? '' : loading ? S.loading : view === 'cases' ? `${caseItems.length} ${S.cases}` : `${models.length} ${S.models}`);
+  text('sub', !isGrid(view) ? '' : loading ? S.loading : view === 'cases' ? `${shown.length} ${S.cases}` : `${models.length} ${S.models}`);
 
   let n1 = '';
   let n2 = '';
   if (view === 'boot') {
     const f = theme.front[fsel].icon;
     n1 = f === 'logo' ? S.title : label(f);
-    n2 = OPENS[fsel] === 'models' ? `${models.length} ${S.models}` : `${styles.length} ${S.cases}`;
+    n2 = OPENS[fsel] === 'models' ? `${models.length} ${S.models}` : `${shown.length} ${S.cases}`;
   } else if (view === 'models') {
     n1 = label(p.id);
     n2 = year(p.id);
-  } else if (view === 'cases' && styles.length) {
-    n1 = styleName(styles[sel.cases]);
+  } else if (view === 'cases' && shown.length) {
+    n1 = styleName(edited()[sel.cases]);
     n2 = label(card.id);
   } else if (view === 'edit' && t) {
     n1 = styleName(t.style);
@@ -566,8 +575,9 @@ function press(k: Press) {
     if (k !== 'cross') return;
     if (view === 'models' && phones[sel.models].id !== card.id) return sfx.cancel();
     if (view === 'cases') {
-      if (!styles.length) return;
-      const i = store.list.findIndex((t) => t.style === styles[sel.cases]);
+      const style = edited()[sel.cases];
+      if (!style) return;
+      const i = store.list.findIndex((t) => t.style === style);
       if (i >= 0) store.cur = i;
       saveTemplates(store);
       wear();
@@ -603,6 +613,8 @@ function press(k: Press) {
   } else if (view === 'edit') {
     if (k === 'cross') {
       sfx.confirm();
+      const t = store.list[store.cur];
+      if (t) t.edited = new Date().toISOString();
       saveTemplates(store);
     } else if (k === 'circle') {
       sfx.cancel();
@@ -637,6 +649,7 @@ function move(dx: number, dy: number) {
     if (n < 0 || n >= list.length || (dx && rowOf(n) !== rowOf(i))) return;
     sel[view] = n;
     follow();
+    pick(view);
   } else if (view === 'edit') {
     if (!dx) return;
     return swap(dx);
@@ -713,6 +726,7 @@ canvas.addEventListener('pointerup', (e) => {
   else {
     sel[view as Grid] = i;
     follow();
+    pick(view as Grid);
   }
   sfx.tick();
   paint();

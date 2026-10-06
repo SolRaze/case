@@ -7,6 +7,7 @@
     "glow": "#ffffff",
     "pick": "#44c8ff",
     "title": "#e8c547",
+    "brand": "#ffffff",
     "dim": "#5e5e62"
   },
   "font": "Arial, Arimo, sans-serif",
@@ -16,12 +17,11 @@
   "case": { "color": "#e4ecf2", "opacity": 0.38, "grid": "#d2d2d2" },
   "card": "17e",
   "front": [
-    { "icon": "logo", "pose": [-0.95, 0, 0], "seg": 6, "size": 0.7 },
-    { "icon": "17e", "pose": [-0.95, 0, 0], "seg": 6 }
+    { "icon": "17e", "pose": [-0.95, 0, 0], "seg": 6 },
+    { "icon": "logo", "pose": [-0.95, 0, 0], "seg": 6, "size": 0.7 }
   ],
   "lines": 448,
-  "pick": 1.15,
-  "dot": 0.55,
+  "dot": 1,
   "spin": 0.9,
   "strings": {
     "brand": "CASE",
