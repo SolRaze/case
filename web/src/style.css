@@ -80,8 +80,8 @@ body:not([data-view=detail]) #detail > p { display: none; }
 #up, #down {
   position: fixed; left: 50%; width: clamp(22px, 4vh, 44px); margin-left: calc(clamp(22px, 4vh, 44px) / -2);
 }
-#up { top: calc(12vh + env(safe-area-inset-top)); }
-#down { bottom: calc(9vh + env(safe-area-inset-bottom)); }
+#up { top: calc(14vh + env(safe-area-inset-top)); }
+#down { bottom: calc(16.5vh + env(safe-area-inset-bottom)); }
 
 footer {
   position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 1.6em;
