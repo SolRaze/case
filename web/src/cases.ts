@@ -9,7 +9,7 @@ const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 
 /** the styles built for a phone, in styles.json order; public/glb/index.json is written by glb.mjs */
 export async function built(phone: string): Promise<string[]> {
-  const index: Record<string, string[]> = await fetch('/glb/index.json')
+  const index: Record<string, string[]> = await fetch('glb/index.json')
     .then((r) => (r.ok ? r.json() : {}))
     .catch(() => ({}));
   const have = new Set(index[phone] ?? []);
@@ -18,7 +18,7 @@ export async function built(phone: string): Promise<string[]> {
 
 /** one case in the drawing frame, mm, float positions with creased normals; glb.mjs writes one mesh per file */
 export async function load(phone: string, style: string) {
-  const gltf = await loader.loadAsync(`/glb/${phone}/${style}.glb`);
+  const gltf = await loader.loadAsync(`glb/${phone}/${style}.glb`);
   gltf.scene.updateMatrixWorld(true);
   let out = new THREE.BufferGeometry();
   gltf.scene.traverse((o) => {
