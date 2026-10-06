@@ -26,12 +26,12 @@ const card = spec(theme.card);
 
 // scene: 1 unit = 100 mm
 const MM = 0.01;
-const COLS = 3;
+const COLS = 4;
 const CELL = { w: 0.9, h: 1.6 }; // under TILT a row's lower third tucks behind the next row, so three rows clear the footer
 const FOV = 40;
 const T = Math.tan(THREE.MathUtils.degToRad(FOV / 2));
-const TILT = 0.6; // the grid's plane leans back by this: lower rows sit nearer the camera and read bigger
-const REST = { x: 0.45, y: 0 }; // grid pose: upright and square, top leaning toward the camera
+const TILT = 0.3; // the grid's plane leans back by this: lower rows sit nearer the camera and read bigger
+const REST = { x: 0.2, y: 0 }; // grid pose: upright and square, top leaning toward the camera
 const D = 4.2; // distance from the camera of the front page's icons and the open phone
 const FLIP = THREE.MathUtils.degToRad(95);
 const LOGO_H = 100; // mm
@@ -106,7 +106,7 @@ function item(object: THREE.Object3D, materials: THREE.Material[], h: number): I
   return { holder, materials, h: h * MM, pos: new THREE.Vector3(), scale: 1, opacity: 0, spin: REST.y, tilt: REST.x, born: 0, ready: true };
 }
 
-// the models page: one finish for every phone, a black slab with a padlock where no case is finished yet
+// the models page: one finish for every phone, an outline with a padlock where no case is finished yet
 const bodies = phones.map((p) => (READY.has(p.id) ? buildPhone(p, theme.finish, 8) : buildLocked(p, 8)));
 const models = bodies.map((b, i) => item(b.object, b.materials, phones[i].L));
 const fit = models[phones.indexOf(card)];
@@ -255,15 +255,16 @@ function layout() {
   follow();
 }
 
-type Target = { pos: THREE.Vector3; scale: number; opacity: number; spin: boolean; tilt?: number };
+type Target = { pos: THREE.Vector3; scale: number; opacity: number; spin: boolean; tilt?: number; sway?: number };
 const gone = (i: number): Target => ({ pos: slot(i).setZ(slot(i).z - 2), scale: 0.6, opacity: 0, spin: false });
 
-// the picked icon keeps its slot, size and pose like the others; only the glow marks it
+// the picked icon keeps its slot and size, rocks gently about its upright axis and carries the glow
 // a row whose centre leaves the band fades out, so nothing sits under the header or the button bar
 function gridTarget(g: Grid, i: number): Target {
   const y = screenY(i, camV);
   const opacity = clamp(Math.min(y - BOTTOM + 0.16, TOP + 0.16 - y) / 0.06, 0, 1);
-  return view === g ? { pos: slot(i), scale: 1, opacity, spin: false } : gone(i);
+  const sway = i === sel[g] ? 0.35 * Math.sin(clock() * 1.6) : 0;
+  return view === g ? { pos: slot(i), scale: 1, opacity, spin: false, sway } : gone(i);
 }
 /** the open phone: upper middle in portrait, left in landscape; bigger and still, back to the camera, in edit */
 function openTarget(it: Item): Target {
@@ -297,7 +298,7 @@ function pose(it: Item, t: Target, dt: number, grow = 1) {
     it.tilt = damp(it.tilt, -0.05, 4, dt);
   } else {
     // ease back to the rest pose the short way round
-    it.spin = damp(unwind(it.spin, REST.y), REST.y, 5, dt);
+    it.spin = damp(unwind(it.spin, REST.y), REST.y + (t.sway ?? 0), 5, dt);
     it.tilt = damp(it.tilt, t.tilt ?? REST.x, 5, dt);
   }
   it.holder.position.copy(it.pos);
