@@ -13,7 +13,6 @@
   "font": "Arial, Arimo, sans-serif",
   "buttons": { "cross": "#707070", "circle": "#7f7f7f", "triangle": "#979797" },
   "finish": { "body": "#121212", "frame": "#2c2c2c", "plateau": "#1a1a1a" },
-  "ghost": { "body": "#8a8a8a", "frame": "#9a9a9a", "plateau": "#929292" },
   "case": { "color": "#e4ecf2", "opacity": 0.38, "grid": "#d2d2d2" },
   "card": "17e",
   "front": [
@@ -28,7 +27,7 @@
     "title": "Apple",
     "models": "models",
     "cases": "cases",
-    "case": "case",
+    "case": "CASE",
     "loading": "Loading...",
     "edit": "Edit",
     "print": "Print",

@@ -115,6 +115,33 @@ export function buildPhone(p: PhoneSpec, finish: Finish, seg = 24) {
   return { object: framed(p, g), frame: g, materials };
 }
 
+/** a phone without a finished case: its outline as a flat black slab, a low-poly padlock standing on the back */
+export function buildLocked(p: PhoneSpec, seg = 8) {
+  const m = (color: string, o: Partial<THREE.MeshStandardMaterialParameters> = {}) =>
+    new THREE.MeshStandardMaterial({ color, transparent: true, flatShading: true, ...o });
+  const black = m('#050505', { roughness: 0.6 });
+  const lock = m('#3c3c3c', { roughness: 0.4, metalness: 0.6 });
+  const g = new THREE.Group();
+  const step = Math.max(1, Math.round(24 / seg));
+  g.add(new THREE.Mesh(slab(shape(p.ring.filter((_, i) => i % step === 0)), 0, p.T, Math.min(EDGE, p.T / 3), seg), black));
+
+  const w = p.W * 0.36;
+  const h = w * 0.8;
+  const d = 2.4;
+  const cx = p.W / 2;
+  const cy = -p.L / 2 - h * 0.2;
+  const z = -p.T - d / 2;
+  const body = new THREE.BoxGeometry(w, h, d);
+  body.translate(cx, cy, z);
+  const shackle = new THREE.TorusGeometry(w * 0.3, w * 0.075, 4, 6, Math.PI);
+  shackle.translate(cx, cy + h / 2, z);
+  const hole = new THREE.CylinderGeometry(w * 0.07, w * 0.07, 0.4, 5);
+  hole.rotateX(Math.PI / 2);
+  hole.translate(cx, cy, z - d / 2 - 0.1);
+  g.add(new THREE.Mesh(body, lock), new THREE.Mesh(shackle, lock), new THREE.Mesh(hole, black));
+  return { object: framed(p, g), frame: g, materials: [black, lock] };
+}
+
 /** wraps a group drawn in the drawing frame: centred on the phone, turned so the back faces the camera */
 export function framed(p: PhoneSpec, g: THREE.Object3D) {
   const inner = new THREE.Group();

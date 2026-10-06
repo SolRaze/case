@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import '@fontsource/arimo/latin-700.css';
 import theme from '../themes/memcard.json';
 import specs from '../phones.json';
-import { buildPhone, framed, label, type PhoneSpec } from './phone';
+import { buildLocked, buildPhone, framed, label, type PhoneSpec } from './phone';
 import { buildLogo } from './logo';
 import { READY, order, styleName, year } from './catalog';
 import { built, exportStl, load, loadTemplates, saveTemplates } from './cases';
@@ -27,7 +27,7 @@ const card = spec(theme.card);
 // scene: 1 unit = 100 mm
 const MM = 0.01;
 const COLS = 3;
-const CELL = { w: 0.9, h: 2.05 }; // rows clear each other under TILT, the tallest phone included
+const CELL = { w: 0.9, h: 1.9 }; // under TILT a row's foot just tucks behind the next row's top, as on the console
 const FOV = 40;
 const T = Math.tan(THREE.MathUtils.degToRad(FOV / 2));
 const TILT = 0.6; // the grid's plane leans back by this: lower rows sit nearer the camera and read bigger
@@ -107,8 +107,8 @@ function item(object: THREE.Object3D, materials: THREE.Material[], h: number): I
   return { holder, materials, h: h * MM, pos: new THREE.Vector3(), scale: 1, opacity: 0, spin: REST.y, tilt: REST.x, born: 0, ready: true };
 }
 
-// the models page: one finish for every phone, grey where no case is finished yet
-const bodies = phones.map((p) => buildPhone(p, READY.has(p.id) ? theme.finish : theme.ghost, 8));
+// the models page: one finish for every phone, a black slab with a padlock where no case is finished yet
+const bodies = phones.map((p) => (READY.has(p.id) ? buildPhone(p, theme.finish, 8) : buildLocked(p, 8)));
 const models = bodies.map((b, i) => item(b.object, b.materials, phones[i].L));
 const fit = models[phones.indexOf(card)];
 
@@ -183,7 +183,6 @@ let fsel = 0; // front page icon
 let cmd = 0; // detail: 0 edit, 1 print
 let ask = 0; // print: 0 not asked, 1 are you sure, 2 printing
 let yes = false;
-let editFrom = 0;
 let printAt = -1;
 let flip: { i: number; t0: number; dir: 1 | -1 } | null = null;
 let busy = false;
@@ -355,8 +354,9 @@ low.setAnimationLoop((t) => {
     paint();
   }
 
-  // the case on the open phone; printing blows it outward and away
-  let alpha = open ? fit.opacity * theme.case.opacity : 0;
+  // the case on 17e: any template while editing, else the worn one, open or on the models page; printing blows it outward and away
+  const caseOn = view === 'edit' || (store.worn >= 0 && (open || view === 'models'));
+  let alpha = caseOn ? fit.opacity * theme.case.opacity : 0;
   let s = 1;
   if (printAt >= 0) {
     const p = clamp((now - printAt) / 0.7, 0, 1);
@@ -372,9 +372,10 @@ low.setAnimationLoop((t) => {
   const lit = view === 'boot' ? front[fsel] : isGrid(view) ? grid[sel[view]] : null;
   if (lit && !flip && !busy) {
     const g = view === 'boot' ? 0 : pop(lit, now);
+    // pulled toward the camera along the sight line, so it stays on the icon wherever the icon sits on screen
     glow.position.copy(lit.pos);
-    if (view !== 'boot') glow.position.add(new THREE.Vector3(0, -lit.h * lit.scale * 0.3, 0.3));
-    else glow.position.z += 0.3;
+    if (view !== 'boot') glow.position.y -= lit.h * lit.scale * 0.3;
+    glow.position.add(camera.position.clone().sub(glow.position).setLength(0.3));
     glow.scale.setScalar(lit.h * lit.scale * (view === 'boot' ? 0.55 : 0.75));
     glow.material.opacity = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * (view === 'boot' ? 1 : Math.min(g, 1));
   } else glow.material.opacity = 0;
@@ -450,7 +451,8 @@ function paint() {
 
   text('d-maker', S.title);
   text('d-name', label(p.id));
-  text('d-case', t ? `${styleName(t.style)} ${S.case}` : '');
+  const w = store.list[store.worn];
+  text('d-case', w ? `${styleName(w.style)} ${S.case}`.toUpperCase() : '');
   text('d-size', `${p.W} × ${p.L} × ${p.T} mm`);
 
   // the console's delete flow: the chosen option stays as the heading, then a question, then the work
@@ -549,7 +551,7 @@ function leave() {
 }
 
 function print() {
-  const t = store.list[store.cur];
+  const t = store.list[store.worn];
   if (!t) return;
   ask = 2;
   sfx.print();
@@ -578,7 +580,7 @@ function press(k: Press) {
       const style = edited()[sel.cases];
       if (!style) return;
       const i = store.list.findIndex((t) => t.style === style);
-      if (i >= 0) store.cur = i;
+      if (i >= 0) store.cur = store.worn = i;
       saveTemplates(store);
       wear();
       sel.models = models.indexOf(fit);
@@ -601,11 +603,11 @@ function press(k: Press) {
       view = from;
       follow();
     } else if (k === 'cross') {
+      // nothing to print on a bare phone
+      if (cmd === 1 && store.worn < 0) return sfx.cancel();
       sfx.confirm();
-      if (cmd === 0) {
-        view = 'edit';
-        editFrom = store.cur;
-      } else {
+      if (cmd === 0) view = 'edit';
+      else {
         ask = 1;
         yes = false;
       }
@@ -615,12 +617,12 @@ function press(k: Press) {
       sfx.confirm();
       const t = store.list[store.cur];
       if (t) t.edited = new Date().toISOString();
-      saveTemplates(store);
+      store.worn = store.cur;
     } else if (k === 'circle') {
       sfx.cancel();
-      store.cur = editFrom;
-      wear();
+      store.worn = -1;
     } else return;
+    saveTemplates(store);
     view = 'detail';
   }
   paint();

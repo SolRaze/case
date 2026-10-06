@@ -37,12 +37,13 @@ export async function load(phone: string, style: string) {
 
 /** a case the user keeps; styles seed the list, designs will add their own; edited is set when the user saves it from edit */
 export type Template = { style: string; edited?: string; printed?: string };
-export type Templates = { cur: number; list: Template[] };
+/** worn: the index of the template on the phone, -1 bare */
+export type Templates = { cur: number; worn: number; list: Template[] };
 const KEY = 'case.templates';
 
 /** the saved templates, with a template added for every built style that has none */
 export function loadTemplates(built: string[]): Templates {
-  let t: Templates = { cur: 0, list: [] };
+  let t: Templates = { cur: 0, worn: -1, list: [] };
   try {
     const s = JSON.parse(localStorage.getItem(KEY) ?? 'null');
     if (s && Array.isArray(s.list)) t = s;
@@ -51,6 +52,7 @@ export function loadTemplates(built: string[]): Templates {
   }
   for (const style of built) if (!t.list.some((x) => x.style === style)) t.list.push({ style });
   t.cur = Math.min(Math.max(t.cur | 0, 0), Math.max(t.list.length - 1, 0));
+  t.worn = t.list[t.worn] ? t.worn | 0 : -1;
   return t;
 }
 export const saveTemplates = (t: Templates) => localStorage.setItem(KEY, JSON.stringify(t));
