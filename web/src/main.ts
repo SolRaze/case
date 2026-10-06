@@ -377,7 +377,8 @@ low.setAnimationLoop((t) => {
     if (view === 'boot') {
       dot.position.copy(lit.pos).add(toCam.clone().setLength(0.3));
       dot.scale.setScalar(h * 0.55);
-      glow.position.copy(lit.pos).sub(toCam.setLength(0.25));
+      // past the icon's bounding radius, or the tilted icon's far half pokes through the additive glow
+      glow.position.copy(lit.pos).sub(toCam.setLength(h * 0.55));
       glow.scale.set(h * 1.9, h * 0.9, 1);
       glow.material.opacity = dot.material.opacity = o;
     } else {
