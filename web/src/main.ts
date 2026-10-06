@@ -173,7 +173,7 @@ built(card.id).then((list) => {
   paint();
 });
 
-type View = 'boot' | 'models' | 'cases' | 'edit' | 'info';
+type View = 'boot' | 'models' | 'cases' | 'detail' | 'edit' | 'info';
 let view: View = 'boot';
 let from: 'boot' | 'models' = 'boot'; // where ○ on the cases page goes
 let msel = 0; // models grid
@@ -186,6 +186,7 @@ let menu = 0;
 let cmd = 0;
 let yes = false;
 let undo = -1; // edit: the worn template ○ puts back
+let back: 'cases' | 'detail' = 'cases'; // where edit returns
 let printAt = -1;
 let flip: { i: number; t0: number; dir: 1 | -1 } | null = null;
 let busy = false;
@@ -351,7 +352,7 @@ low.setAnimationLoop((t) => {
   const dt = Math.min(timer.getDelta(), 0.05);
   const now = clock();
   fling = damp(fling, 0, 1.5, dt);
-  const open = view === 'cases' || view === 'edit';
+  const open = view === 'cases' || view === 'detail' || view === 'edit';
 
   models.forEach((it, i) => pose(it, view === 'info' && i === msel ? infoTarget(it) : open && it === fit ? openTarget(it) : gridTarget(i), dt, view === 'models' ? pop(it, now) : 1));
   // the ring turns the short way round to the picked design
@@ -460,6 +461,7 @@ const bars: Record<View, [Press, string][]> = {
   boot: [['cross', S.enter]],
   models: [['cross', S.enter], ['circle', S.back], ['triangle', S.options]],
   cases: [['cross', S.pick], ['circle', S.back], ['triangle', S.options]],
+  detail: [],
   edit: [['cross', S.enter], ['circle', S.back]],
   info: [['circle', S.back]],
 };
@@ -475,6 +477,7 @@ const ink$ = (tag: string, s: string, cls = '') => {
 /** the command list's rows and whether each can be picked; a phone with no design only edits */
 function rows(): [string, boolean][] {
   const has = shown().length > 0;
+  if (menu === 1 && view === 'detail') return [[S.copy, true], [S.delete, !!store.list[store.worn]?.edited]];
   if (menu === 1) return [[S.edit, true], [S.print, has], [S.delete, has]];
   if (menu === 2) return [[S.export, true], [S.order, !!theme.order]];
   return [];
@@ -510,6 +513,12 @@ function paint() {
   text('n1', n1);
   text('n2', n2);
 
+  const w = store.list[store.worn];
+  text('d-maker', S.title);
+  text('d-name', label(p.id));
+  text('d-case', w ? `${styleName(w.style)} ${S.case}`.toUpperCase() : '');
+  text('d-size', `${p.W} × ${p.L} × ${p.T} mm`);
+
   const made = p.id === card.id ? list.length : 0;
   text('i-name', `${S.product} ${label(p.id)}`);
   const on = p.id === card.id && store.worn >= 0 ? styleName(store.list[store.worn].style) : S.bare;
@@ -536,7 +545,7 @@ function paint() {
     return li(b);
   };
   const row = ([s, ok]: [string, boolean], i: number) =>
-    button(s, ok && i === cmd, () => (!ok ? sfx.cancel() : cmd === i ? press('cross') : (sfx.tick(), (cmd = i), paint())), [ok ? '' : 'off', menu === 1 && i === 2 ? 'del' : ''].filter(Boolean).join(' '));
+    button(s, ok && i === cmd, () => (!ok ? sfx.cancel() : cmd === i ? press('cross') : (sfx.tick(), (cmd = i), paint())), [ok ? '' : 'off', s === S.delete ? 'del' : ''].filter(Boolean).join(' '));
   if (menu === 1) ul.replaceChildren(...rows().map(row));
   else if (menu === 2) ul.replaceChildren(li(ink$('p', S.print)), ...rows().map(row));
   else if (menu === 3) {
@@ -693,6 +702,10 @@ function command(k: Press) {
     // back one level, the cursor on the row that opened it
     cmd = menu - 1;
     menu = menu === 1 ? 0 : 1;
+    if (view === 'detail' && !menu) {
+      view = 'models';
+      follow();
+    }
     return paint();
   }
   if (k !== 'cross') return;
@@ -700,23 +713,25 @@ function command(k: Press) {
     if (yes) {
       sfx.confirm();
       remove();
+      if (view === 'detail') menu = 1;
     } else {
       sfx.cancel();
       menu = 1;
-      cmd = 2;
+      cmd = view === 'detail' ? 1 : 2;
     }
     return paint();
   }
   if (!rows()[cmd]?.[1]) return sfx.cancel();
   sfx.confirm();
   if (menu === 1 && cmd === 0) {
+    back = view === 'detail' ? 'detail' : 'cases';
     undo = store.worn;
     if (tpl() >= 0) store.cur = tpl();
     wear();
     menu = 0;
     view = 'edit';
   } else if (menu === 1) {
-    menu = cmd === 1 ? 2 : 3;
+    menu = cmd === 1 && view !== 'detail' ? 2 : 3;
     cmd = 0;
     yes = false;
   } else if (cmd === 0) print();
@@ -740,9 +755,13 @@ function press(k: Press) {
     if (k !== 'cross') return;
     if (models[msel] !== fit) return sfx.cancel();
     sfx.confirm();
-    from = 'models';
-    openCases(0);
-  } else if (view === 'cases') {
+    view = 'detail';
+    menu = 1;
+    cmd = 0;
+    // detail's Copy and Delete work on the worn design
+    ring = Math.max(edited().indexOf(store.list[store.worn]?.style ?? ''), 0);
+  } else if (view === 'detail') return command(k);
+  else if (view === 'cases') {
     if (menu) return command(k);
     if (k === 'circle') {
       if (from === 'boot') return leave();
@@ -776,7 +795,11 @@ function press(k: Press) {
       wear();
     } else return;
     saveTemplates(store);
-    view = 'cases';
+    view = back;
+    if (back === 'detail') {
+      menu = 1;
+      cmd = 0;
+    }
   } else if (view === 'info') {
     if (k !== 'circle') return;
     sfx.cancel();
