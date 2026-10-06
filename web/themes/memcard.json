@@ -12,7 +12,7 @@
     "dim": "#5e5e62",
     "del": "#d23c3c"
   },
-  "font": "Arial, Arimo, sans-serif",
+  "font": "\"Helvetica Neue\", Helvetica, Arimo, Arial, sans-serif",
   "buttons": { "cross": "#707070", "circle": "#7f7f7f", "triangle": "#979797" },
   "finish": { "body": "#121212", "frame": "#2c2c2c", "plateau": "#1a1a1a" },
   "case": { "color": "#e4ecf2", "opacity": 0.38, "grid": "#d2d2d2" },

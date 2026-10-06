@@ -21,7 +21,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
 /* the real text: laid out and clickable but unseen, ink.ts draws it into #ink */
 #ui { position: fixed; inset: 0; opacity: 0; pointer-events: none; }
 #ui button { pointer-events: auto; }
-.ink { font-weight: 700; letter-spacing: .02em; white-space: pre-wrap; }
+.ink { font-weight: 500; letter-spacing: .02em; white-space: pre-wrap; }
 
 /* top left the page and what it holds, top right the selected icon, two lines each like the console */
 header, #name {
