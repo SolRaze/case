@@ -10,7 +10,7 @@ ul { list-style: none; }
   content: ''; opacity: 0;
   background: radial-gradient(100% 80% at 30% 30%, var(--detail0), var(--detail1));
 }
-[data-view=detail] #bg::after, [data-view=edit] #bg::after { opacity: .85; }
+[data-view=detail] #bg::after, [data-view=edit] #bg::after, [data-view=info] #bg::after { opacity: .85; }
 
 /* #view and #ink render at the console's line count and are scaled up hard-edged; #hi is the case at full resolution */
 canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
@@ -50,6 +50,16 @@ header { color: var(--brand); }
   #detail { left: 50%; bottom: auto; top: 24%; }
 }
 
+/* △ on a model: its details under the phone, the name in the title yellow */
+#info {
+  position: fixed; left: 0; right: 0; top: 40%;
+  text-align: center; font-size: clamp(14px, min(4.2vw, 2.5vh), 26px); line-height: 1.5;
+}
+#i-name { font-size: 1.5em; color: var(--title); margin-bottom: .3em; }
+@media (min-aspect-ratio: 1/1) {
+  #info { top: 46%; }
+}
+
 footer {
   position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 1.6em;
   padding: 0 4vw calc(2.2vh + env(safe-area-inset-bottom));
@@ -59,9 +69,10 @@ footer button { display: flex; align-items: center; gap: .3em; min-height: 44px;
 footer img { width: 1.5em; height: 1.5em; }
 
 /* what shows where */
-header, #name, #detail, footer { transition: opacity .35s; }
+header, #name, #detail, #info, footer { transition: opacity .35s; }
 [data-view=detail] #name, [data-view=boot] #detail, [data-view=models] #detail,
-[data-view=cases] #detail, [data-view=edit] #detail { opacity: 0; }
+[data-view=cases] #detail, [data-view=edit] #detail, [data-view=info] #detail,
+[data-view=info] #name, body:not([data-view=info]) #info { opacity: 0; }
 body:not([data-view=detail]) #detail button { pointer-events: none; }
 /* the flip into a page: the hud goes first */
 [data-busy] :is(header, #name, #detail, footer) { opacity: 0; transition: opacity .12s; }

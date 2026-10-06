@@ -173,7 +173,7 @@ built(card.id).then((list) => {
   paint();
 });
 
-type View = 'boot' | 'models' | 'cases' | 'detail' | 'edit';
+type View = 'boot' | 'models' | 'cases' | 'detail' | 'edit' | 'info';
 type Grid = 'models' | 'cases';
 let view: View = 'boot';
 let from: Grid = 'models'; // the grid the open phone came from
@@ -272,6 +272,8 @@ function openTarget(it: Item): Target {
   if (view === 'edit') return { pos: ahead(0, pt ? 0.04 : 0.02, D), scale: fill(pt ? 0.56 : 0.78, D, it.h), opacity: 1, spin: false, tilt: 0 };
   return { pos: ahead(pt ? 0 : -0.2, pt ? 0.2 : 0.02, D), scale: fill(pt ? 0.36 : 0.62, D, it.h), opacity: 1, spin: true };
 }
+/** △ on a model: the phone small and still at the top, its details below */
+const infoTarget = (it: Item): Target => ({ pos: ahead(0, portrait() ? 0.26 : 0.22, D), scale: fill(portrait() ? 0.2 : 0.3, D, it.h), opacity: 1, spin: false });
 const frontTarget = (i: number): Target => ({
   pos: ahead((i - (front.length - 1) / 2) * (portrait() ? 0.48 : 0.3), 0.02, D),
   scale: fill((portrait() ? 0.26 : 0.36) * (theme.front[i].size ?? 1), D, front[i].h) * (i === fsel ? 1.12 : 1),
@@ -320,7 +322,7 @@ low.setAnimationLoop((t) => {
   fling = damp(fling, 0, 1.5, dt);
   const open = view === 'detail' || view === 'edit';
 
-  models.forEach((it, i) => pose(it, open && it === fit ? openTarget(it) : gridTarget('models', i), dt, view === 'models' ? pop(it, now) : 1));
+  models.forEach((it, i) => pose(it, view === 'info' && i === sel.models ? infoTarget(it) : open && it === fit ? openTarget(it) : gridTarget('models', i), dt, view === 'models' ? pop(it, now) : 1));
   const shown = gridOf('cases');
   caseItems.forEach((it, i) => {
     const j = shown.indexOf(it);
@@ -349,7 +351,7 @@ low.setAnimationLoop((t) => {
   }
 
   // the case on 17e: any template while editing, else the worn one, open or on the models page; printing blows it outward and away
-  const caseOn = view === 'edit' || (store.worn >= 0 && (open || view === 'models'));
+  const caseOn = view === 'edit' || (store.worn >= 0 && (open || view === 'models' || view === 'info'));
   let alpha = caseOn ? fit.opacity * theme.case.opacity : 0;
   let s = 1;
   if (printAt >= 0) {
@@ -362,17 +364,18 @@ low.setAnimationLoop((t) => {
   caseMat.opacity = alpha;
   caseMesh.visible = alpha > 0.003;
 
-  // the glare: on the selected front icon, over the lower half of the selected grid item; it jumps, never glides
+  // the glare: over the lower half of the selected icon; it jumps, never glides
   const lit = view === 'boot' ? front[fsel] : isGrid(view) ? grid[sel[view]] : null;
   if (lit && !flip && !busy) {
     const g = view === 'boot' ? 0 : pop(lit, now);
     // pulled toward the camera along the sight line, so it stays on the icon wherever the icon sits on screen
     glow.position.copy(lit.pos);
-    if (view !== 'boot') glow.position.y -= lit.h * lit.scale * 0.42;
+    // the front icons lie tilted back, so their lower half sits higher on screen
+    glow.position.y -= lit.h * lit.scale * (view === 'boot' ? 0.22 : 0.42);
     glow.position.add(camera.position.clone().sub(glow.position).setLength(0.3));
     // depth-tested in the grids so the row in front covers it
     glow.material.depthTest = view !== 'boot';
-    glow.scale.setScalar(lit.h * lit.scale * (view === 'boot' ? 0.55 : 1.2));
+    glow.scale.setScalar(lit.h * lit.scale * 1.2);
     glow.material.opacity = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * (view === 'boot' ? 1 : Math.min(g, 1));
   } else glow.material.opacity = 0;
 
@@ -409,6 +412,7 @@ const bars: Record<View, [Press, string][]> = {
   cases: [['cross', S.enter], ['circle', S.back], ['triangle', S.options]],
   detail: [['cross', S.enter], ['circle', S.back]],
   edit: [['cross', S.enter], ['circle', S.back]],
+  info: [['circle', S.back]],
 };
 
 const text = (id: string, s: string) => ($(id).textContent = s);
@@ -450,6 +454,13 @@ function paint() {
   const w = store.list[store.worn];
   text('d-case', w ? `${styleName(w.style)} ${S.case}`.toUpperCase() : '');
   text('d-size', `${p.W} × ${p.L} × ${p.T} mm`);
+
+  const made = p.id === card.id ? shown.length : 0;
+  text('i-name', label(p.id));
+  text('i-maker', S.title);
+  text('i-year', `${S.released} ${year(p.id)}`);
+  text('i-size', `${p.W} × ${p.L} × ${p.T} mm`);
+  text('i-cases', made ? `${made} ${S.cases}` : S.noCases);
 
   // the console's delete flow: the chosen option stays as the heading, then a question, then the work
   const ul = $('commands');
@@ -570,6 +581,11 @@ function press(k: Press) {
   }
   if (isGrid(view)) {
     if (k === 'circle') return leave();
+    if (k === 'triangle' && view === 'models') {
+      sfx.confirm();
+      view = 'info';
+      return paint();
+    }
     if (k !== 'cross') return;
     if (view === 'models' && phones[sel.models].id !== card.id) return sfx.cancel();
     if (view === 'cases') {
@@ -620,6 +636,11 @@ function press(k: Press) {
     } else return;
     saveTemplates(store);
     view = 'detail';
+  } else if (view === 'info') {
+    if (k !== 'circle') return;
+    sfx.cancel();
+    view = 'models';
+    follow();
   }
   paint();
 }
@@ -650,7 +671,8 @@ function move(dx: number, dy: number) {
   } else if (view === 'edit') {
     if (!dx) return;
     return swap(dx);
-  } else if (ask === 1) yes = !yes;
+  } else if (view === 'info') return;
+  else if (ask === 1) yes = !yes;
   else if (ask === 0 && dy) cmd = (cmd + 2 + dy) % 2;
   else return;
   sfx.tick();

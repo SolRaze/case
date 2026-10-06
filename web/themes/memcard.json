@@ -38,6 +38,8 @@
     "keep": "Do not close this page.",
     "enter": "Enter",
     "back": "Back",
-    "options": "Options"
+    "options": "Options",
+    "released": "Released",
+    "noCases": "No cases yet"
   }
 }
