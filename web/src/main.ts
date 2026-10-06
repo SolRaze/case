@@ -193,6 +193,7 @@ let flip: { i: number; t0: number; dir: 1 | -1 } | null = null;
 let busy = false;
 let camV = 0; // camera along the grid plane, in flat grid units
 let fling = 0; // extra spin from a swipe, decays to the theme's spin
+let grab = false; // a finger is on the open phone: it turns with the finger, not by itself
 let dist = 4;
 let loading = false;
 
@@ -329,7 +330,9 @@ function pose(it: Item, t: Target, dt: number, grow = 1) {
   it.pos.z = damp(it.pos.z, t.pos.z, 7, dt);
   it.scale = damp(it.scale, t.scale, 7, dt);
   it.opacity = damp(it.opacity, t.opacity, 6, dt);
-  if (t.spin) {
+  if (t.spin && grab) {
+    // pointermove turns it
+  } else if (t.spin) {
     it.spin += dt * (theme.spin + fling);
     it.tilt = damp(it.tilt, -0.05, 4, dt);
   } else {
@@ -917,12 +920,19 @@ addEventListener('pointerdown', sfx.unlock, { capture: true, once: true });
 addEventListener('keydown', sfx.unlock, { capture: true, once: true });
 
 // touch: tap picks, a second tap on the picked icon is ✕; vertical drag scrolls the grid,
-// horizontal drag flings the cases page's phone round, a horizontal swipe in edit changes the case
+// on the cases and detail pages a touch holds the phone and a drag turns and tips it, let go mid-swipe and it flings on;
+// a horizontal swipe in edit changes the case
 const ray = new THREE.Raycaster();
 const canvas = $('view');
-let down: { x: number; y: number; camV: number; last: number } | null = null;
+/** radians per pixel dragged across the open phone */
+const TURN = 0.012;
+let down: { x: number; y: number; camV: number; last: number; lastY: number; t: number; v: number } | null = null;
 canvas.addEventListener('pointerdown', (e) => {
-  down = { x: e.clientX, y: e.clientY, camV, last: e.clientX };
+  down = { x: e.clientX, y: e.clientY, camV, last: e.clientX, lastY: e.clientY, t: e.timeStamp, v: 0 };
+  if ((view === 'cases' || view === 'detail') && menu < 2) {
+    grab = true;
+    fling = 0;
+  }
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener('pointermove', (e) => {
@@ -930,15 +940,29 @@ canvas.addEventListener('pointermove', (e) => {
   if (view === 'models') {
     const { min, max } = camLimits();
     camV = clamp(down.camV + ((e.clientY - down.y) / innerHeight) * 2 * dist * T, min, max);
-  } else if (view === 'cases') {
-    fling += (e.clientX - down.last) * 0.08;
+  } else if (grab) {
+    const dx = (e.clientX - down.last) * TURN;
+    fit.spin += dx;
+    fit.tilt = clamp(fit.tilt + (e.clientY - down.lastY) * TURN, -0.7, 0.7);
+    down.v = dx / Math.max((e.timeStamp - down.t) / 1000, 1e-3);
     down.last = e.clientX;
+    down.lastY = e.clientY;
+    down.t = e.timeStamp;
   }
+});
+canvas.addEventListener('pointercancel', () => {
+  down = null;
+  grab = false;
 });
 canvas.addEventListener('pointerup', (e) => {
   const d = down;
   down = null;
   if (!d) return;
+  if (grab) {
+    grab = false;
+    // a swipe still moving at release carries on, a held stop does not
+    if (e.timeStamp - d.t < 80) fling = clamp(d.v - theme.spin, -30, 30);
+  }
   const dx = e.clientX - d.x;
   if (view === 'edit' && Math.abs(dx) > 40) return swap(dx < 0 ? 1 : -1);
   if (Math.hypot(dx, e.clientY - d.y) > 8) return;
