@@ -57,7 +57,7 @@ for (const l of [key, rim]) {
 camera.add(key, rim);
 scene.add(camera, sky);
 
-/** a hot white core whose light bleeds past the icon's edges: the selected icon's underglow and its centre dot */
+/** a hot white core whose light bleeds past the icon's edges: the selection glows */
 function glowSprite() {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
@@ -365,22 +365,30 @@ low.setAnimationLoop((t) => {
   caseMat.opacity = alpha;
   caseMesh.visible = alpha > 0.003;
 
-  // the underglow: a wide flat pool of light behind the selected icon's bottom edge, the icon itself covers its top; it jumps, never glides
+  // front page: a centre dot in front of the icon and an underglow behind it on the same spot
+  // phone selection grid: one glow on the icon's lower part, depth-tested so the row in front covers it
+  // both jump, never glide
   const lit = view === 'boot' ? front[fsel] : isGrid(view) ? grid[sel[view]] : null;
   if (lit && !flip && !busy) {
-    const g = view === 'boot' ? 0 : pop(lit, now);
+    const g = view === 'boot' ? 1 : Math.min(pop(lit, now), 1);
     const h = lit.h * lit.scale;
-    glow.position.copy(lit.pos);
-    // the front icons lie tilted back, so their bottom edge sits higher on screen
-    glow.position.y -= h * (view === 'boot' ? 0.36 : 0.55);
-    // pushed away from the camera along the sight line, so it sits behind the icon wherever the icon is on screen
-    glow.position.add(glow.position.clone().sub(camera.position).setLength(0.25));
-    glow.scale.set(h * 1.9, h * 0.9, 1);
-    glow.material.opacity = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * (view === 'boot' ? 1 : Math.min(g, 1));
-    // the centre dot: on the icon's middle, pulled toward the camera so it sits in front of it
-    dot.position.copy(lit.pos).add(camera.position.clone().sub(lit.pos).setLength(0.3));
-    dot.scale.setScalar(h * 0.55);
-    dot.material.opacity = glow.material.opacity;
+    const toCam = camera.position.clone().sub(lit.pos);
+    const o = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * g;
+    if (view === 'boot') {
+      dot.position.copy(lit.pos).add(toCam.clone().setLength(0.3));
+      dot.scale.setScalar(h * 0.55);
+      glow.position.copy(lit.pos).sub(toCam.setLength(0.25));
+      glow.scale.set(h * 1.9, h * 0.9, 1);
+      glow.material.opacity = dot.material.opacity = o;
+    } else {
+      dot.position.copy(lit.pos);
+      dot.position.y -= h * 0.42;
+      dot.position.add(camera.position.clone().sub(dot.position).setLength(0.3));
+      dot.scale.setScalar(h * 1.2);
+      dot.material.opacity = o;
+      glow.material.opacity = 0;
+    }
+    dot.material.depthTest = view !== 'boot';
   } else glow.material.opacity = dot.material.opacity = 0;
 
   const c = camAt();
