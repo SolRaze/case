@@ -376,7 +376,7 @@ low.setAnimationLoop((t) => {
     glow.position.copy(lit.pos);
     if (view !== 'boot') glow.position.y -= lit.h * lit.scale * 0.3;
     glow.position.add(camera.position.clone().sub(glow.position).setLength(0.3));
-    glow.scale.setScalar(lit.h * lit.scale * (view === 'boot' ? 0.55 : 0.75));
+    glow.scale.setScalar(lit.h * lit.scale * (view === 'boot' ? 0.55 : 1.2));
     glow.material.opacity = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * (view === 'boot' ? 1 : Math.min(g, 1));
   } else glow.material.opacity = 0;
 
