@@ -524,7 +524,6 @@ function paint() {
     n2 = f === 'logo' ? `${models.length} ${S.models}` : `${list.length} ${S.cases}`;
   } else if (view === 'models') {
     n1 = label(p.id);
-    n2 = year(p.id);
   } else if (view === 'cases') {
     n1 = list.length ? styleName(list[ring]) : S.noCases;
     n2 = pages > 1 ? `${label(card.id)} ${page() + 1}/${pages}` : label(card.id);
