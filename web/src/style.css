@@ -49,19 +49,22 @@ header { color: var(--brand); }
   #detail { left: 50%; bottom: auto; top: 24%; }
 }
 
-/* △ on a model: the small phone top left (main.ts infoTarget), its name in the title yellow beside it,
-   then each detail with its label; the offsets follow the phone's spot and size */
-#info { font-size: clamp(14px, min(4.2vw, 2.5vh), 26px); line-height: 1.5; }
-#i-name { position: fixed; left: 30%; top: 20%; transform: translateY(-50%); font-size: 1.5em; color: var(--title); }
-#i-list {
-  position: fixed; left: 8vw; right: 8vw; top: 31%;
-  display: grid; grid-template-columns: auto 1fr; column-gap: 1.2em;
+/* △ on a model: one block whose left edge is the small phone's (main.ts infoTarget) and whose right edge is
+   the widest of the name and the values; --px --py --pw --ph are that phone's centre and size, keep them in step */
+#info {
+  --px: 20vw; --py: 20vh; --pw: 6.3vh; --ph: 12.6vh;
+  position: fixed; left: calc(var(--px) - var(--pw) / 2); top: calc(var(--py) - var(--ph) / 2);
+  display: grid; row-gap: 1.2em; font-size: clamp(14px, min(4.2vw, 2.5vh), 26px); line-height: 1.5;
 }
+#i-name {
+  min-height: var(--ph); padding-left: calc(var(--pw) + 1em);
+  display: flex; align-items: center; justify-content: flex-end; font-size: 1.5em; color: var(--title);
+}
+#i-list { display: grid; grid-template-columns: auto 1fr; column-gap: 1.2em; }
 #i-list dt { color: var(--dim); }
 #i-list dd { text-align: right; }
 @media (min-aspect-ratio: 1/1) {
-  #i-name { left: 26%; top: 24%; }
-  #i-list { left: 12%; right: auto; width: min(30em, 50%); top: 39%; }
+  #info { --py: 24vh; --pw: 10vh; --ph: 18.6vh; }
 }
 
 footer {

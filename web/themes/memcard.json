@@ -50,6 +50,9 @@
     "size": "Size",
     "made": "Cases",
     "none": "None yet",
+    "wearing": "Case on",
+    "bare": "Bare",
+    "product": "iPhone",
     "noCases": "No cases yet"
   }
 }

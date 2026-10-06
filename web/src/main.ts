@@ -511,13 +511,15 @@ function paint() {
   text('n2', n2);
 
   const made = p.id === card.id ? list.length : 0;
-  text('i-name', label(p.id));
+  text('i-name', `${S.product} ${label(p.id)}`);
+  const on = p.id === card.id && store.worn >= 0 ? styleName(store.list[store.worn].style) : S.bare;
   $('i-list').replaceChildren(
     ...[
       [S.maker, S.title],
       [S.released, year(p.id)],
       [S.size, `${p.W} × ${p.L} × ${p.T} mm`],
       [S.made, made ? String(made) : S.none],
+      [S.wearing, on],
     ].flatMap(([k, v]) => [ink$('dt', k), ink$('dd', v)]),
   );
 
