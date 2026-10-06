@@ -281,7 +281,7 @@ const hub = () => (portrait() ? { x: 0, y: 0.06 } : { x: -0.2, y: 0.02 });
 function openTarget(it: Item): Target {
   const pt = portrait();
   if (view === 'edit') return { pos: ahead(0, pt ? 0.04 : 0.02, D), scale: fill(pt ? 0.56 : 0.78, D, it.h), opacity: 1, spin: false, tilt: 0 };
-  if (view === 'detail') return { pos: ahead(pt ? 0 : -0.2, pt ? 0.2 : 0.02, D), scale: fill(pt ? 0.36 : 0.62, D, it.h), opacity: 1, spin: true };
+  if (view === 'detail') return { pos: ahead(pt ? 0 : -0.2, pt ? 0.1 : 0.02, D), scale: fill(pt ? 0.36 : 0.62, D, it.h), opacity: 1, spin: true };
   return { pos: ahead(hub().x, hub().y, D), scale: fill(pt ? 0.24 : 0.36, D, it.h), opacity: 1, spin: true };
 }
 const page = () => Math.floor(ring / RING);
@@ -496,7 +496,7 @@ const ink$ = (tag: string, s: string, cls = '') => {
 /** the command list's rows and whether each can be picked; a phone with no design only edits */
 function rows(): [string, boolean][] {
   const has = shown().length > 0;
-  if (menu === 1 && view === 'detail') return [[S.copy, true], [S.delete, !!store.list[store.worn]?.edited]];
+  if (menu === 1 && view === 'detail') return [[S.copy, store.worn >= 0], [S.delete, !!store.list[store.worn]?.edited]];
   if (menu === 1) return [[S.edit, true], [S.print, has], [S.delete, has]];
   if (menu === 2) return [[S.export, true], [S.order, !!theme.order]];
   return [];
