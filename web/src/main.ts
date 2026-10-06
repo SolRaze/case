@@ -225,7 +225,7 @@ function solve(i: number, y: number) {
   return (lo + hi) / 2;
 }
 // rows stay between the header and the button bar
-const TOP = 0.5 - 0.24;
+const TOP = 0.5 - 0.3; // room for the picked icon's PULL growth under the header
 const BOTTOM = -0.5 + 0.22;
 const camLimits = () => {
   const n = gridOf(here()).length;
@@ -435,7 +435,6 @@ function paint() {
     n2 = label(card.id);
   } else if (view === 'edit' && t) {
     n1 = styleName(t.style);
-    n2 = `${store.cur + 1} / ${store.list.length}`;
   }
   text('n1', n1);
   text('n2', n2);
