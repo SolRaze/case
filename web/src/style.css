@@ -1,10 +1,13 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; background: #000; font-family: var(--font); color: var(--ink); }
+/* Safari colours its toolbars with the root background colour;
+   html and #bg both span 100lvh from the top so the two gradients line up with no seam or repeat */
+html { background: #000 linear-gradient(115deg, var(--field0, #c4c4c4), var(--field1, #8c8c8c) 40%, var(--field2, #5a5a5a) 70%, var(--field3, #363636)) 0 0 / 100% 100lvh no-repeat; }
+html, body { height: 100%; overflow: hidden; font-family: var(--font); color: var(--ink); }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 ul { list-style: none; }
 
 /* the browser's lit grey, light top left to dark bottom right; an open phone dims it */
-#bg, #bg::after { position: fixed; inset: 0; transition: opacity .5s; }
+#bg, #bg::after { position: fixed; top: 0; left: 0; right: 0; height: 100lvh; transition: opacity .5s; }
 #bg { background: linear-gradient(115deg, var(--field0), var(--field1) 40%, var(--field2) 70%, var(--field3)); }
 #bg::after {
   content: ''; opacity: 0;
@@ -53,6 +56,25 @@ body:not([data-view=detail]) #detail > p { display: none; }
 @media (min-aspect-ratio: 1/1) {
   #detail { left: 50%; bottom: auto; top: 24%; }
 }
+/* edit: the style, then a part set's parts with their boolean op */
+#parts {
+  position: fixed; left: 0; right: 0; bottom: calc(9vh + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; align-items: center; font-size: clamp(13px, min(3.6vw, 2.1vh), 22px);
+}
+#parts li { display: flex; align-items: center; }
+#parts button { min-height: 1.6em; color: var(--dim); white-space: pre; }
+#parts button.on { color: var(--pick); }
+#parts .name { min-width: 7.5em; text-align: left; }
+#parts .value { min-width: 6.5em; text-align: center; }
+#parts .step { padding: 0 .7em; }
+#parts button.step:not(.on) { opacity: .4; }
+#parts .title { min-height: 1.6em; color: var(--title); }
+#parts .moved .name:not(.on) { color: var(--title); }
+#parts li:has(> .group) { width: 17.4em; }
+#parts .group { margin-top: .5em; font-size: .78em; letter-spacing: .08em; text-transform: uppercase; color: var(--title); opacity: .75; }
+@media (min-aspect-ratio: 1/1) {
+  #parts { left: 68%; bottom: auto; top: 24%; align-items: flex-start; }
+}
 
 /* △ on a model: main.ts infoTarget centres the phone over the label column, level with the name;
    --pw --ph are that phone's size, keep them in step with its fill */
@@ -82,7 +104,7 @@ body:not([data-view=detail]) #detail > p { display: none; }
   position: fixed; left: 50%; width: clamp(22px, 4vh, 44px); margin-left: calc(clamp(22px, 4vh, 44px) / -2);
 }
 #up { top: calc(14vh + env(safe-area-inset-top)); }
-#down { bottom: calc(16.5vh + env(safe-area-inset-bottom)); }
+#down { bottom: calc(16.5vh - 16px + env(safe-area-inset-bottom)); }
 
 footer {
   position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 1.6em;
@@ -91,13 +113,16 @@ footer {
 }
 footer button { display: flex; align-items: center; gap: .3em; min-height: 44px; }
 footer img { width: 1.5em; height: 1.5em; }
+/* move's six buttons: closer, L1 against R1, and onto a second line before they leave the screen */
+footer.dense { gap: .4em .8em; flex-wrap: wrap; }
+footer .pair { margin-right: -.5em; }
 
 /* what shows where */
-header, #name, #detail, #info, footer, #loading, #up, #down { transition: opacity .35s; }
+header, #name, #detail, #parts, #info, footer, #loading, #up, #down { transition: opacity .35s; }
 body:not([data-loading]) #loading, body:not([data-up]) #up, body:not([data-down]) #down { opacity: 0; }
 body:not([data-menu]) #detail, [data-view=info] #name, [data-view=detail] #name, body:not([data-view=info]) #info { opacity: 0; }
 body:not([data-menu]) #detail button { pointer-events: none; }
 /* the flip into a page: the hud goes first */
-[data-busy] :is(header, #name, #detail, footer) { opacity: 0; transition: opacity .12s; }
+[data-busy] :is(header, #name, #detail, #parts, footer) { opacity: 0; transition: opacity .12s; }
 
 #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; }

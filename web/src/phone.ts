@@ -115,13 +115,16 @@ export function buildPhone(p: PhoneSpec, finish: Finish, seg = 24) {
   return { object: framed(p, g), frame: g, materials };
 }
 
-/** a phone with no finished case yet: the body's outline and a solid padlock */
+/** a phone with no finished case yet: the body and a padlock, see-through black under a black wireframe */
 export function buildLocked(p: PhoneSpec, seg = 8) {
-  const ink = new THREE.LineBasicMaterial({ color: '#000000', transparent: true });
-  const lines = (geo: THREE.BufferGeometry) => new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), ink);
+  // userData.alpha: main.ts pose scales the fade by it, so the phone stays see-through
+  const fill = new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, userData: { alpha: 0.55 } });
+  const ink = new THREE.LineBasicMaterial({ color: '#000000', transparent: true, userData: { alpha: 0.85 } });
+  // black solid with its black wireframe on top
+  const solid = (geo: THREE.BufferGeometry) => [new THREE.Mesh(geo, fill), new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), ink)];
   const g = new THREE.Group();
   const step = Math.max(1, Math.round(24 / seg));
-  g.add(lines(slab(shape(p.ring.filter((_, i) => i % step === 0)), 0, p.T, Math.min(EDGE, p.T / 3), seg)));
+  g.add(...solid(slab(shape(p.ring.filter((_, i) => i % step === 0)), 0, p.T, Math.min(EDGE, p.T / 3), seg)));
 
   const w = p.W * 0.36;
   const h = w * 0.8;
@@ -133,9 +136,8 @@ export function buildLocked(p: PhoneSpec, seg = 8) {
   body.translate(cx, cy, z);
   const shackle = new THREE.TorusGeometry(w * 0.3, w * 0.075, 8, 16, Math.PI);
   shackle.translate(cx, cy + h / 2, z);
-  const fill = new THREE.MeshBasicMaterial({ color: '#000000', transparent: true });
-  g.add(new THREE.Mesh(body, fill), new THREE.Mesh(shackle, fill));
-  return { object: framed(p, g), frame: g, materials: [ink, fill] };
+  g.add(...solid(body), ...solid(shackle));
+  return { object: framed(p, g), frame: g, materials: [fill, ink] };
 }
 
 /** wraps a group drawn in the drawing frame: centred on the phone, turned so the back faces the camera */

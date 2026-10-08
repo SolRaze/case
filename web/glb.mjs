@@ -2,6 +2,7 @@
 // plus previews/<phone>/<style>.png beside it and public/glb/index.json listing what exists.
 // Skips a glb newer than its stl. Run after case.py --all: npm run glb
 // Only the styles in KEEP reach the web catalog; out/ keeps every style.
+// A folder with a parts.json is a part set: public/glb/<phone>/<set>/<part>.glb and its parts.json.
 import fs from 'node:fs';
 import path from 'node:path';
 import { Document, NodeIO } from '@gltf-transform/core';
@@ -54,6 +55,22 @@ for (const phone of fs.readdirSync(path.join(root, 'out')).sort()) {
     const png = path.join(root, 'previews', phone, `${style}.png`);
     if (fs.existsSync(png)) fs.copyFileSync(png, path.join(dst, phone, `${style}.png`));
     (index[phone] ??= []).push(style);
+  }
+  // a part set: out/<phone>/<set>/parts.json lists its stls, each one glb, combined live in the edit view
+  for (const set of fs.readdirSync(dir).filter((f) => fs.existsSync(path.join(dir, f, 'parts.json'))).sort()) {
+    const parts = JSON.parse(fs.readFileSync(path.join(dir, set, 'parts.json'), 'utf8'));
+    const out = path.join(dst, phone, set);
+    fs.mkdirSync(out, { recursive: true });
+    for (const { name } of parts) {
+      const stl = path.join(dir, set, `${name}.stl`);
+      const glb = path.join(out, `${name}.glb`);
+      if (!fs.existsSync(glb) || fs.statSync(glb).mtimeMs < fs.statSync(stl).mtimeMs) {
+        await convert(stl, glb);
+        built++;
+      }
+    }
+    fs.copyFileSync(path.join(dir, set, 'parts.json'), path.join(out, 'parts.json'));
+    (index[phone] ??= []).push(set);
   }
 }
 fs.writeFileSync(path.join(dst, 'index.json'), JSON.stringify(index));
