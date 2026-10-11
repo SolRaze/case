@@ -5,7 +5,7 @@ import specs from '../phones.json';
 import { buildLocked, buildPhone, framed, label, type PhoneSpec } from './phone';
 import { buildLogo } from './logo';
 import { READY, order, styleName, year } from './catalog';
-import { built, exportStl, isSet, load, loadTemplates, placing, saveTemplates, solid, type Template } from './cases';
+import { built, exportStl, isSet, load, loadTemplates, placing, saveTemplates, SINK, solid, type Template } from './cases';
 import { STEPS, combine, opsKey, partList, type Move, type Moves, type Op, type Part } from './parts';
 import { inkLayer } from './ink';
 import * as sfx from './sound';
@@ -123,11 +123,18 @@ const caseMat = new THREE.MeshStandardMaterial({
 const caseMesh = new THREE.Mesh(new THREE.BufferGeometry(), caseMat);
 const centre = new THREE.Vector3(card.W / 2, -card.L / 2, -card.T / 2);
 // edit's move: the part where it will go, drawn over the case, and the grid it snaps to
+// the ghost is lit and drawn once per pixel: its depth-only copy goes first, so its own far faces do not stack into blotches
+// and the phone hides what sinks into it; the case writes no depth, so the ghost shows through the case
+const ghostCut: THREE.Plane[] = [];
 const ghost = new THREE.Mesh(
   new THREE.BufferGeometry(),
-  new THREE.MeshBasicMaterial({ color: C.pick, transparent: true, opacity: 0.5, depthTest: false, depthWrite: false, clippingPlanes: [] }),
+  new THREE.MeshStandardMaterial({ color: C.pick, emissive: C.pick, emissiveIntensity: 0.35, roughness: 0.6, transparent: true, opacity: 0.6, depthWrite: false, clippingPlanes: ghostCut }),
 );
 ghost.matrixAutoUpdate = false;
+const ghostDepth = new THREE.Mesh(ghost.geometry, new THREE.MeshBasicMaterial({ colorWrite: false, clippingPlanes: ghostCut }));
+ghostDepth.layers.set(1);
+ghost.add(ghostDepth);
+const setGhost = (g: THREE.BufferGeometry) => (ghost.geometry = ghostDepth.geometry = g);
 const snapGrid = new THREE.LineSegments(
   new THREE.BufferGeometry(),
   new THREE.LineBasicMaterial({ color: C.pick, transparent: true, opacity: 0.22, depthTest: false, depthWrite: false }),
@@ -164,6 +171,8 @@ const setParts = new Map<string, Part[]>();
 type Look = Pick<Template, 'style' | 'ops' | 'moves'>;
 const copyLook = (l: Look): Look => ({ style: l.style, ops: l.ops && { ...l.ops }, moves: l.moves && { ...l.moves } });
 let starts: { name: string; look: Look }[] = [];
+/** finished designs kept out of the start row: ✕ on it steps through them, and the bar shows no key for it */
+let creations: typeof starts = [];
 let store = loadTemplates([]);
 
 /** solved cases by style and ops, shared by the ring, the phone, edit and print; oldest dropped past GEOS */
@@ -182,20 +191,22 @@ function caseOf(t: Look, lane?: string) {
   }
   return geos.get(k)!;
 }
-let solving = 0; // the phone's solve in flight, a later one wins
+let solving = 0; // 1 while the phone's solve is in flight
+let asked = 0; // counts wear's calls and never rewinds: only the latest may land
 /** puts a design's case on the open phone */
 function wear(t?: Look) {
   if (!t) return;
-  const n = ++solving;
+  const n = ++asked;
+  solving = 1;
   caseOf(t, 'edit').then(
     (g) => {
-      if (n !== solving) return;
+      if (n !== asked) return;
       solving = 0;
       caseMesh.geometry = g;
       paint();
     },
     () => {
-      if (n !== solving) return;
+      if (n !== asked) return;
       solving = 0;
       sfx.cancel();
       paint();
@@ -232,16 +243,16 @@ function dropItem(t: Template) {
 built(card.id).then(async (list) => {
   for (const s of list.filter(isSet)) setParts.set(s, (await partList(card.id, s)).list);
   styles = list;
-  // a part set starts bare, its shell with every part off, or with its parts.json ops; a style as built
+  // a part set starts bare, its shell with every part off; a style as built. A set with its parts.json ops is a creation
   const sets = list.filter(isSet);
   starts = [
     ...sets.map((s) => ({
       name: sets.length > 1 ? `${S.base} ${styleName(s)}` : S.base,
       look: { style: s, ops: Object.fromEntries(setParts.get(s)!.filter((p) => p.op !== 'base').map((p): [string, Op] => [p.name, 'off'])) },
     })),
-    ...sets.map((s) => ({ name: styleName(s), look: { style: s } })),
     ...list.filter((s) => !isSet(s)).map((s) => ({ name: styleName(s), look: { style: s } })),
   ];
+  creations = sets.map((s) => ({ name: styleName(s), look: { style: s } }));
   store = loadTemplates(list);
   wear(store.list[store.worn]);
   paint();
@@ -265,6 +276,11 @@ let editing = -1; // edit: the design ✕ saves over, -1 a new one
 let psel = 0; // edit: 0 the start row, then the parts added
 let adding = false; // edit: □ opened the list of parts not yet added
 let asel = 0; // edit: the picked row of that list
+let agroup: string | null = null; // edit: the group of parts that list shows; null while it lists the groups
+let past: Look[] = []; // edit: the draft before each change, newest last; Undo takes one back
+let origin: Look | null = null; // edit: the look it opened on; ○ on a draft off it asks before dropping it
+let leaving = false; // edit: ○ asked once, a second ○ drops the draft
+const orbit = { yaw: 0, tilt: 0 }; // edit: a drag turns the phone to look round the case; a move starts square-on
 // edit: □ on a part moves and turns it on the back; at is its place, from what ○ puts back, snap steps it on the grid and by ANGLE;
 // c is the part's middle, lo hi the x y z shifts that keep that middle over the case and within RISE of the back, box the case's outline, part the part's
 let moving: {
@@ -288,11 +304,19 @@ let loading = false;
 const RING = 8; // designs on one ring page
 /** the saved designs on built styles, in the order they were made */
 const edited = () => store.list.filter((t) => t.edited && styles.includes(t.style));
-const shown = () => edited().map(itemOf);
+/** the cases page as the showcase page: its ring holds the creations, ✕ opens a copy of one in edit */
+let gallery = false;
+/** showcase's preview: the picked creation alone on the phone, big and turning */
+let peek = false;
+/** the phone in the ring's middle tries the picked creation on */
+const tryOn = () => gallery && wear(creations[ring].look);
+/** the designs on the ring */
+const ringList = (): Template[] => (gallery ? creations.map((c) => c.look) : edited());
+const shown = () => ringList().map(itemOf);
 /** the picked design's index in store.list, -1 with none */
 const tpl = () => store.list.indexOf(edited()[ring]);
 /** a look's start name; a part set's look that is no start is custom */
-const lookName = (t: Look) => starts.find((s) => sameLook(s.look, t))?.name ?? (isSet(t.style) ? S.custom : styleName(t.style));
+const lookName = (t: Look) => [...starts, ...creations].find((s) => sameLook(s.look, t))?.name ?? (isSet(t.style) ? S.custom : styleName(t.style));
 /** a design's name on screen: its look's, numbered when designs share it */
 function designName(t: Template) {
   const n = lookName(t);
@@ -381,15 +405,18 @@ function openTarget(it: Item): Target {
   if (view === 'edit') {
     // EDIT times as far and as much bigger: the parts stand tens of mm off the back, and up close perspective spreads them past the case's sides
     const E = D * EDIT;
-    const yaw = moving && side ? -Math.PI / 2 : 0;
-    if (!pt) return { pos: ahead(0, 0.02, E), scale: fill(0.78, E, it.h), opacity: 1, spin: false, tilt: 0, yaw };
+    const yaw = moving ? (side ? -Math.PI / 2 : 0) : orbit.yaw;
+    const tilt = moving ? 0 : orbit.tilt;
+    // landscape: left of the list, which style.css #parts starts at 56%
+    if (!pt) return { pos: ahead(-0.2, 0.02, E), scale: fill(0.74, E, it.h), opacity: 1, spin: false, tilt, yaw };
     // portrait: in the band between the header and the part list
     const list = $('parts').getBoundingClientRect();
     const top = 0.1 * innerHeight, bottom = list.height ? list.top - 0.02 * innerHeight : 0.88 * innerHeight;
     const y = 0.5 - (top + bottom) / 2 / innerHeight;
-    return { pos: ahead(0, y, E), scale: fill(Math.min(0.62, (bottom - top) / innerHeight), E, it.h), opacity: 1, spin: false, tilt: 0, yaw };
+    // 0.86: the case and its parts stand past the phone's own height
+    return { pos: ahead(0, y, E), scale: fill(Math.min(0.62, (0.86 * (bottom - top)) / innerHeight), E, it.h), opacity: 1, spin: false, tilt, yaw };
   }
-  if (view === 'detail') return { pos: ahead(pt ? 0 : -0.2, pt ? 0.1 : 0.02, D), scale: fill(pt ? 0.36 : 0.62, D, it.h), opacity: 1, spin: true };
+  if (view === 'detail' || peek) return { pos: ahead(pt ? 0 : -0.2, pt ? 0.1 : 0.02, D), scale: fill(pt ? 0.36 : 0.62, D, it.h), opacity: 1, spin: true };
   return { pos: ahead(hub().x, hub().y, D), scale: fill(pt ? 0.24 : 0.36, D, it.h), opacity: 1, spin: true };
 }
 const page = () => Math.floor(ring / RING);
@@ -398,7 +425,7 @@ function ringTarget(it: Item, j: number): Target {
   const n = shown().length;
   const k = j - page() * RING;
   const m = Math.min(RING, n - page() * RING);
-  if (view !== 'cases' || k < 0 || k >= m) return gone(j);
+  if (view !== 'cases' || peek || k < 0 || k >= m) return gone(j);
   const a = -Math.PI / 2 + ((k - turn) * 2 * Math.PI) / m;
   const pt = portrait();
   const pos = ahead(hub().x + Math.cos(a) * (pt ? 0.34 : 0.17), hub().y + Math.sin(a) * (pt ? 0.22 : 0.3), D);
@@ -496,7 +523,7 @@ low.setAnimationLoop((t) => {
   });
 
   const grid = view === 'models' ? models : view === 'cases' ? list : [];
-  const busyPop = grid.some((it) => !it.ready || now < it.born + 0.3) || (solving > 0 && open);
+  const busyPop = grid.some((it) => !it.ready || now < it.born + 0.3) || (solving > 0 && open && view !== 'edit');
   if (busyPop !== loading) {
     loading = busyPop;
     paint();
@@ -510,9 +537,9 @@ low.setAnimationLoop((t) => {
   });
 
   // the case on 17e: any template while editing, else the worn one, open or on the models page; printing blows it outward and away
-  const caseOn = view === 'edit' || (store.worn >= 0 && (open || view === 'models' || view === 'info'));
+  const caseOn = view === 'edit' || (view === 'cases' && gallery) || (store.worn >= 0 && (open || view === 'models' || view === 'info'));
   // a solve in flight in edit dims the case it will replace
-  let alpha = caseOn ? fit.opacity * theme.case.opacity * (view === 'edit' && solving ? 0.45 : 1) : 0;
+  let alpha = caseOn ? fit.opacity * theme.case.opacity * (view === 'edit' && solving ? 0.7 : 1) : 0;
   let s = 1;
   if (printAt >= 0) {
     const p = clamp((now - printAt) / 0.7, 0, 1);
@@ -602,20 +629,23 @@ const bars: Record<View, [Press, string][]> = {
   info: [['circle', S.back]],
 };
 
-/** edit's buttons follow the picked row: □ adds on the start row and moves a part; moving, they place, snap, cancel and reset it */
+/** edit's bar: what ✕ does on the picked row, ○, and △ on a part; a move's other controls are rows beside the phone */
 function editBar(): [Press, string][] {
-  if (adding) return [['cross', S.add], ['circle', S.back]];
-  // a turn does not show edge-on, so the edge view has no L1 R1
-  if (moving)
-    return [
-      ['cross', S.place], ['square', moving.snap ? S.free : S.snap], ['circle', S.cancel], ['triangle', side ? S.flat : S.side],
-      ...(side ? [] : ([['l1', ''], ['r1', S.turn]] as [Press, string][])),
-    ];
-  if (psel) return [['cross', S.save], ['square', S.move], ['circle', S.back], ['triangle', S.remove]];
-  return [['cross', S.save], ...(addable().length ? [['square', S.add] as [Press, string]] : []), ['circle', S.back]];
+  if (leaving) return [['cross', S.stay], ['circle', S.discard]];
+  if (adding) return [['cross', agroup === null ? S.enter : S.add], ['circle', S.back]];
+  if (moving) return [['cross', S.place], ['circle', S.cancel]];
+  const k = rowKind();
+  const x = { start: '', part: S.move, add: S.add, undo: S.undo, save: S.save }[k];
+  return [...(x ? [['cross', x] as [Press, string]] : []), ['circle', S.back], ...(k === 'part' ? [['triangle', S.remove] as [Press, string]] : [])];
 }
 
 const text = (id: string, s: string) => ($(id).textContent = s);
+
+/** the showcase button, top right of a phone's page: □ opens the creations */
+const inspoOpen = () => view === 'detail' && menu === 1 && creations.length > 0;
+($('inspo').firstElementChild as HTMLImageElement).src = glyph.square;
+$('inspo').lastElementChild!.textContent = S.inspo;
+$('inspo').onclick = () => press('square');
 const ink$ = (tag: string, s: string, cls = '') => {
   const e = document.createElement(tag);
   e.className = 'ink' + (cls && ' ' + cls);
@@ -630,7 +660,7 @@ function rows(): Row[] {
   if (menu === 1 && view === 'detail')
     return store.worn >= 0
       ? [['copy', S.copy, true], ['delete', S.delete, true]]
-      : [['new', S.new, true], ['delete', S.delete, false]];
+      : [['new', S.new, starts.length > 0], ['delete', S.delete, false]];
   if (menu === 1) return [['edit', S.edit, has], ['copy', S.copy, has], ['print', S.print, has], ['delete', S.delete, has]];
   if (menu === 2) return [['export', S.export, true], ['order', S.order, !!theme.order]];
   return [];
@@ -648,9 +678,41 @@ const partRows = () => {
 };
 /** a part file's name as a label: clipper-seat reads Clipper seat */
 const partName = (n: string) => n.charAt(0).toUpperCase() + n.slice(1).replace(/-/g, ' ');
-const addable = () => setRows().filter((r) => r.op === 'off' && r.def !== 'off');
+/** what a part is for, from the theme's groups by part name; a part in none of them is Other */
+const GROUPS: Record<string, string[]> = theme.groups;
+const groupOf = (name: string) => Object.keys(GROUPS).find((g) => GROUPS[g].includes(name)) ?? S.other;
+/** the parts off the case, by name with C10 after C9 */
+const addable = () =>
+  setRows()
+    .filter((r) => r.op === 'off' && r.def !== 'off')
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+/** the groups with a part left to add, in the theme's order, Other last */
+const addGroups = () => [...Object.keys(GROUPS), S.other].filter((g) => addable().some((r) => groupOf(r.name) === g));
+/** □'s list one group deep: that group's parts left to add */
+const addRows = () => addable().filter((r) => groupOf(r.name) === agroup);
+/** edit's rows: the start, the parts, then what ✕ can do: add a part, undo, save */
+type Kind = 'start' | 'part' | 'add' | 'undo' | 'save';
+const tail = (): Kind[] => [...(addable().length ? ['add' as const] : []), ...(past.length ? ['undo' as const] : []), 'save'];
+const rowKind = (i = psel): Kind => (i === 0 ? 'start' : i <= partRows().length ? 'part' : (tail()[i - partRows().length - 1] ?? 'save'));
+const rowCount = () => 1 + partRows().length + tail().length;
+/** remembers the draft as it is, before a change */
+function mark() {
+  past.push(copyLook(draft!));
+  if (past.length > 50) past.shift();
+}
+/** the draft as it was before its last change; the pick stays on Undo while there is more to undo, never slides onto Save */
+function undo() {
+  const l = past.pop();
+  if (!l) return false;
+  const k = rowKind();
+  draft = l;
+  wear(draft);
+  psel = k !== 'undo' ? Math.min(psel, partRows().length) : past.length ? 1 + partRows().length + tail().indexOf('undo') : 0;
+  return true;
+}
 /** the draft with one part on op; a part on its parts.json op keeps no entry */
 function setOp(name: string, def: Op, op: Op) {
+  mark();
   const ops = { ...draft!.ops, [name]: op };
   if (op === def) delete ops[name];
   // a part taken off forgets its move
@@ -695,11 +757,12 @@ async function startMove(name: string) {
   const c = p.getCenter(new THREE.Vector3()).setZ(0);
   const union = partRows().find((r) => r.name === name)?.op === 'union';
   side = false;
+  orbit.yaw = orbit.tilt = 0;
   moving = {
     name, from: at, at: [...at], snap: true, c, box: b, part: p, union,
     lo: [b.min.x - c.x, b.min.y - c.y, -RISE], hi: [b.max.x - c.x, b.max.y - c.y, RISE],
   };
-  ghost.geometry = g;
+  setGhost(g);
   grid();
   placeGhost();
   paint();
@@ -727,18 +790,22 @@ function grid() {
   snapGrid.geometry.dispose();
   snapGrid.geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
 }
-/** edit's picked part row, faint over the case where it sits, so the row and the part read as one; moving takes over from it */
+/** edit's picked part, faint over the case where it sits, so the row and the part read as one: a part row's, or in □'s list the part ✕ would add; moving takes over from it */
 let picked: { name: string; c: THREE.Vector3; box: THREE.Box3; union: boolean } | null = null;
+const wanted = () => (view === 'edit' && draft && !moving ? (adding ? addRows()[asel] : partRows()[psel - 1]) : undefined);
 async function showPart() {
-  const r = view === 'edit' && !adding && psel ? partRows()[psel - 1] : undefined;
-  const union = r?.op === 'union';
-  if (!r || moving) picked = null;
+  const r = wanted();
+  const union = (adding ? r?.def : r?.op) === 'union';
+  if (!r) picked = null;
   else if (picked?.name !== r.name || picked.union !== union) {
+    // nothing shows while the part loads: the last part's ghost is not this row's
+    picked = null;
+    placeGhost();
     const style = draft!.style;
     const [g, base] = await Promise.all([partGeo(style, r.name), partGeo(style, setParts.get(style)!.find((p) => p.op === 'base')!.name)]);
-    if (partRows()[psel - 1]?.name !== r.name || moving || view !== 'edit') return;
+    if (wanted()?.name !== r.name) return;
     picked = { name: r.name, c: g.boundingBox!.getCenter(new THREE.Vector3()).setZ(0), box: base.boundingBox!, union };
-    ghost.geometry = g;
+    setGhost(g);
   }
   placeGhost();
 }
@@ -748,21 +815,25 @@ function placeGhost() {
   ghost.visible = !!s;
   snapGrid.visible = !!moving?.snap;
   if (!s) return;
-  const mat = ghost.material as THREE.MeshBasicMaterial;
+  const mat = ghost.material;
   mat.color.set(s.union ? C.pick : C.del);
-  mat.opacity = moving ? 0.5 : 0.3;
+  mat.emissive.copy(mat.color);
+  mat.opacity = moving ? 0.6 : 0.35;
   ghost.matrix.copy(placing(s.c, moving?.at ?? moveOf(s.name)));
 }
-/** a union part's ghost cut to the case's sides, in world space, so it follows the phone; a cut part shows whole */
+/** a union part's ghost cut to the case's sides and SINK into its back, as the solver cuts it, in world space, so it follows the phone; a cut part shows whole */
 function clipGhost() {
   const m = moving ?? picked;
-  const planes = (ghost.material as THREE.MeshBasicMaterial).clippingPlanes!;
+  const planes = ghostCut;
   planes.length = 0;
   if (!m?.union) return;
   const { min, max } = m.box;
+  // pose moved the phone this frame; the renderer has not walked the scene yet
+  caseMesh.updateWorldMatrix(true, false);
   const n = new THREE.Matrix3().getNormalMatrix(caseMesh.matrixWorld);
   for (const [nx, ny, d] of [[1, 0, -min.x], [-1, 0, max.x], [0, 1, -min.y], [0, -1, max.y]])
     planes.push(new THREE.Plane(new THREE.Vector3(nx, ny, 0), d).applyMatrix4(caseMesh.matrixWorld, n));
+  planes.push(new THREE.Plane(new THREE.Vector3(0, 0, -1), min.z + SINK).applyMatrix4(caseMesh.matrixWorld, n));
 }
 /** a shift on screen, in px with y down, as a shift in the case's x y z mm: across x and y on the back, z and y edge-on */
 function toCase(px: number, py: number): number[] {
@@ -797,14 +868,23 @@ function turnBy(dir: 1 | -1) {
   const flip = Math.sign(x * y2 - y * x2) || 1;
   return shift([m.at[0], m.at[1], m.at[2] + dir * flip * (m.snap ? ANGLE : 1), m.at[3]]);
 }
+/** a move back to the part's own place */
+function resetMove() {
+  if (view !== 'edit' || !moving) return;
+  if (!shift([0, 0, 0, 0])) return sfx.cancel();
+  sfx.tick();
+  paint();
+}
 const opName: Record<Op, string> = { base: '', union: S.union, difference: S.difference, off: S.off };
 
 function paint() {
   document.body.dataset.view = view;
   if (menu) document.body.dataset.menu = '';
   else delete document.body.dataset.menu;
+  if (inspoOpen()) document.body.dataset.inspo = '';
+  else delete document.body.dataset.inspo;
   const p = phones[msel];
-  const list = edited();
+  const list = ringList();
   const pages = Math.ceil(list.length / RING);
   text('brand', S.brand);
   const count = view === 'models' ? `${models.length} ${S.models}` : view === 'cases' ? `${list.length} ${S.cases}` : '';
@@ -822,11 +902,12 @@ function paint() {
   } else if (view === 'models') {
     n1 = label(p.id);
   } else if (view === 'cases') {
-    n1 = list.length ? designName(list[ring]) : S.noCases;
-    n2 = pages > 1 ? `${label(card.id)} ${page() + 1}/${pages}` : label(card.id);
+    n1 = gallery ? creations[ring].name : list.length ? designName(list[ring]) : S.noCases;
+    const where = gallery ? S.inspo : label(card.id);
+    n2 = pages > 1 ? `${where} ${page() + 1}/${pages}` : where;
   } else if (view === 'edit') {
-    n1 = editing >= 0 ? designName(store.list[editing]) : S.new;
-    n2 = label(card.id);
+    n1 = leaving ? S.discardAsk : editing >= 0 ? designName(store.list[editing]) : S.new;
+    n2 = solving ? S.loading : label(card.id);
   }
   text('n1', n1);
   text('n2', n2);
@@ -876,18 +957,72 @@ function paint() {
   } else if (menu === 4) ul.replaceChildren(li(ink$('p', S.print)), li(ink$('p', S.printing)), li(ink$('p', S.keep)));
   else ul.replaceChildren();
 
-  // edit's rows: the start, then each part; a tap on a row picks it, ‹ › step it, as ← → do on the picked row
+  // edit's rows: the start, each part, then add, undo and save; a tap picks a row, a tap on the picked row is ✕, ‹ › step it as ← → do
   const parts = $('parts');
+  // rows are a finger tall on a touch screen, and only as many show as fit beside or under the phone
+  const rowH = Math.max(parseFloat(getComputedStyle(parts).fontSize) * 1.6, matchMedia('(pointer: coarse)').matches ? 40 : 0);
+  parts.style.setProperty('--row', `${rowH}px`);
+  const fits = Math.max(4, Math.floor((innerHeight * (portrait() ? 0.36 : 0.62)) / rowH));
+  /** the rows that fit, the picked one kept in the middle; ▲ ▼ stand in for the rows cut off */
+  const windowed = (rows: [HTMLElement, boolean][]) => {
+    const els = rows.map((r) => r[0]);
+    if (els.length <= fits) return els;
+    const from = clamp(rows.findIndex((r) => r[1]) - (fits >> 1), 0, els.length - fits);
+    const cut = els.slice(from, from + fits);
+    if (from > 0) cut[0] = li(ink$('p', '▲', 'more'));
+    if (from + fits < els.length) cut[fits - 1] = li(ink$('p', '▼', 'more'));
+    return cut;
+  };
   if (view === 'edit' && draft && adding) {
-    // □'s list: a tap picks a part, a second tap adds it, as ✕ does
-    const list = addable();
+    // □'s list: the groups, then one group's parts; a tap picks a row, a part shows on the case, a second tap is ✕
+    const list = agroup === null ? addGroups().map((g) => `${g}  ${addable().filter((r) => groupOf(r.name) === g).length}`) : addRows().map((r) => `${partName(r.name)}  ${opName[r.def]}`);
     parts.replaceChildren(
-      li(ink$('p', list.length ? S.addTitle : S.nothing, 'title')),
-      ...list.map((r, i) => {
-        const b = ink$('button', `${partName(r.name)}  ${opName[r.def]}`, i === asel ? 'on' : '');
-        b.onclick = () => (i === asel ? press('cross') : (sfx.tick(), (asel = i), paint()));
-        return li(b);
-      }),
+      li(ink$('p', agroup ?? S.addTitle, 'title')),
+      ...windowed(
+        list.map((s, i): [HTMLElement, boolean] => {
+          const b = ink$('button', s, i === asel ? 'on' : '');
+          b.onclick = () => (i === asel ? press('cross') : (sfx.tick(), (asel = i), paint()));
+          return [li(b), i === asel];
+        }),
+      ),
+    );
+  } else if (view === 'edit' && draft && moving) {
+    // a move: where the part is, then its controls, each with the button that also works it
+    const at = moving.at;
+    const pos: [string, number][] = side ? [['y', at[1]], ['z', at[3] ?? 0]] : [['x', at[0]], ['y', at[1]], ...(at[3] ? [['z', at[3]] as [string, number]] : [])];
+    const hint = (b: HTMLElement, k: Press) => {
+      const img = document.createElement('img');
+      img.className = 'px';
+      img.src = glyph[k];
+      img.alt = '';
+      b.prepend(img);
+    };
+    const act = (k: Press | null, name: string, value: string, click: () => void) => {
+      const l = document.createElement('li');
+      const a = ink$('button', name, 'name');
+      const b = ink$('button', value, 'value');
+      a.onclick = b.onclick = click;
+      if (k) hint(a, k);
+      l.append(a, b);
+      return l;
+    };
+    const turn = document.createElement('li');
+    const step = (s: string, k: Press) => {
+      const b = ink$('button', s, 'step');
+      b.onclick = () => press(k);
+      return b;
+    };
+    const l1 = step('‹', 'l1'), r1 = step('›', 'r1');
+    hint(l1, 'l1');
+    r1.append(Object.assign(document.createElement('img'), { className: 'px', src: glyph.r1, alt: '' }));
+    turn.append(ink$('p', S.turn, 'name'), l1, ink$('p', `${at[2]}°`, 'value'), r1);
+    parts.replaceChildren(
+      li(ink$('p', partName(moving.name), 'title')),
+      li(ink$('p', `${pos.map(([a, v]) => `${a} ${mm(v)}`).join('   ')} mm`, 'read')),
+      ...(side ? [] : [turn]),
+      act('square', S.grid, moving.snap ? S.snap : S.free, () => press('square')),
+      act('triangle', S.view, side ? S.side : S.flat, () => press('triangle')),
+      act(null, S.reset, '', resetMove),
     );
   } else if (view === 'edit' && draft) {
     const editRow = (i: number, name: string, value: string, cls = '') => {
@@ -899,47 +1034,56 @@ function paint() {
         e.onclick = click;
         return e;
       };
+      // a tap on the picked part is ✕: it moves the part
       const pick = () => {
-        if (on || moving) return;
+        if (on) return void (i && press('cross'));
         sfx.tick();
         psel = i;
+        leaving = false;
         paint();
       };
-      // moving, the picked row's ‹ › turn the part
       const step = (d: number) => () => {
-        if (moving) return on && press(d < 0 ? 'l1' : 'r1');
         psel = i;
         move(d, 0);
       };
       l.append(b(name, pick, 'name'), b('‹', step(-1), 'step'), b(value, pick, 'value'), b('›', step(1), 'step'));
       return l;
     };
-    // a moved part shows its shift in mm while it moves, and in the title colour after, as a changed op does
-    const value = (r: { name: string; op: Op }) => {
-      const at = moving?.name === r.name ? moving.at : null;
-      if (!at) return opName[r.op];
-      // the axes the view moves along, and z or the turn once set
-      const axes = side ? ['y', 'z'] : ['x', 'y', ...(at[3] ? ['z'] : [])];
-      const v = { x: at[0], y: at[1], z: at[3] ?? 0 } as Record<string, number>;
-      return axes.map((a) => `${a}${mm(v[a])}`).join(' ') + (at[2] && !side ? ` ${at[2]}°` : '');
-    };
+    // a part off its parts.json op or out of its own place shows in the title colour
     const changed = (r: { name: string; op: Op; def: Op }) => r.op !== r.def || moveOf(r.name).some(Boolean);
     // each op's rows under a heading; the headings are not rows, ↑/↓ step over them
     const heading = { union: S.joined, difference: S.cutOut } as Record<Op, string>;
+    const P = partRows();
+    const names: Record<string, string> = { add: S.addPart, undo: S.undo, save: S.save };
     parts.replaceChildren(
-      editRow(0, S.start, lookName(draft)),
-      ...partRows().flatMap((r, i, all) => [
-        ...(all[i - 1]?.op !== r.op ? [li(ink$('p', heading[r.op], 'group'))] : []),
-        editRow(i + 1, partName(r.name), value(r), changed(r) ? 'moved' : ''),
+      ...windowed([
+        [editRow(0, S.start, lookName(draft)), !psel],
+        ...P.flatMap((r, i, all): [HTMLElement, boolean][] => [
+          ...(all[i - 1]?.op !== r.op ? [[li(ink$('p', heading[r.op], 'group')), false] as [HTMLElement, boolean]] : []),
+          [editRow(i + 1, partName(r.name), opName[r.op], changed(r) ? 'moved' : ''), i + 1 === psel],
+        ]),
+        ...tail().map((k, i): [HTMLElement, boolean] => {
+          const n = P.length + 1 + i;
+          const b = ink$('button', names[k], n === psel ? 'on' : '');
+          b.onclick = () => {
+            if (n === psel) return press('cross');
+            sfx.tick();
+            psel = n;
+            leaving = false;
+            paint();
+          };
+          const l = li(b);
+          l.className = i ? 'act' : 'act first';
+          return [l, n === psel];
+        }),
       ]),
     );
-    void showPart();
   } else parts.replaceChildren();
+  void showPart();
 
   const bar = $('bar');
   const keys: [Press, string][] =
-    menu === 4 ? [] : menu ? [['cross', S.enter], ['circle', S.back]] : view === 'edit' ? editBar() : view === 'cases' && !list.length ? [['cross', S.enter], ['circle', S.back]] : bars[view];
-  bar.classList.toggle('dense', keys.length > 4);
+    menu === 4 ? [] : menu ? [['cross', S.enter], ['circle', S.back]] : view === 'edit' ? editBar() : view === 'cases' && gallery ? [['cross', S.remix], ['circle', S.back], ...(peek ? [] : [['triangle', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['cross', S.enter], ['circle', S.back]] : bars[view];
   bar.replaceChildren(
     ...keys.map(([k, s]) => {
       const b = document.createElement('button');
@@ -948,8 +1092,7 @@ function paint() {
       img.src = glyph[k];
       img.alt = '';
       b.append(img);
-      if (s) b.append(ink$('span', s));
-      else b.className = 'pair';
+      b.append(ink$('span', s));
       b.onclick = () => press(k);
       return b;
     }),
@@ -1088,6 +1231,10 @@ function startEdit(look: Look, at: number) {
   back = view === 'detail' ? 'detail' : 'cases';
   draft = copyLook(look);
   editing = at;
+  origin = copyLook(look);
+  past = [];
+  leaving = false;
+  orbit.yaw = orbit.tilt = 0;
   psel = 0;
   adding = false;
   moving = null;
@@ -1109,6 +1256,15 @@ function command(k: Press) {
       view = 'models';
       follow();
     }
+    return paint();
+  }
+  if (k === 'square') {
+    if (!inspoOpen()) return;
+    sfx.confirm();
+    gallery = true;
+    ring = 0;
+    openCases(0.1);
+    tryOn();
     return paint();
   }
   if (k !== 'cross') return;
@@ -1168,6 +1324,25 @@ function press(k: Press) {
   } else if (view === 'detail') return command(k);
   else if (view === 'cases') {
     if (menu) return command(k);
+    if (gallery) {
+      if (k === 'cross') {
+        sfx.confirm();
+        peek = false;
+        startEdit(creations[ring].look, -1);
+      } else if (k === 'triangle' || (k === 'circle' && peek)) {
+        sfx[peek ? 'cancel' : 'confirm']();
+        peek = !peek;
+      } else if (k === 'circle') {
+        sfx.cancel();
+        gallery = false;
+        wear(store.list[store.worn]);
+        ring = Math.max(edited().indexOf(store.list[store.worn]), 0);
+        view = 'detail';
+        menu = 1;
+        cmd = 0;
+      } else return sfx.cancel();
+      return paint();
+    }
     if (k === 'circle') {
       if (from === 'boot') return leave();
       sfx.cancel();
@@ -1193,15 +1368,46 @@ function press(k: Press) {
     }
   } else if (view === 'edit') {
     if (!draft) return;
-    // □'s list: ✕ adds the picked part on its parts.json op, ○ shuts the list
+    // ○ on a changed draft asks first: ○ again drops it, anything else keeps editing
+    if (leaving) {
+      leaving = false;
+      if (k !== 'circle') {
+        sfx.tick();
+        return paint();
+      }
+    } else if (k === 'circle' && !adding && !moving && origin && !sameLook(draft, origin)) {
+      sfx.cancel();
+      leaving = true;
+      return paint();
+    }
+    // the add list: ✕ opens the picked group, then adds the picked part on its parts.json op; ○ goes back a level, then shuts the list
     if (adding) {
-      const r = addable()[asel];
+      const groups = addGroups();
+      if (agroup === null) {
+        if (k === 'cross' && groups[asel]) {
+          sfx.confirm();
+          agroup = groups[asel];
+          asel = 0;
+        } else if (k === 'circle') {
+          sfx.cancel();
+          adding = false;
+        } else return;
+        return paint();
+      }
+      const r = addRows()[asel];
       if (k === 'cross' && r) {
         sfx.confirm();
         setOp(r.name, r.def, r.def);
         psel = partRows().findIndex((x) => x.name === r.name) + 1;
-      } else if (k === 'circle') sfx.cancel();
-      else return;
+      } else if (k === 'circle') {
+        sfx.cancel();
+        // a lone group opened straight away; there is no group list to go back to
+        if (groups.length > 1) {
+          asel = Math.max(groups.indexOf(agroup), 0);
+          agroup = null;
+          return paint();
+        }
+      } else return;
       adding = false;
       return paint();
     }
@@ -1212,6 +1418,7 @@ function press(k: Press) {
         sfx.confirm();
         moving = null;
         if (m.at.some((v, i) => v !== m.from[i])) {
+          mark();
           setMove(m.name, m.at);
           wear(draft);
         }
@@ -1234,15 +1441,13 @@ function press(k: Press) {
       placeGhost();
       return paint();
     }
-    if (k === 'square' && psel) {
-      sfx.confirm();
-      return void startMove(partRows()[psel - 1].name);
-    }
+    // □ opens the add list from any row
     if (k === 'square') {
       if (!addable().length) return sfx.cancel();
       sfx.confirm();
       adding = true;
       asel = 0;
+      agroup = addGroups().length > 1 ? null : addGroups()[0];
       return paint();
     }
     // △ takes the picked part off
@@ -1254,7 +1459,28 @@ function press(k: Press) {
       psel = Math.min(psel, partRows().length);
       return paint();
     }
+    // ✕ works the picked row: a part moves, Add part opens the list, Undo steps back, Save saves; the start row steps the creations
     if (k === 'cross') {
+      const kind = rowKind();
+      if (kind === 'start') {
+        const next = creations[(creations.findIndex((c) => sameLook(c.look, draft!)) + 1) % creations.length];
+        if (!next || sameLook(next.look, draft)) return sfx.cancel();
+        sfx.confirm();
+        mark();
+        draft = copyLook(next.look);
+        wear(draft);
+        return paint();
+      }
+      if (kind === 'add') return press('square');
+      if (kind === 'part') {
+        sfx.confirm();
+        return void startMove(partRows()[psel - 1].name);
+      }
+      if (kind === 'undo') {
+        if (undo()) sfx.tick();
+        else sfx.cancel();
+        return paint();
+      }
       sfx.confirm();
       const old = store.list[editing];
       const t: Template = { ...old, style: draft.style, ops: draft.ops, moves: draft.moves, edited: new Date().toISOString() };
@@ -1264,6 +1490,8 @@ function press(k: Press) {
         store.list[editing] = t;
       } else store.list.push(t);
       store.worn = store.list.indexOf(t);
+      // a remix saved from the showcase page lands on the user's own cases
+      gallery = false;
       ring = edited().indexOf(t);
     } else if (k === 'circle') {
       sfx.cancel();
@@ -1274,6 +1502,7 @@ function press(k: Press) {
     placeGhost();
     saveTemplates(store);
     view = back;
+    if (view === 'cases') tryOn();
     if (back === 'detail') {
       menu = 1;
       cmd = 0;
@@ -1302,6 +1531,7 @@ function move(dx: number, dy: number) {
     // ↑/↓ pick a row; ← → on the start row change the start, on a part step its op; in □'s list ↑/↓ pick a part
     // moving, the arrows step the part one grid line, or a fine step when free, the way they point on screen
     if (!draft) return;
+    leaving = false;
     const parts = partRows();
     if (moving) {
       const v = toCase(dx, dy);
@@ -1311,22 +1541,23 @@ function move(dx: number, dy: number) {
       const a = moving.at;
       if (!shift([a[0] + d[0], a[1] + d[1], a[2], (a[3] ?? 0) + d[2]])) return sfx.cancel();
     } else if (adding) {
-      const n = clamp(asel + dy, 0, addable().length - 1);
+      const n = clamp(asel + dy, 0, (agroup === null ? addGroups() : addRows()).length - 1);
       if (!dy || n === asel) return;
       asel = n;
     } else if (dy) {
-      const n = clamp(psel + dy, 0, parts.length);
+      const n = clamp(psel + dy, 0, rowCount() - 1);
       if (n === psel) return;
       psel = n;
     } else if (!psel) {
       if (starts.length < 2) return;
-      let at = starts.findIndex((s) => sameLook(s.look, draft!));
-      // a changed draft steps from its style's own start, not its Base
-      if (at < 0) at = starts.findIndex((s) => s.look.style === draft!.style && !s.look.ops);
+      mark();
+      // a changed draft or a creation steps from the first start
+      const at = Math.max(starts.findIndex((s) => sameLook(s.look, draft!)), 0);
       draft = copyLook(starts[(at + dx + starts.length) % starts.length].look);
       wear(draft);
     } else {
       const r = parts[psel - 1];
+      if (!r) return;
       setOp(r.name, r.def, STEPS[(STEPS.indexOf(r.op) + dx + STEPS.length) % STEPS.length]);
       // the row changes group; the pick goes with it
       psel = partRows().findIndex((x) => x.name === r.name) + 1;
@@ -1339,7 +1570,7 @@ function move(dx: number, dy: number) {
     if (!dy) return;
     let n = cmd;
     do n = (n + dy + r.length) % r.length;
-    while (!r[n][1]);
+    while (!r[n][2] && n !== cmd);
     if (n === cmd) return;
     cmd = n;
   } else {
@@ -1358,6 +1589,7 @@ function move(dx: number, dy: number) {
       ring = q * RING;
       openCases(0);
     }
+    tryOn();
   }
   sfx.tick();
   paint();
@@ -1381,14 +1613,16 @@ addEventListener('keydown', (e) => {
     q: () => press('l1'),
     e: () => press('r1'),
     m: sfx.toggleMute,
-    r: () => {
-      if (view !== 'edit' || !moving) return;
-      if (!shift([0, 0, 0, 0])) return sfx.cancel();
+    r: resetMove,
+    z: () => {
+      if (view !== 'edit' || !draft || moving || adding || !undo()) return sfx.cancel();
       sfx.tick();
-      placeGhost();
       paint();
     },
   };
+  // the browser's own chords stay the browser's; a held key repeats only where a step should
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.repeat && !k.startsWith('arrow') && k !== 'q' && k !== 'e') return;
   if (map[k]) {
     e.preventDefault();
     map[k]();
@@ -1424,6 +1658,11 @@ canvas.addEventListener('pointermove', (e) => {
   } else if (view === 'models') {
     const { min, max } = camLimits();
     camV = clamp(down.camV + ((e.clientY - down.y) / innerHeight) * 2 * dist * T, min, max);
+  } else if (view === 'edit') {
+    orbit.yaw = clamp(orbit.yaw + (e.clientX - down.last) * TURN, -3, 3);
+    orbit.tilt = clamp(orbit.tilt + (e.clientY - down.lastY) * TURN, -0.7, 0.7);
+    down.last = e.clientX;
+    down.lastY = e.clientY;
   } else if (grab) {
     const dx = (e.clientX - down.last) * TURN;
     fit.spin += dx;
@@ -1461,7 +1700,10 @@ canvas.addEventListener('pointerup', (e) => {
   const cur = view === 'boot' ? fsel : view === 'models' ? msel : ring;
   if (i === cur) return press('cross');
   if (view === 'boot') fsel = i;
-  else if (view === 'cases') ring = i;
+  else if (view === 'cases') {
+    ring = i;
+    tryOn();
+  }
   else {
     msel = i;
     follow();

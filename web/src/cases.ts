@@ -25,6 +25,9 @@ export function placing(c: THREE.Vector3, [dx, dy, deg = 0, dz = 0]: Move) {
     .multiply(new THREE.Matrix4().makeTranslation(-c.x, -c.y, 0));
 }
 
+/** mm a joined part reaches into the shell from its back face, the case's lowest z: enough to fuse, never into the phone's pocket; solve.worker.ts cuts to it and edit's ghost shows it */
+export const SINK = 0.4;
+
 /** a part set, not a styles.json style: glb.mjs builds it from out/<phone>/<set>/parts.json */
 export const isSet = (style: string) => !(style in styles);
 

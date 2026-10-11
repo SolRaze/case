@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import Module, { type Manifold, type Mat4 } from 'manifold-3d';
 import wasmUrl from 'manifold-3d/manifold.wasm?url';
-import { placing, solid } from './cases';
+import { placing, SINK, solid } from './cases';
 import type { Moves, Op, Part } from './parts';
 
 const wasm = Module({ locateFile: () => wasmUrl }).then((m) => (m.setup(), m));
@@ -11,7 +11,7 @@ const solids = new Map<string, Promise<Manifold>>();
 /** the base and union parts joined, by dir and part names; a difference-only change reuses it. Oldest dropped past JOINED. */
 const joined = new Map<string, Manifold>();
 const JOINED = 4;
-/** the base's outline run far out both ways along z, by dir: union parts are cut to it so nothing sticks out past the case's sides */
+/** where a union part may be, by dir: behind the base, within its outline and SINK into its back; the phone's pocket, the camera window and the wall openings stay clear */
 const outlines = new Map<string, Promise<Manifold>>();
 function outline(dir: string, base: string) {
   if (!outlines.has(dir))
@@ -20,10 +20,10 @@ function outline(dir: string, base: string) {
       (async () => {
         const { Manifold } = await wasm;
         const s = await part(dir, base);
-        const a = s.translate([0, 0, 100]), b = s.translate([0, 0, -100]);
-        const h = Manifold.hull([s, a, b]);
-        a.delete();
-        b.delete();
+        const back = s.translate([0, 0, -100]), whole = s.hull();
+        const column = Manifold.hull([s, back]), kept = whole.translate([0, 0, SINK]);
+        const h = column.subtract(kept);
+        for (const m of [back, whole, column, kept]) m.delete();
         return h;
       })(),
     );

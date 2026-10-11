@@ -51,7 +51,7 @@ async function keep(key: string, m: Mesh) {
 }
 
 /** bumped whenever solve.worker.ts makes a different mesh from the same parts, so IndexedDB's old meshes go unused */
-const SOLVER = 2;
+const SOLVER = 3;
 
 // one solve at a time in the worker; a lane's newer job replaces its queued one and jumps the queue
 type Job = { msg: { dir: string; ops: Record<string, Op>; moves: Moves }; lane?: string; ok: (m: Mesh) => void; no: (e: Error) => void };

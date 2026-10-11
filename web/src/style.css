@@ -27,13 +27,15 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
 .ink { font-weight: 500; letter-spacing: .02em; white-space: pre-wrap; }
 
 /* top left the page and what it holds, top right the selected icon, two lines each like the console */
-header, #name {
+header, #name, #inspo {
   position: fixed; top: calc(2.4vh + env(safe-area-inset-top));
   font-size: clamp(15px, min(4.8vw, 2.9vh), 30px); line-height: 1.3;
 }
 header { left: max(4vw, env(safe-area-inset-left)); display: flex; gap: .4em; align-items: center; }
 header img { width: 2.3em; height: 2.3em; }
 #name { right: max(4vw, env(safe-area-inset-right)); text-align: right; }
+#inspo { right: max(4vw, env(safe-area-inset-right)); display: flex; align-items: center; gap: .3em; min-height: 44px; font-size: clamp(14px, min(4.4vw, 2.6vh), 26px); }
+#inspo img { width: 1.5em; height: 1.5em; }
 #sub, #n2 { font-size: .8em; }
 header { color: var(--brand); }
 #n1 { color: var(--title); }
@@ -58,22 +60,30 @@ body:not([data-view=detail]) #detail > p { display: none; }
 }
 /* edit: the style, then a part set's parts with their boolean op */
 #parts {
-  position: fixed; left: 0; right: 0; bottom: calc(9vh + env(safe-area-inset-bottom));
-  display: flex; flex-direction: column; align-items: center; font-size: clamp(13px, min(3.6vw, 2.1vh), 22px);
+  position: fixed; left: 0; right: 0; bottom: calc(9vh + env(safe-area-inset-bottom)); width: fit-content; margin: 0 auto;
+  display: flex; flex-direction: column; font-size: clamp(13px, min(3.6vw, 2.1vh), 22px);
 }
 #parts li { display: flex; align-items: center; }
-#parts button { min-height: 1.6em; color: var(--dim); white-space: pre; }
+/* --row is set by main.ts paint: a finger tall on a touch screen */
+#parts button, #parts p { min-height: var(--row, 1.6em); display: flex; align-items: center; white-space: pre; }
+#parts button { color: var(--ink); }
 #parts button.on { color: var(--pick); }
 #parts .name { min-width: 7.5em; text-align: left; }
-#parts .value { min-width: 6.5em; text-align: center; }
-#parts .step { padding: 0 .7em; }
-#parts button.step:not(.on) { opacity: .4; }
-#parts .title { min-height: 1.6em; color: var(--title); }
+#parts .value { min-width: 6.5em; justify-content: center; }
+#parts .step { padding: 0 .9em; }
+#parts button.step:not(.on) { opacity: .7; }
+#parts img { width: 1.15em; height: 1.15em; margin: 0 .35em 0 0; }
+#parts .step img { margin: 0 .2em; }
+#parts .title, #parts .read { color: var(--title); }
+#parts .read { font-size: .9em; }
 #parts .moved .name:not(.on) { color: var(--title); }
-#parts li:has(> .group) { width: 17.4em; }
-#parts .group { margin-top: .5em; font-size: .78em; letter-spacing: .08em; text-transform: uppercase; color: var(--title); opacity: .75; }
+#parts .group { min-height: 0; margin-top: .5em; font-size: .78em; letter-spacing: .08em; text-transform: uppercase; color: var(--title); opacity: .75; }
+#parts .more { flex: 1; justify-content: center; color: var(--more); font-size: .7em; }
+#parts .act.first { margin-top: .5em; }
 @media (min-aspect-ratio: 1/1) {
-  #parts { left: 68%; bottom: auto; top: 24%; align-items: flex-start; }
+  #parts { left: 56%; bottom: auto; top: 20%; margin: 0; }
+  /* edit's buttons sit under its list, the phone has the left */
+  [data-view=edit] footer { left: 56%; justify-content: flex-start; padding-left: 0; }
 }
 
 /* △ on a model: main.ts infoTarget centres the phone over the label column, level with the name;
@@ -107,22 +117,20 @@ body:not([data-view=detail]) #detail > p { display: none; }
 #down { bottom: calc(16.5vh - 16px + env(safe-area-inset-bottom)); }
 
 footer {
-  position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 1.6em;
+  position: fixed; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0 1.4em;
   padding: 0 4vw calc(2.2vh + env(safe-area-inset-bottom));
   font-size: clamp(14px, min(4.4vw, 2.6vh), 26px);
 }
 footer button { display: flex; align-items: center; gap: .3em; min-height: 44px; }
 footer img { width: 1.5em; height: 1.5em; }
-/* move's six buttons: closer, L1 against R1, and onto a second line before they leave the screen */
-footer.dense { gap: .4em .8em; flex-wrap: wrap; }
-footer .pair { margin-right: -.5em; }
 
 /* what shows where */
-header, #name, #detail, #parts, #info, footer, #loading, #up, #down { transition: opacity .35s; }
+header, #name, #inspo, #detail, #parts, #info, footer, #loading, #up, #down { transition: opacity .35s; }
 body:not([data-loading]) #loading, body:not([data-up]) #up, body:not([data-down]) #down { opacity: 0; }
 body:not([data-menu]) #detail, [data-view=info] #name, [data-view=detail] #name, body:not([data-view=info]) #info { opacity: 0; }
-body:not([data-menu]) #detail button { pointer-events: none; }
+body:not([data-menu]) #detail button, body:not([data-inspo]) #inspo { pointer-events: none; }
+body:not([data-inspo]) #inspo { opacity: 0; }
 /* the flip into a page: the hud goes first */
-[data-busy] :is(header, #name, #detail, #parts, footer) { opacity: 0; transition: opacity .12s; }
+[data-busy] :is(header, #name, #inspo, #detail, #parts, footer) { opacity: 0; transition: opacity .12s; }
 
 #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; }
