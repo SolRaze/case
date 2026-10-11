@@ -72,13 +72,17 @@ ROOT = Path(__file__).resolve().parent
 SOLVER = "MANIFOLD"   # every operand is a closed loft, which is all this solver needs
 SEG = 64              # segments per full circle
 
-CLEAR = 0.25   # phone to inner wall, all round
+CLEAR = 0.25   # phone to inner wall along the straights
+CLEAR_CORNER = 0.4     # and round each corner arc, where a printed inside curve comes out tight
 WALL = 1.3     # side wall. CLEAR + WALL is the bottom, 1.8 max for docks (ADG 5.1.3)
 BACK = 2.0     # 2.1 is the Apple hard limit for backside thickness
 LIP = 0.5      # rim reaches this far in over the phone's rolled front edge, clear
                # of the glass edge at 1.05. Rigid print (PETG/PLA): the phone snaps
                # past it by bowing the long walls LIP each side, and it retains only
                # while LIP > CLEAR. PLA cracks sooner, 0.35 there
+LIP_CORNER = 0.0       # the rim's reach round each corner and across both ends: under CLEAR,
+                       # only the long walls bow, and the phone tips in over an end or a side
+LIP_FALL = 8.0         # along each straight from the arc's end, corner values ease to the straight's
 GLASS_GAP = 1.0        # exposed glass to any flat surface: 0.85 min, 1.0 ideal (ADG 5.1.1)
 MIN_GAP = 0.85
 PROUD = GLASS_GAP      # how far the rim stands above the front glass plane
@@ -338,7 +342,9 @@ def build(name="17e", style="case", **knobs):
     CLOSED = tuple(k for k in globals()["CLOSED"] if k in names)
     assert BACK <= p["max_back"]
     assert CLEAR + WALL <= 1.8
+    assert CLEAR <= CLEAR_CORNER < CLEAR + WALL - 0.8, "corner wall under 0.8"
     assert CLEAR < LIP < 1.05
+    assert 0 <= LIP_CORNER < CLEAR, "a corner lip past the clearance blocks the phone"
     assert BUTTONS in ("windows", "slot")
     assert WALLS in ("full", "sides", "corners") and MAGSAFE in (None, "ring", "open")
     assert not set(KEYS) & set(CLOSED)
@@ -365,8 +371,32 @@ def build(name="17e", style="case", **knobs):
     OUT = CLEAR + WALL
     ring = ph.plan_outline(p["corner"], W, L)
     outer = offset(ring, -OUT)
-    inner = offset(ring, -CLEAR)
-    front = offset(ring, LIP)
+
+    def eased(corner, straight, ends=False):
+        """Outline `straight` in from the phone along the straights and `corner` in round
+        the corner arcs, eased over LIP_FALL. With `ends`, across both ends as well."""
+        ax, ay = max(x for x, _ in p["corner"]), max(-y for _, y in p["corner"])
+        dense = []
+        for i, (bx, by) in enumerate(ring):
+            x0, y0 = ring[i - 1]
+            n = max(1, math.ceil(math.hypot(bx - x0, by - y0)))
+            dense += [(x0 + (bx - x0) * k / n, y0 + (by - y0) * k / n) for k in range(1, n + 1)]
+        out = []
+        for (x, y), a, b in zip(dense, ph.offset_ring(dense, corner), ph.offset_ring(dense, straight)):
+            # mm along a straight past the arc's end
+            past = min(-y, L + y) - ay
+            if not ends:
+                past = max(past, min(x, W - x) - ax)
+            t = (1 - math.cos(math.pi * min(1.0, max(0.0, past / LIP_FALL)))) / 2
+            out.append((a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])))
+        return out
+
+    def rim(flare):
+        """Front opening. Corner walls stand free of each other and hinge at the back,
+        so they keep LIP all round."""
+        return eased((LIP if WALLS == "corners" else LIP_CORNER) - flare, LIP - flare, ends=True)
+
+    inner = eased(-CLEAR_CORNER, -CLEAR)
 
     Z_BACK = -T
     Z_CASE_BACK = Z_BACK - BACK
@@ -405,7 +435,7 @@ def build(name="17e", style="case", **knobs):
         part = body(Z_CASE_BACK, PROUD)
     part -= prism(inner, Z_BACK, 0.0)
     part -= loft([[(x, y, z) for x, y in r] for r, z in
-                  ((front, -0.01), (front, PROUD - RIM_FLARE), (offset(ring, LIP - RIM_FLARE), PROUD + 0.01))])
+                  ((rim(0), -0.01), (rim(0), PROUD - RIM_FLARE), (rim(RIM_FLARE), PROUD + 0.01))])
 
     def edge_port(w, h, cx, cz, top, shape=slot):
         """Opening w along x, h along z through the top or bottom wall, with the

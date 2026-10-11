@@ -94,7 +94,7 @@ limits | from the apple accessory design guidelines and the phone sheets, checke
 - Every lens and flash light cone is cut clear, with the fit clearance added. (ADG 5.7.1 and each sheet's keepout cones)
 - The USB-C connector keepout is cut through the bottom wall, with the fit clearance added. (each sheet, ADG 5.1.2.3)
 - Speaker and mic openings reach 2.0 mm past the port, with a 45 degree chamfer outside and a 0.6 mm straight land. (ADG 5.2.3.1)
-- The front rim reaches 0.5 mm over the phone's rolled edge: more than the 0.25 clearance so it holds the phone, and short of the glass edge at 1.05. (17e sheet, glass edge 1.05 in)
+- The front rim reaches 0.5 mm over the phone's rolled edge along the long sides: more than the 0.25 clearance so it holds the phone, and short of the glass edge at 1.05. Round the corners and across both ends it stops at the phone's outline, because only the long walls bow to let the phone past, and the cavity is 0.4 clear round each corner arc. (17e sheet, glass edge 1.05 in)
 
 checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass

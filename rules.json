@@ -411,13 +411,13 @@
     },
     {
       "id": "lip",
-      "text": "The front rim reaches 0.5 mm over the phone's rolled edge: more than the 0.25 clearance so it holds the phone, and short of the glass edge at 1.05.",
+      "text": "The front rim reaches 0.5 mm over the phone's rolled edge along the long sides: more than the 0.25 clearance so it holds the phone, and short of the glass edge at 1.05. Round the corners and across both ends it stops at the phone's outline, because only the long walls bow to let the phone past, and the cavity is 0.4 clear round each corner arc.",
       "rule": "rim lip over the rolled front edge clear of the glass edge",
       "max": 1.05,
       "unit": "mm",
       "source": "17e sheet, glass edge 1.05 in",
-      "case": "LIP 0.5, and LIP > CLEAR so the phone is retained",
-      "checked": "assert CLEAR < LIP < 1.05"
+      "case": "LIP 0.5, and LIP > CLEAR so the phone is retained; LIP_CORNER 0.0 round the corners and across the ends, CLEAR_CORNER 0.4 round the corner arcs, both eased over LIP_FALL 8",
+      "checked": "assert CLEAR < LIP < 1.05, assert 0 <= LIP_CORNER < CLEAR, assert CLEAR <= CLEAR_CORNER < CLEAR + WALL - 0.8"
     }
   ],
   "invalid": {
