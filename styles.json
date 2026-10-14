@@ -1,8 +1,8 @@
 {
   "base": {
-    "knobs": {"RIBS": 1.0, "RIB_SIDE": "in", "VENT": true, "BUMPER": 1.5, "PORT": "merged", "KEYS": ["action", "side_power", "volume_up", "volume_down"]},
+    "knobs": {"PROUD": 2.0, "WEDGE": 0.45, "CLEAR": 0.35, "WALL": 2.2, "RIBS": 1.0, "RIB_SIDE": "in", "VENT": true, "BUMPER": 1.5, "PORT": "notch", "BUTTONS": "notch", "KEYS": []},
     "output": "part",
-    "about": "the template every phone gets: flat outside, 1.0 mm back skin under lengthwise channels on the phone side that run out into the camera window and through the bottom wall; every button a flexure key with a ridge to find it by; one chamfered bottom opening from speaker to speaker with room for a cable boot; 1.5 mm corner bumpers"
+    "about": "the template every phone gets, the printed fit: flat outside, 2.2 mm walls at 0.35 clearance leaning in 0.45 by the front glass plane to pinch the phone's flat sides, no lip, rim 2.0 over the glass; 1.0 mm back skin under lengthwise channels on the phone side that run out into the camera window and through the bottom wall; one window per side open up through the rim, the wall thinned round it; the bottom open from speaker to speaker up through the rim; 1.5 mm corner bumpers"
   },
   "case": {
     "knobs": {},

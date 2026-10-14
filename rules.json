@@ -5,7 +5,8 @@
       "default": "windows",
       "values": [
         "windows",
-        "slot"
+        "slot",
+        "notch"
       ]
     },
     "KEYS": {
@@ -98,7 +99,8 @@
       "default": "split",
       "values": [
         "split",
-        "merged"
+        "merged",
+        "notch"
       ]
     },
     "VENT": {

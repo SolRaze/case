@@ -9,7 +9,8 @@ Frame: x 0..W across the front, y 0..-L down the length, z 0 at the front cover-
 plane and -T at the back face.
 
 Knobs, defaults in rules.json; a style in styles.json is a named knob set.
-  BUTTONS    "windows" one window per button | "slot" one window per side
+  BUTTONS    "windows" one window per button | "slot" one window per side |
+             "notch" one window per side, open through the rim
   KEYS       button names printed as flexure keys that press through the wall;
              names this phone lacks are dropped
   CLOSED     button names covered, the wall relieved so it never presses them
@@ -26,7 +27,10 @@ Knobs, defaults in rules.json; a style in styles.json is a named knob set.
              the camera ring and a band at the rim top stand flush with the skin;
              on a banded back the skin bridges the openings
   PORT       "split" USB-C and each speaker group apart | "merged" one chamfered opening
-             from speaker to speaker, room for a cable boot
+             from speaker to speaker, room for a cable boot | "notch" the same span open
+             up through the rim, unchamfered
+  WEDGE      0: rim lip | mm the inner wall leans in by the front glass plane, no lip;
+             it pinches the phone's flat sides
   VENT       inner channels run out through the bottom wall, RIBS with RIB_SIDE "in"
   FLIP       front cover, `cover`, on a 3DS-style hinge along the left edge: the
              case carries the two end knuckles, the cover the barrel between
@@ -82,6 +86,7 @@ LIP = 0.5      # rim reaches this far in over the phone's rolled front edge, cle
                # while LIP > CLEAR. PLA cracks sooner, 0.35 there
 LIP_CORNER = 0.0       # the rim's reach round each corner and across both ends: under CLEAR,
                        # only the long walls bow, and the phone tips in over an end or a side
+WEDGE = 0.0            # no lip; the inner wall leans in this much by the front glass plane
 LIP_FALL = 8.0         # along each straight from the arc's end, corner values ease to the straight's
 GLASS_GAP = 1.0        # exposed glass to any flat surface: 0.85 min, 1.0 ideal (ADG 5.1.1)
 MIN_GAP = 0.85
@@ -118,6 +123,9 @@ USB_BOOT = (0.25, 0.2)  # PORT "merged": cable boot room past the USB-C keepout,
 CORNER_L = 24.0        # WALLS "sides"/"corners": wall kept this far along each edge from a corner
 WALL_END_R = 5.0       # where it rounds into the back, so it reaches CORNER_L + this at the back
 WALL_END_TOP = 2.0     # round over the rim top at each wall end
+NOTCH_THIN = 0.9       # wall left at a notch's ends and bottom edge, so a fingertip rolls in
+NOTCH_RAMP = 6.0       # back to full WALL this far along the wall from each end
+NOTCH_DROP = 1.0       # and this far below its bottom edge
 SPINE_W = 4.0          # spine past the camera ring
 ISLAND_W = 4.0         # banded back: island past the camera ring's footprint
 BAND_FILLET = 6.0      # banded back: radius in every inside corner of what is kept
@@ -328,12 +336,16 @@ def keepout_cone(cx, cy, z0, r0, half_angle, z1):
 
 # Case ------------------------------------------------------------------------
 
+# Module constants as written; a style may override any of them, so each build starts from these.
+CONSTANTS = {k: v for k, v in globals().items() if k.isupper()}
+
+
 def build(name="17e", style="case", **knobs):
     """Every solid this phone, style and knob overrides make, as objects in the
     `case` collection: `part`, and `plate` / `slider` where the knobs make them."""
     global SCRATCH
     base = styles()[style]["knobs"]
-    globals().update({**KNOBS, **base, **knobs})
+    globals().update({**CONSTANTS, **KNOBS, **base, **knobs})
     p = phone(name)
     W, L, T = p["W"], p["L"], p["T"]
 
@@ -341,11 +353,11 @@ def build(name="17e", style="case", **knobs):
     KEYS = tuple(k for k in globals()["KEYS"] if k in names)
     CLOSED = tuple(k for k in globals()["CLOSED"] if k in names)
     assert BACK <= p["max_back"]
-    assert CLEAR + WALL <= 1.8
+    assert WEDGE or CLEAR + WALL <= 1.8   # a wedge case gives up the dock fit for thicker walls
     assert CLEAR <= CLEAR_CORNER < CLEAR + WALL - 0.8, "corner wall under 0.8"
-    assert CLEAR < LIP < 1.05
-    assert 0 <= LIP_CORNER < CLEAR, "a corner lip past the clearance blocks the phone"
-    assert BUTTONS in ("windows", "slot")
+    assert WEDGE or CLEAR < LIP < 1.05
+    assert WEDGE or 0 <= LIP_CORNER < CLEAR, "a corner lip past the clearance blocks the phone"
+    assert BUTTONS in ("windows", "slot", "notch")
     assert WALLS in ("full", "sides", "corners") and MAGSAFE in (None, "ring", "open")
     assert not set(KEYS) & set(CLOSED)
     assert not (KEYS and WALLS == "corners"), "corner walls leave no wall for a key"
@@ -354,7 +366,7 @@ def build(name="17e", style="case", **knobs):
     assert not RIBS or (BACK_BAND is None and not MAGSAFE), "ribs pocket the full back, magnets need it solid"
     assert not RIBS or BACK - RIBS >= MIN_GAP, "back between the ribs under the glass gap"
     assert RIB_SIDE in ("out", "in")
-    assert PORT in ("split", "merged")
+    assert PORT in ("split", "merged", "notch")
     assert not VENT or (RIBS and RIB_SIDE == "in"), "vents run out of the inner channels"
     assert not (SLIDER and MAGSAFE), "slider rails reach y -52, a charger's top edge is at -45"
     assert not (SLIDER and p["plateau"] == "full"), "the slider can't cover a full-width plateau"
@@ -433,9 +445,15 @@ def build(name="17e", style="case", **knobs):
         part += body(Z_CASE_BACK, PROUD, out=out_l) & span(-10, W + 10, 10, -L - 10, PROUD - LEATHER_BAND, PROUD + 1)
     else:
         part = body(Z_CASE_BACK, PROUD)
-    part -= prism(inner, Z_BACK, 0.0)
-    part -= loft([[(x, y, z) for x, y in r] for r, z in
-                  ((rim(0), -0.01), (rim(0), PROUD - RIM_FLARE), (rim(RIM_FLARE), PROUD + 0.01))])
+    if WEDGE:
+        pinch = eased(WEDGE - CLEAR_CORNER, WEDGE - CLEAR)
+        part -= loft([[(x, y, z) for x, y in r] for r, z in
+                      ((inner, Z_BACK), (pinch, 0.0), (pinch, PROUD - RIM_FLARE),
+                       (eased(WEDGE - CLEAR_CORNER - RIM_FLARE, WEDGE - CLEAR - RIM_FLARE), PROUD + 0.01))])
+    else:
+        part -= prism(inner, Z_BACK, 0.0)
+        part -= loft([[(x, y, z) for x, y in r] for r, z in
+                      ((rim(0), -0.01), (rim(0), PROUD - RIM_FLARE), (rim(RIM_FLARE), PROUD + 0.01))])
 
     def edge_port(w, h, cx, cz, top, shape=slot):
         """Opening w along x, h along z through the top or bottom wall, with the
@@ -464,17 +482,69 @@ def build(name="17e", style="case", **knobs):
         return side_loft(side, cy, cz, [(d0 - 0.01 * (d1 - d0) / grow_, slot(w + 2 * grow_, h + 2 * grow_)),
                                         (d0, slot(w + 2 * grow_, h + 2 * grow_)), (d1, slot(w, h))])
 
+    def notch(u0, u1, z0):
+        """(u, z) outline of a wall opening u0..u1 from z0 up through the rim, its rim corners rounded."""
+        rt = WALL_END_TOP
+        q = [(math.cos(t), math.sin(t)) for t in np.linspace(0, math.pi / 2, 9)]
+        left = [(u0 - rt, PROUD + 5)] + [(u0 - rt + rt * c, PROUD - rt + rt * s) for c, s in q[::-1]] + [(u0, z0)]
+        return left + [(u0 + u1 - u, z) for u, z in left[::-1]]
+
+    def scoop(along, lo, hi, z0, wall):
+        """Solid that thins the wall round a notch lo..hi (x for along 0, y for along 1) with its
+        bottom at z0, on the wall `wall(x, y)` picks: NOTCH_THIN left at the notch, full WALL
+        NOTCH_RAMP away and NOTCH_DROP below, eased, and following the outline round a corner."""
+        dense = []
+        for i, (bx, by) in enumerate(ring):
+            ax_, ay_ = ring[i - 1]
+            n = max(1, math.ceil(math.hypot(bx - ax_, by - ay_)))
+            dense += [(ax_ + (bx - ax_) * k / n, ay_ + (by - ay_) * k / n) for k in range(1, n + 1)]
+        # full stands 0.01 off the outside, so the cut shares no face with the wall
+        thin, full = ph.offset_ring(dense, -CLEAR - NOTCH_THIN), bumped(ph.offset_ring(dense, -OUT - 0.01))
+
+        def ease(v):
+            return (1 - math.cos(math.pi * v)) / 2
+
+        def at(k):
+            out = []
+            for q, a, b in zip(dense, thin, full):
+                t = min(1.0, max(lo - q[along], q[along] - hi, 0.0) / NOTCH_RAMP) if wall(*q) else 1.0
+                e = 1 - (1 - ease(t)) * (1 - ease(k))
+                out.append((a[0] + e * (b[0] - a[0]), a[1] + e * (b[1] - a[1])))
+            return out
+        n = 8
+        levels = [(z0 - NOTCH_DROP * k / n, at(k / n)) for k in range(n, -1, -1)] + [(PROUD + 2, at(0))]
+        keep = loft([[(x, y, z) for x, y in r] for z, r in levels])
+        u0, u1, far = lo - NOTCH_RAMP - 1, hi + NOTCH_RAMP + 1, OUT + 2
+        mid = (lo + hi) / 2
+        if along == 0:
+            box_ = span(u0, u1, -L - far, -L + 5, z0 - NOTCH_DROP + 0.005, PROUD + 1) if wall(mid, -L) else \
+                span(u0, u1, far, -5, z0 - NOTCH_DROP + 0.005, PROUD + 1)
+        else:
+            box_ = span(W + far, W - 5, u0, u1, z0 - NOTCH_DROP + 0.005, PROUD + 1) if wall(W, mid) else \
+                span(-far, 5, u0, u1, z0 - NOTCH_DROP + 0.005, PROUD + 1)
+        return box_ - keep
+
     # USB-C connector keepout, grown by CLEAR.
     ux, uz, kw, kh = p["usb"]
     sd, sz, groups = p["speakers"]
-    if PORT == "merged":
+    if PORT in ("merged", "notch"):
         # One opening along the bottom from speaker to speaker, chamfered outside, the
         # USB-C part grown by USB_BOOT for a cable boot.
         uw, uh = kw + 2 * (CLEAR + USB_BOOT[0]), kh + 2 * (CLEAR + USB_BOOT[1])
         x0 = min([g[0] for g in groups] + [ux - uw / 2 + PORT_OFFSET]) - PORT_OFFSET
         x1 = max([g[1] for g in groups] + [ux + uw / 2 - PORT_OFFSET]) + PORT_OFFSET
-        part -= edge_port(x1 - x0, sd + 2 * PORT_OFFSET, (x0 + x1) / 2, sz, top=False)
-        part -= edge_port(uw, uh, ux, uz, top=False)
+        if PORT == "notch":
+            # The bottom wall open from the port up through the rim, no bar over it. The
+            # openings stop at the speaker and USB-C keepouts, unchamfered, and the wall thins round them.
+            a = OUT + 2
+            for w, h, cx, cz, shape in ((x1 - x0, sd + 2 * PORT_OFFSET, (x0 + x1) / 2, sz, slot(x1 - x0, sd + 2 * PORT_OFFSET)),
+                                        (uw, uh, ux, uz, rounded(uw, uh, 1.0))):
+                part -= loft([[(cx + u, -L + t, cz + v) for u, v in shape] for t in (-a, a)])
+            part -= loft([[(u, y, z) for u, z in notch(x0, x1, sz)] for y in (-L + LIP + 1, -L - OUT - 2)])
+            part -= scoop(0, x0, x1, sz - sd / 2 - PORT_OFFSET, lambda x, y: y < -L / 2)
+        else:
+            part -= edge_port(x1 - x0, sd + 2 * PORT_OFFSET, (x0 + x1) / 2, sz, top=False)
+            part -= edge_port(uw, uh, ux, uz, top=False)
     else:
         a = WALL + CLEAR + 2
         part -= loft([[(ux + u, -L + t, uz + v) for u, v in slot(kw + 2 * CLEAR, kh + 2 * CLEAR)] for t in (-a, a)])
@@ -500,7 +570,7 @@ def build(name="17e", style="case", **knobs):
     thru = OUT + 2
     windows = [(b["side"], b["center_y"] + b["length"] / 2, b["center_y"] - b["length"] / 2)
                for b in p["buttons"] if b["name"] not in KEYS + CLOSED]
-    if BUTTONS == "slot":
+    if BUTTONS in ("slot", "notch"):
         windows = [(side, max(t for s_, t, _ in windows if s_ == side),
                     min(b for s_, _, b in windows if s_ == side))
                    for side in sorted({s_ for s_, _, _ in windows})]
@@ -508,6 +578,10 @@ def build(name="17e", style="case", **knobs):
         x0, x1 = (W - thru, W + thru) if side == "right" else (thru, -thru)
         length = top - bot + 2 * BUTTON_MARGIN
         part -= loft([[(x, (top + bot) / 2 + u, zc + v) for u, v in slot(length, 2 * half)] for x in (x0, x1)])
+        if BUTTONS == "notch":
+            u0 = bot - BUTTON_MARGIN
+            part -= loft([[(x, u, z) for u, z in notch(u0, u0 + length, zc)][::1 if side == "right" else -1] for x in (x0, x1)])
+            part -= scoop(1, u0, u0 + length, zc - half, (lambda x, y: x > W / 2) if side == "right" else (lambda x, y: x < W / 2))
     def nearest(b, u):
         """(gap, neighbour) to the next button on b's side, up (u 1) or down (u -1)."""
         cy, bl = b["center_y"], b["length"]
@@ -742,7 +816,7 @@ def build(name="17e", style="case", **knobs):
                 if b - a < 3:
                     continue
                 top = Z_BACK
-                if PORT == "merged" and a < ux + uw / 2 and b > ux - uw / 2:
+                if PORT in ("merged", "notch") and a < ux + uw / 2 and b > ux - uw / 2:
                     top = uz - uh / 2 + 0.05
                 part -= span(a, b, -L + 1, -L - OUT - 2, z0, top)
     elif RIBS:
