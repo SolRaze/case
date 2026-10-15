@@ -9,7 +9,7 @@ layout
 - ref/ | drawing data per product, one json per model, index in ref/README.md
 - laptop/ | MS-16W1 mainboard measured off a pegboard, findings in laptop/README.md
 - previews/ | every build seen from the back | tools/ | drawing fetch and reading, phone body check, readme writer
-- web/ | memory card browser: every phone with a case, modelled from its drawing | phones.py reads phone.py and rules.json at dev and build
+- web/ | memory card browser: every phone with a case, modelled from its drawing | edit joins, cuts and moves a part set's parts | showcase holds finished designs to remix | playground, own icon on the front page, no phone | box, cylinder, sphere, cone, torus and stl blocks joined, cut and blended in the printer's 235 x 235 x 200 mm volume | saved parts on its shelf and in edit's add part, my parts | exports stl | every key has a button in the bar | keys, touch or a controller | phones.py reads phone.py and rules.json at dev and build
 
 run
 - `python case.py` 17e, every style | `python case.py magsafe frame` | `--phone 16 --phone air` | `--all`
@@ -20,7 +20,7 @@ run
 - web/ `npm install` | `npm run phones` writes web/phones.json, `npm run glb` packs out/ stl into web/public/glb | `npm run dev`
 
 styles
-- base | the template every phone gets: flat outside, 1.0 mm back skin under lengthwise channels on the phone side that run out into the camera window and through the bottom wall; every button a flexure key with a ridge to find it by; one chamfered bottom opening from speaker to speaker with room for a cable boot; 1.5 mm corner bumpers
+- base | the template every phone gets, the printed fit: flat outside, 2.2 mm walls at 0.35 clearance leaning in 0.45 by the front glass plane to pinch the phone's flat sides, no lip, rim 2.0 over the glass; 1.0 mm back skin under lengthwise channels on the phone side that run out into the camera window and through the bottom wall; one window per side open up through the rim, the wall thinned round it; the bottom open from speaker to speaker up through the rim; 1.5 mm corner bumpers
 - case | full case: a window per button, fitted camera ring, full back
 - slot | one button slot per side, fitted camera, full back
 - magsafe | pockets for the ADG 42.1 magnet array, glued in from the phone side; action and side buttons as flexure keys where the phone has them
@@ -40,34 +40,17 @@ styles
 - flip | full case carrying a front cover on a 3DS-style hinge along the left edge: two end knuckles, stop shelves for the cover open flat at 180, 1.5 mm corner bumpers
 - cover | 2 mm front cover for flip, its barrel runs between the case's knuckles on a 1.75 filament pin
 
-knobs
-- BUTTONS | default "windows" | "windows" "slot"
-- KEYS | default [] | button names; names a phone lacks are dropped
-- CLOSED | default [] | button names, none shared with KEYS
-- BACK_BAND | default null | null (full back) or mm of back kept round the edge
-- RING | default true | false true
-- PLATE | default false | false true
-- WALLS | default "full" | "full" "sides" "corners"
-- MAGSAFE | default null | null "ring" "open"
-- SLIDER | default false | false true
-- CIG | default false | false true
-- COUPON | default null | null or mm of each edge kept round the bottom-right corner
-- FLIP | default false | false true
-- RIBS | default null | null (solid back) or mm pocketed out of the back between ribs
-- RIB_SIDE | default "out" | "out" "in"
-- BUMPER | default null | null or mm the outside bulges out round each corner
-- LEATHER | default null | null or mm of leather glued over the outside
-- PORT | default "split" | "split" "merged"
-- VENT | default false | false true
+knobs | defaults and values in rules.json knobs
+- BUTTONS | KEYS | CLOSED | BACK_BAND | RING | PLATE | WALLS | MAGSAFE | SLIDER | CIG | COUPON | FLIP | RIBS | RIB_SIDE | BUMPER | LEATHER | PORT | VENT
 
 design
-- The outside is one rounded shape: a 1.55 mm wall rolling into the back over 3.0 mm, a 0.8 mm round on the front rim, and the rim opening flared 0.4 mm.
-- The camera opening hugs every lens and the plateau they stand on, 1.2 mm out; flash and mic outside it get their own hole. A full-width plateau opens the top of the back, its top corners and rim kept.
-- The camera ring stands 1.0 mm past the lens: a flat 1.5 mm top, its outside rounded; the camera and flash holes chamfer 0.4 mm at their outside edge, every other opening in the back rounds out 0.75 mm.
-- A banded back keeps the camera ring on an island swept out to the band, every inside corner filleted at 6 mm, so each opening is one curve.
-- Open walls end in a 5 mm round into the back and a 2 mm round over the rim top.
-- Button windows and port openings are obround; a flexure key hinges toward the larger gap to the next button. The receiver gets a shallow dip in the top rim that eases back up over 4 mm each side.
-- Styles only change knobs, so every style shares this shape.
+- outside one rounded shape | 1.55 mm wall rolls into the back over 3.0 mm | 0.8 mm round on the front rim | rim opening flared 0.4 mm
+- camera opening hugs every lens and their plateau, 1.2 mm out | flash and mic outside it get their own hole | a full-width plateau opens the top of the back, top corners and rim kept
+- camera ring 1.0 mm past the lens, flat 1.5 mm top, outside rounded | camera and flash holes chamfer 0.4 mm outside | every other back opening rounds out 0.75 mm
+- banded back keeps the camera ring on an island swept out to the band | inside corners filleted 6 mm, each opening one curve
+- open walls end in a 5 mm round into the back and a 2 mm round over the rim top
+- button windows and port openings obround | a flexure key hinges toward the larger gap to the next button | receiver gets a shallow dip in the top rim, easing back up over 4 mm each side
+- styles only change knobs, every style shares this shape
 
 rules | build skips a phone and style that break one, and says which
 - The slider and MagSafe don't mix: the rails run down to y -52 and the charger's top edge sits at -45.
@@ -100,37 +83,8 @@ checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass
 - 489 of 570 phone x style build and pass | the rest are in rules.json invalid
 
-previews | from the back, grid in previews/README.md
-- 5s | none, sheet has no corner profile
-- [se-2-3](previews/README.md#se-2-3) | 17 styles
-- [12-mini](previews/README.md#12-mini) | 14 styles
-- [12](previews/README.md#12) | 17 styles
-- [12-pro](previews/README.md#12-pro) | 15 styles
-- [12-pro-max](previews/README.md#12-pro-max) | 17 styles
-- [13-mini](previews/README.md#13-mini) | 14 styles
-- [13](previews/README.md#13) | 17 styles
-- [13-pro](previews/README.md#13-pro) | 17 styles
-- [13-pro-max](previews/README.md#13-pro-max) | 17 styles
-- [14](previews/README.md#14) | 17 styles
-- [14-plus](previews/README.md#14-plus) | 17 styles
-- [14-pro](previews/README.md#14-pro) | 17 styles
-- [14-pro-max](previews/README.md#14-pro-max) | 17 styles
-- [15](previews/README.md#15) | 17 styles
-- [15-plus](previews/README.md#15-plus) | 17 styles
-- [15-pro](previews/README.md#15-pro) | 17 styles
-- [15-pro-max](previews/README.md#15-pro-max) | 17 styles
-- [16](previews/README.md#16) | 17 styles
-- [16-plus](previews/README.md#16-plus) | 17 styles
-- [16e](previews/README.md#16e) | 19 styles
-- [16-pro](previews/README.md#16-pro) | 17 styles
-- [16-pro-max](previews/README.md#16-pro-max) | 17 styles
-- [17](previews/README.md#17) | 17 styles
-- [17e](previews/README.md#17e) | 19 styles
-- [air](previews/README.md#air) | 17 styles
-- [17-pro](previews/README.md#17-pro) | 17 styles
-- [17-pro-max](previews/README.md#17-pro-max) | 17 styles
-- [18-pro](previews/README.md#18-pro) | 17 styles
-- [18-pro-max](previews/README.md#18-pro-max) | 17 styles
+previews
+- from the back, one section per phone in previews/README.md | 29 of 30 phones
 
 requirements
 - `pip install -r requirements.txt` | blender's python module, numpy, pymupdf | libegl for headless previews

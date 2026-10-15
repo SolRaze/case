@@ -46,3 +46,28 @@ export function buildLogo(h: number, depth: number, finish: Finish, seg: number)
   object.add(new THREE.Mesh(geo, [face, side]));
   return { object, materials: [face, side] };
 }
+
+/**
+ * The playground's icon, drawn for this site: a print bed h mm tall with a block, a post and a cone standing on it,
+ * centred, the solids toward +z; the bed in the finish's body, the solids in its frame.
+ */
+export function buildPlay(h: number, finish: Finish, seg: number) {
+  const m = (color: string, o: Partial<THREE.MeshStandardMaterialParameters>) =>
+    new THREE.MeshStandardMaterial({ color, transparent: true, flatShading: seg <= 8, ...o });
+  const bed = m(finish.body, { roughness: 0.35, metalness: 0.05 });
+  const solid = m(finish.frame, { roughness: 0.3, metalness: 0.8 });
+  const w = h * 0.7, t = h * 0.05, r = h * 0.08;
+  const plate = new THREE.Shape();
+  plate.moveTo(-w / 2 + r, -h / 2);
+  for (const [x, y, a] of [[w / 2 - r, -h / 2 + r, -0.5], [w / 2 - r, h / 2 - r, 0], [-w / 2 + r, h / 2 - r, 0.5], [-w / 2 + r, -h / 2 + r, 1]])
+    plate.absarc(x, y, r, a * Math.PI, (a + 0.5) * Math.PI, false);
+  const object = new THREE.Group();
+  object.add(new THREE.Mesh(new THREE.ExtrudeGeometry(plate, { depth: t, bevelEnabled: false, curveSegments: seg }).translate(0, 0, -t), bed));
+  // each solid stands on the bed's face at z 0
+  const stand = (g: THREE.BufferGeometry, x: number, y: number, tall: number, turn = 0) =>
+    object.add(new THREE.Mesh(g.rotateX(Math.PI / 2).rotateZ(turn).translate(x * h, y * h, tall / 2), solid));
+  stand(new THREE.BoxGeometry(h * 0.3, h * 0.3, h * 0.3), -0.14, 0.26, h * 0.3, 0.3);
+  stand(new THREE.CylinderGeometry(h * 0.11, h * 0.11, h * 0.5, seg * 2), 0.17, 0, h * 0.5);
+  stand(new THREE.ConeGeometry(h * 0.17, h * 0.42, seg * 2), -0.13, -0.27, h * 0.42);
+  return { object, materials: [bed, solid] };
+}

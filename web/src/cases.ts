@@ -48,6 +48,68 @@ export async function solid(url: string) {
   return out;
 }
 
+/** an imported STL's part name starts with this; its mesh is welded, in the case's mm, and kept in IndexedDB, where solve.worker.ts reads it too */
+export const IMPORT = 'stl:';
+type Solid = Awaited<ReturnType<typeof solid>>;
+const imports = <T>(mode: IDBTransactionMode, ask: (s: IDBObjectStore) => IDBRequest<T>) =>
+  new Promise<T>((ok, no) => {
+    const open = indexedDB.open('case.imports', 1);
+    open.onupgradeneeded = () => open.result.createObjectStore('stl');
+    open.onerror = () => no(open.error);
+    open.onsuccess = () => {
+      const r = ask(open.result.transaction('stl', mode).objectStore('stl'));
+      r.onsuccess = () => ok(r.result);
+      r.onerror = () => no(r.error);
+    };
+  });
+export const importNames = () => imports('readonly', (s) => s.getAllKeys()) as Promise<string[]>;
+export const keepImport = (name: string, m: Solid) => imports('readwrite', (s) => s.put(m, name));
+export const dropImport = (name: string) => imports('readwrite', (s) => s.delete(name));
+/** a part's mesh: an import or a saved part from IndexedDB, undefined when gone; any other from its glb in dir */
+export const partSolid = (dir: string, name: string): Promise<Solid> =>
+  name.startsWith(IMPORT) || name.startsWith(MY) ? imports('readonly', (s) => s.get(name)) : solid(`${dir}/${name}.glb`);
+
+/** a part saved from the playground: its mesh in case.imports under MY + slug, in the part frame; name, version and recipe in localStorage */
+export const MY = 'my:';
+export type MyPart = { name: string; version: number; pieces: Piece[] };
+const MYKEY = 'case.my';
+export function loadMy(): Record<string, MyPart> {
+  try {
+    return JSON.parse(localStorage.getItem(MYKEY) ?? '{}') ?? {};
+  } catch {
+    return {};
+  }
+}
+export const saveMy = (m: Record<string, MyPart>) => localStorage.setItem(MYKEY, JSON.stringify(m));
+/** a saved part on a case's back, given the base's box: turned 180° about x so its bed face meets the back, centred on the box, the bed face SINK into the shell.
+ * solve.worker.ts and edit's ghost both seat with it */
+export function seat({ pos, idx }: Solid, min: number[], max: number[]): Solid {
+  const lo = [Infinity, Infinity], hi = [-Infinity, -Infinity];
+  for (let i = 0; i < pos.length; i += 3)
+    for (const a of [0, 1]) {
+      lo[a] = Math.min(lo[a], pos[i + a]);
+      hi[a] = Math.max(hi[a], pos[i + a]);
+    }
+  const dx = (min[0] + max[0] - lo[0] - hi[0]) / 2, my = (lo[1] + hi[1]) / 2, cy = (min[1] + max[1]) / 2, z = min[2] + SINK;
+  const out = new Float32Array(pos.length);
+  for (let i = 0; i < pos.length; i += 3) {
+    out[i] = pos[i] + dx;
+    out[i + 1] = cy - (pos[i + 1] - my);
+    out[i + 2] = z - pos[i + 2];
+  }
+  return { pos: out, idx };
+}
+
+export type Shape = 'box' | 'cylinder' | 'sphere' | 'cone' | 'torus';
+/** one playground block in the part frame, mm, z up, the bed at z 0: pos its middle, rot degrees about x y z, size its outline before turning;
+ * an stl piece's ref names its mesh in case.imports, kept centred on the origin. blend is the mm it melts into what comes before it */
+export type Piece = { kind: Shape | 'stl'; pos: number[]; rot: number[]; size: number[]; op: 'join' | 'cut'; blend: number; ref?: string };
+/** a piece turned by rot, then moved to pos; its size is the caller's */
+export function pieceMatrix({ pos: [x, y, z], rot }: Piece) {
+  const [a, b, c] = rot.map(THREE.MathUtils.degToRad);
+  return new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(a, b, c)).setPosition(x, y, z);
+}
+
 /** one case in the drawing frame, float positions with creased normals */
 export async function load(phone: string, style: string) {
   const { pos, idx } = await solid(`glb/${phone}/${style}.glb`);

@@ -3,13 +3,14 @@ import '@fontsource/arimo/latin-700.css';
 import theme from '../themes/memcard.json';
 import specs from '../phones.json';
 import { buildLocked, buildPhone, framed, label, type PhoneSpec } from './phone';
-import { buildLogo } from './logo';
+import { buildLogo, buildPlay } from './logo';
 import { READY, order, styleName, year } from './catalog';
-import { built, exportStl, isSet, load, loadTemplates, placing, saveTemplates, SINK, solid, type Template } from './cases';
+import { built, exportStl, isSet, load, loadMy, loadTemplates, MY, partSolid, placing, saveTemplates, seat, SINK, solid, type Template } from './cases';
 import { STEPS, combine, opsKey, partList, type Move, type Moves, type Op, type Part } from './parts';
 import { inkLayer } from './ink';
 import * as sfx from './sound';
 import { picker, screenRect } from './pick';
+import { playground, type Dir } from './play';
 
 const S = theme.strings;
 const C = theme.colors;
@@ -158,11 +159,11 @@ const snapGrid = new THREE.LineSegments(
   }
 }
 
-// the front page: a phone opens its cases page, the apple opens the models
+// the front page: a phone opens its cases page, the apple opens the models, the bed opens the playground
 const front = theme.front.map((f) => {
   const { object, materials } =
-    f.icon === 'logo' ? buildLogo(LOGO_H, card.T, theme.finish, f.seg) : buildPhone(spec(f.icon), theme.finish, f.seg);
-  return item(object, materials, f.icon === 'logo' ? LOGO_H : spec(f.icon).L);
+    f.icon === 'logo' ? buildLogo(LOGO_H, card.T, theme.finish, f.seg) : f.icon === 'play' ? buildPlay(LOGO_H, theme.finish, f.seg) : buildPhone(spec(f.icon), theme.finish, f.seg);
+  return item(object, materials, f.icon === 'logo' || f.icon === 'play' ? LOGO_H : spec(f.icon).L);
 });
 
 // the built styles and part sets; the parts of each set, read once; the starts edit offers in its first row
@@ -178,13 +179,21 @@ let store = loadTemplates([]);
 /** solved cases by style and ops, shared by the ring, the phone, edit and print; oldest dropped past GEOS */
 const geos = new Map<string, Promise<THREE.BufferGeometry>>();
 const GEOS = 24;
-const keyOf = (t: Look) => (isSet(t.style) ? `${t.style}|${opsKey(t.ops, setParts.get(t.style) ?? [], t.moves)}` : t.style);
+/** the playground's saved parts as parts that start off; edit's Add part lists them under My parts */
+const myList = (): Part[] => Object.keys(loadMy()).map((name) => ({ name, op: 'off' }));
+/** the version of each saved part a look has on; one deleted since is left out, and the solve skips it */
+function myVers(t: Look) {
+  const my = loadMy();
+  return Object.fromEntries(Object.keys(t.ops ?? {}).flatMap((n) => (my[n] && t.ops![n] !== 'off' ? [[n, my[n].version]] : [])));
+}
+const keyOf = (t: Look) =>
+  isSet(t.style) ? `${t.style}|${opsKey(t.ops, [...(setParts.get(t.style) ?? []), ...myList()], t.moves)}|${JSON.stringify(myVers(t))}` : t.style;
 const sameLook = (a: Look, b: Look) => a.style === b.style && keyOf(a) === keyOf(b);
 /** a design's case; lane 'edit' replaces the queued solve it overtakes, which then rejects and leaves the cache */
 function caseOf(t: Look, lane?: string) {
   const k = keyOf(t);
   if (!geos.has(k)) {
-    const p = isSet(t.style) ? combine(card.id, t.style, t.ops ?? {}, t.moves ?? {}, lane) : load(card.id, t.style);
+    const p = isSet(t.style) ? combine(card.id, t.style, t.ops ?? {}, t.moves ?? {}, lane, myVers(t)) : load(card.id, t.style);
     p.catch(() => geos.delete(k));
     geos.set(k, p);
     if (geos.size > GEOS) geos.delete(geos.keys().next().value!);
@@ -258,7 +267,7 @@ built(card.id).then(async (list) => {
   paint();
 });
 
-type View = 'boot' | 'models' | 'cases' | 'detail' | 'edit' | 'info';
+type View = 'boot' | 'models' | 'cases' | 'detail' | 'edit' | 'info' | 'play';
 let view: View = 'boot';
 let from: 'boot' | 'models' = 'boot'; // where ○ on the cases page goes
 let msel = 0; // models grid
@@ -323,9 +332,9 @@ function designName(t: Template) {
   const same = edited().filter((x) => lookName(x) === n);
   return same.length > 1 ? `${n} ${same.indexOf(t) + 1}` : n;
 }
-/** the front page's icons, as theme.front indices: the phones with a design, then the apple */
-const fronts = () => theme.front.flatMap((f, i) => (f.icon === 'logo' || (f.icon === card.id && edited().length) ? [i] : []));
-const opens = (i: number) => (theme.front[i].icon === 'logo' ? 'models' : 'cases');
+/** the front page's icons, as theme.front indices: the phones with a design, the apple and the playground */
+const fronts = () => theme.front.flatMap((f, i) => (f.icon === 'logo' || f.icon === 'play' || (f.icon === card.id && edited().length) ? [i] : []));
+const opens = (i: number) => (theme.front[i].icon === 'logo' ? 'models' : theme.front[i].icon === 'play' ? 'play' : 'cases');
 const portrait = () => camera.aspect < 1;
 
 const rowOf = (i: number) => Math.floor(i / COLS);
@@ -491,6 +500,8 @@ low.setAnimationLoop((t) => {
   timer.update(t);
   const dt = Math.min(timer.getDelta(), 0.05);
   const now = clock();
+  pad(now, dt);
+  play.frame(dt, now);
   fling = damp(fling, 0, 1.5, dt);
   const open = view === 'cases' || view === 'detail' || view === 'edit';
 
@@ -579,15 +590,16 @@ low.setAnimationLoop((t) => {
     dot.material.depthTest = view !== 'boot';
   } else glow.material.opacity = dot.material.opacity = 0;
 
+  // the playground places its bed from where the camera stands
   const c = camAt();
-  camera.position.set(damp(camera.position.x, c.x, 8, dt), damp(camera.position.y, c.y, 8, dt), damp(camera.position.z, c.z, 8, dt));
+  if (view !== 'play') camera.position.set(damp(camera.position.x, c.x, 8, dt), damp(camera.position.y, c.y, 8, dt), damp(camera.position.z, c.z, 8, dt));
   camera.layers.set(0);
   low.render(scene, camera);
-  if (caseMesh.visible || hiDrawn) {
+  if (caseMesh.visible || play.shown || hiDrawn) {
     camera.layers.set(1);
     hi.render(scene, camera);
     camera.layers.set(0);
-    hiDrawn = caseMesh.visible;
+    hiDrawn = caseMesh.visible || play.shown;
   }
   ink.draw();
 });
@@ -608,8 +620,16 @@ const glyph = {
   // the shoulder buttons, drawn as the turn each makes
   l1: disc('<path d="M16.8 9.2A5.6 5.6 0 1 0 17.6 13"/><path d="M17.6 4.6V9.6H12.6" stroke-linejoin="miter"/>', theme.buttons.square),
   r1: disc('<path d="M7.2 9.2A5.6 5.6 0 1 1 6.4 13"/><path d="M6.4 4.6V9.6H11.4" stroke-linejoin="miter"/>', theme.buttons.square),
+  // the triggers, drawn as the way each moves: down and up
+  l2: disc('<path d="M12 5.5V17.5M7 12.5 12 17.5 17 12.5"/>', theme.buttons.square),
+  r2: disc('<path d="M12 18.5V6.5M7 11.5 12 6.5 17 11.5"/>', theme.buttons.square),
+  // the d-pad, drawn as chevrons
+  left: disc('<path d="M14.5 7 9.5 12 14.5 17"/>', theme.buttons.square),
+  right: disc('<path d="M9.5 7 14.5 12 9.5 17"/>', theme.buttons.square),
+  up: disc('<path d="M7 14.5 12 9.5 17 14.5"/>', theme.buttons.square),
+  down: disc('<path d="M7 9.5 12 14.5 17 9.5"/>', theme.buttons.square),
 };
-type Press = keyof typeof glyph;
+type Press = Exclude<keyof typeof glyph, Dir>;
 /** the console's more-this-way marker: a flat borderless blue triangle, faded at its base and darkening to the tip */
 const arrow = (d: string, base: 0 | 1) =>
   'data:image/svg+xml,' +
@@ -627,6 +647,7 @@ const bars: Record<View, [Press, string][]> = {
   detail: [],
   edit: [['cross', S.save], ['circle', S.back]],
   info: [['circle', S.back]],
+  play: [],
 };
 
 /** edit's bar: what ✕ does on the picked row, ○, and △ on a part; a move's other controls are rows beside the phone */
@@ -652,6 +673,7 @@ const ink$ = (tag: string, s: string, cls = '') => {
   e.textContent = s;
   return e;
 };
+const play = playground({ scene, camera, paint, leave, ink: ink$ });
 
 type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order', label: string, ok: boolean];
 /** the command list's rows and whether each can be picked; detail works on the worn design, cases on the picked one */
@@ -666,28 +688,30 @@ function rows(): Row[] {
   return [];
 }
 
-/** a part set's parts but the base, each with its op in the draft and in parts.json */
+/** a part set's parts but the base, then the saved parts, each with its op in the draft and in parts.json */
 const setRows = () =>
   draft && isSet(draft.style)
-    ? (setParts.get(draft.style) ?? []).filter((p) => p.op !== 'base').map((p) => ({ name: p.name, def: p.op, op: draft!.ops?.[p.name] ?? p.op }))
+    ? [...(setParts.get(draft.style) ?? []), ...myList()].filter((p) => p.op !== 'base').map((p) => ({ name: p.name, def: p.op, op: draft!.ops?.[p.name] ?? p.op }))
     : [];
+/** the op Add part puts a part on: its parts.json op, a saved part joined */
+const addOp = (r: { def: Op }): Op => (r.def === 'off' ? 'union' : r.def);
 /** edit's part rows: the parts on the case, joined ones then cut ones, as the list groups them; □ lists the rest */
 const partRows = () => {
   const on = setRows();
   return [...on.filter((r) => r.op === 'union'), ...on.filter((r) => r.op === 'difference')];
 };
-/** a part file's name as a label: clipper-seat reads Clipper seat */
-const partName = (n: string) => n.charAt(0).toUpperCase() + n.slice(1).replace(/-/g, ' ');
+/** a part file's name as a label: clipper-seat reads Clipper seat; a saved part by the name it was saved under */
+const partName = (n: string) => (n.startsWith(MY) ? (loadMy()[n]?.name ?? n.slice(MY.length)) : n.charAt(0).toUpperCase() + n.slice(1).replace(/-/g, ' '));
 /** what a part is for, from the theme's groups by part name; a part in none of them is Other */
 const GROUPS: Record<string, string[]> = theme.groups;
-const groupOf = (name: string) => Object.keys(GROUPS).find((g) => GROUPS[g].includes(name)) ?? S.other;
+const groupOf = (name: string) => (name.startsWith(MY) ? S.myParts : (Object.keys(GROUPS).find((g) => GROUPS[g].includes(name)) ?? S.other));
 /** the parts off the case, by name with C10 after C9 */
 const addable = () =>
   setRows()
-    .filter((r) => r.op === 'off' && r.def !== 'off')
+    .filter((r) => r.op === 'off' && (r.def !== 'off' || r.name.startsWith(MY)))
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 /** the groups with a part left to add, in the theme's order, Other last */
-const addGroups = () => [...Object.keys(GROUPS), S.other].filter((g) => addable().some((r) => groupOf(r.name) === g));
+const addGroups = () => [...Object.keys(GROUPS), S.myParts, S.other].filter((g) => addable().some((r) => groupOf(r.name) === g));
 /** □'s list one group deep: that group's parts left to add */
 const addRows = () => addable().filter((r) => groupOf(r.name) === agroup);
 /** edit's rows: the start, the parts, then what ✕ can do: add a part, undo, save */
@@ -734,12 +758,15 @@ const mm = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${+Math.abs(v).toF
 
 /** one part's solid as a geometry, for the ghost, and its box, for the move's range */
 const partGeos = new Map<string, Promise<THREE.BufferGeometry>>();
-function partGeo(style: string, name: string) {
-  const url = `glb/${card.id}/${style}/${name}.glb`;
+function partGeo(style: string, name: string): Promise<THREE.BufferGeometry> {
+  const mine = name.startsWith(MY);
+  const url = mine ? `${style}|${name}|${loadMy()[name]?.version}` : `glb/${card.id}/${style}/${name}.glb`;
+  // a saved part seats on the base's back as the solve seats it
+  const base = () => partGeo(style, setParts.get(style)!.find((p) => p.op === 'base')!.name);
   if (!partGeos.has(url))
     partGeos.set(
       url,
-      solid(url).then(({ pos, idx }) => {
+      (mine ? Promise.all([partSolid('', name), base()]).then(([m, b]) => seat(m, b.boundingBox!.min.toArray(), b.boundingBox!.max.toArray())) : solid(url)).then(({ pos, idx }) => {
         const g = new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(pos, 3)).setIndex(new THREE.BufferAttribute(idx, 1));
         g.computeBoundingBox();
         return g;
@@ -897,8 +924,8 @@ function paint() {
   let n2 = '';
   if (view === 'boot') {
     const f = theme.front[fronts()[fsel]].icon;
-    n1 = f === 'logo' ? S.title : label(f);
-    n2 = f === 'logo' ? `${models.length} ${S.models}` : `${list.length} ${S.cases}`;
+    n1 = f === 'logo' ? S.title : f === 'play' ? S.play : label(f);
+    n2 = f === 'logo' ? `${models.length} ${S.models}` : f === 'play' ? '' : `${list.length} ${S.cases}`;
   } else if (view === 'models') {
     n1 = label(p.id);
   } else if (view === 'cases') {
@@ -908,7 +935,7 @@ function paint() {
   } else if (view === 'edit') {
     n1 = leaving ? S.discardAsk : editing >= 0 ? designName(store.list[editing]) : S.new;
     n2 = solving ? S.loading : label(card.id);
-  }
+  } else if (view === 'play') [n1, n2] = play.title();
   text('n1', n1);
   text('n2', n2);
 
@@ -975,7 +1002,7 @@ function paint() {
   };
   if (view === 'edit' && draft && adding) {
     // □'s list: the groups, then one group's parts; a tap picks a row, a part shows on the case, a second tap is ✕
-    const list = agroup === null ? addGroups().map((g) => `${g}  ${addable().filter((r) => groupOf(r.name) === g).length}`) : addRows().map((r) => `${partName(r.name)}  ${opName[r.def]}`);
+    const list = agroup === null ? addGroups().map((g) => `${g}  ${addable().filter((r) => groupOf(r.name) === g).length}`) : addRows().map((r) => `${partName(r.name)}  ${opName[addOp(r)]}`);
     parts.replaceChildren(
       li(ink$('p', agroup ?? S.addTitle, 'title')),
       ...windowed(
@@ -1078,12 +1105,13 @@ function paint() {
         }),
       ]),
     );
-  } else parts.replaceChildren();
+  } else if (view === 'play') parts.replaceChildren(...windowed(play.rows()));
+  else parts.replaceChildren();
   void showPart();
 
   const bar = $('bar');
-  const keys: [Press, string][] =
-    menu === 4 ? [] : menu ? [['cross', S.enter], ['circle', S.back]] : view === 'edit' ? editBar() : view === 'cases' && gallery ? [['cross', S.remix], ['circle', S.back], ...(peek ? [] : [['triangle', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['cross', S.enter], ['circle', S.back]] : bars[view];
+  const keys: [Press | Dir, string][] =
+    menu === 4 ? [] : menu ? [['cross', S.enter], ['circle', S.back]] : view === 'edit' ? editBar() : view === 'play' ? play.bar() : view === 'cases' && gallery ? [['cross', S.remix], ['circle', S.back], ...(peek ? [] : [['triangle', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['cross', S.enter], ['circle', S.back]] : bars[view];
   bar.replaceChildren(
     ...keys.map(([k, s]) => {
       const b = document.createElement('button');
@@ -1093,7 +1121,7 @@ function paint() {
       img.alt = '';
       b.append(img);
       b.append(ink$('span', s));
-      b.onclick = () => press(k);
+      b.onclick = () => (DIR[k] ? move(...DIR[k]) : press(k as Press));
       return b;
     }),
   );
@@ -1139,6 +1167,10 @@ function enterFront() {
       camera.position.copy(camAt());
       fit.pos.copy(openTarget(fit).pos);
       openCases(0.35);
+    } else if (opens(i) === 'play') {
+      view = 'play';
+      camera.position.copy(camAt());
+      play.enter();
     } else {
       view = 'models';
       follow();
@@ -1167,6 +1199,7 @@ function leave() {
   fade.style.opacity = '1';
   setTimeout(() => {
     for (const it of view === 'models' ? models : [...shown(), fit]) it.opacity = 0;
+    play.exit();
     view = 'boot';
     camera.position.copy(camAt());
     // back on the icon it came from; a phone whose last design went is off the front page
@@ -1302,6 +1335,7 @@ function command(k: Press) {
 
 function press(k: Press) {
   if (busy || flip) return;
+  if (view === 'play') return play.press(k);
   if (view === 'boot') {
     if (k === 'cross') enterFront();
     return;
@@ -1397,7 +1431,7 @@ function press(k: Press) {
       const r = addRows()[asel];
       if (k === 'cross' && r) {
         sfx.confirm();
-        setOp(r.name, r.def, r.def);
+        setOp(r.name, r.def, addOp(r));
         psel = partRows().findIndex((x) => x.name === r.name) + 1;
       } else if (k === 'circle') {
         sfx.cancel();
@@ -1518,6 +1552,7 @@ function press(k: Press) {
 
 function move(dx: number, dy: number) {
   if (busy || flip) return;
+  if (view === 'play') return play.move(dx, dy);
   if (view === 'boot') {
     const n = clamp(fsel + dx, 0, fronts().length - 1);
     if (n === fsel) return;
@@ -1620,14 +1655,46 @@ addEventListener('keydown', (e) => {
       paint();
     },
   };
-  // the browser's own chords stay the browser's; a held key repeats only where a step should
+  // the browser's own chords stay the browser's; naming in the playground takes the keys it types; a held key repeats only where a step should
   if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (view === 'play' && !busy && play.type(e.key)) return e.preventDefault();
+  // shift with ↑ ↓ is the triggers: the playground's up and down
+  if (e.shiftKey && (k === 'arrowup' || k === 'arrowdown')) {
+    e.preventDefault();
+    return press(k === 'arrowup' ? 'r2' : 'l2');
+  }
   if (e.repeat && !k.startsWith('arrow') && k !== 'q' && k !== 'e') return;
   if (map[k]) {
     e.preventDefault();
     map[k]();
   }
 });
+// a controller works the page as the keys do: the standard mapping's face buttons, shoulders and triggers press, the d-pad and the left stick move,
+// the right stick turns the playground's bed. A held direction, shoulder or trigger repeats after HOLD, then every AGAIN; held is each one's next repeat time
+const PAD: [number, Press][] = [[0, 'cross'], [1, 'circle'], [2, 'square'], [3, 'triangle'], [4, 'l1'], [5, 'r1'], [6, 'l2'], [7, 'r2']];
+const DIR: Record<string, [number, number]> = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] };
+const REPEAT = new Set(['l1', 'r1', 'l2', 'r2']);
+const HOLD = 0.4, AGAIN = 0.08, STICK = 0.5, DEAD = 0.2;
+const held = new Map<string, number>();
+function pad(now: number, dt: number) {
+  const p = navigator.getGamepads?.().find((g) => g?.connected);
+  if (!p) return;
+  const b = (i: number) => !!p.buttons[i]?.pressed;
+  const [x = 0, y = 0, rx = 0, ry = 0] = p.axes;
+  if (view === 'play' && Math.hypot(rx, ry) > DEAD) play.drag(rx * dt * 300, ry * dt * 300);
+  const on: Record<string, boolean> = { left: b(14) || x < -STICK, right: b(15) || x > STICK, up: b(12) || y < -STICK, down: b(13) || y > STICK };
+  for (const [i, k] of PAD) on[k] = b(i);
+  for (const k in on) {
+    const next = held.get(k);
+    if (!on[k]) held.delete(k);
+    else if (next === undefined || ((k in DIR || REPEAT.has(k)) && now >= next)) {
+      held.set(k, now + (next === undefined ? HOLD : AGAIN));
+      if (k in DIR) move(...DIR[k]);
+      else press(k as Press);
+    }
+  }
+}
+
 // audio may only start inside a gesture
 addEventListener('pointerdown', sfx.unlock, { capture: true, once: true });
 addEventListener('keydown', sfx.unlock, { capture: true, once: true });
@@ -1655,6 +1722,10 @@ canvas.addEventListener('pointermove', (e) => {
     const f = (down.from ??= [...moving.at]);
     shift([f[0] + x, f[1] + y, moving.at[2], (f[3] ?? 0) + z]);
     paint();
+  } else if (view === 'play') {
+    play.drag(e.clientX - down.last, e.clientY - down.lastY);
+    down.last = e.clientX;
+    down.lastY = e.clientY;
   } else if (view === 'models') {
     const { min, max } = camLimits();
     camV = clamp(down.camV + ((e.clientY - down.y) / innerHeight) * 2 * dist * T, min, max);

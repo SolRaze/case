@@ -54,7 +54,7 @@ async function keep(key: string, m: Mesh) {
 const SOLVER = 3;
 
 // one solve at a time in the worker; a lane's newer job replaces its queued one and jumps the queue
-type Job = { msg: { dir: string; ops: Record<string, Op>; moves: Moves }; lane?: string; ok: (m: Mesh) => void; no: (e: Error) => void };
+type Job = { msg: { dir: string; ops: Record<string, Op>; moves: Moves; my: Record<string, number> }; lane?: string; ok: (m: Mesh) => void; no: (e: Error) => void };
 const worker = new Worker(new URL('./solve.worker.ts', import.meta.url), { type: 'module' });
 const queue: Job[] = [];
 let running: Job | null = null;
@@ -82,13 +82,14 @@ const solve = (msg: Job['msg'], lane?: string) =>
   });
 
 /** a part set's case with the ops and moves given and parts.json's for the rest; from IndexedDB when solved before, else solved in solve.worker.ts.
- * Rejects when a newer job on the same lane replaced it before it started. */
-export async function combine(phone: string, set: string, ops: Record<string, Op>, moves: Moves, lane?: string) {
+ * my holds the version of each saved part in ops; one missing from it is left out. Rejects when a newer job on the same lane replaced it before it started. */
+export async function combine(phone: string, set: string, ops: Record<string, Op>, moves: Moves, lane?: string, my: Record<string, number> = {}) {
   const { list, version } = await partList(phone, set);
-  const key = `${phone}/${set}|${version}|${SOLVER}|${opsKey(ops, list, moves)}`;
+  const all = [...list, ...Object.keys(my).map((name): Part => ({ name, op: 'off' }))];
+  const key = `${phone}/${set}|${version}|${SOLVER}|${opsKey(ops, all, moves)}|${JSON.stringify(my)}`;
   let m = version ? await kept(key) : undefined;
   if (!m) {
-    m = await solve({ dir: new URL(`glb/${phone}/${set}`, location.href).href, ops, moves }, lane);
+    m = await solve({ dir: new URL(`glb/${phone}/${set}`, location.href).href, ops, moves, my }, lane);
     if (version) keep(key, m);
   }
   const g = new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(m.pos, 3));
