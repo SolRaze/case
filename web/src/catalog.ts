@@ -33,7 +33,7 @@ export const year = (id: string) => RELEASED[id]?.slice(0, 4) ?? '';
 const NAMES: Record<string, string> = {
   base: 'Core', case: 'Full', slot: 'Slot', magsafe: 'Magnet', sides: 'Open Ends', corners: 'Corners',
   frame: 'Window', edge: 'Bumper', plateframe: 'Plate Frame', plate: 'Back Plate', spine: 'Spine',
-  slider: 'Lens Slide', leather: 'Leather', cig: 'Smoker', corner: 'Fit Test', ribs: 'Ribbed',
+  slider: 'Lens Slide', leather: 'Leather', cig: 'Smoker', money: 'Money Clip', corner: 'Fit Test', ribs: 'Ribbed',
   ribcorner: 'Rib Test', flip: 'Flip', cover: 'Flip Cover',
 };
 export const styleName = (id: string) => NAMES[id] ?? id[0].toUpperCase() + id.slice(1);

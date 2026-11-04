@@ -69,6 +69,11 @@
     "output": "part",
     "about": "snap clip for one unlit cigarette along the right edge of the back; PETG softens near 80 C"
   },
+  "money": {
+    "knobs": {"MONEY": true},
+    "output": "part",
+    "about": "money clip on the back for the Indian 500 rupee note folded once: the back is one leaf, a 2.6 mm spring leaf the other, 34 mm wide, 6 mm bend, mouth opening down with a flared lip"
+  },
   "corner": {
     "knobs": {"COUPON": 45.0},
     "output": "part",

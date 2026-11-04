@@ -13,7 +13,7 @@
     "del": "#d23c3c"
   },
   "font": "\"Helvetica Neue\", Helvetica, Arimo, Arial, sans-serif",
-  "buttons": { "cross": "#707070", "circle": "#7f7f7f", "triangle": "#979797", "square": "#8a8a8a" },
+  "buttons": { "a": "#707070", "b": "#7f7f7f", "x": "#979797", "y": "#8a8a8a" },
   "finish": { "body": "#121212", "frame": "#2c2c2c", "plateau": "#1a1a1a" },
   "case": { "color": "#e4ecf2", "opacity": 0.38, "grid": "#d2d2d2" },
   "card": "17e",
@@ -64,6 +64,7 @@
     "del": "Del",
     "ok": "OK",
     "myParts": "My parts",
+    "featured": "Featured",
     "emptyBench": "Empty bench",
     "print": "Print",
     "export": "Export",

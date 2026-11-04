@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import styles from '../../styles.json';
 import type { Move, Moves, Op } from './parts';
@@ -71,7 +72,8 @@ export const partSolid = (dir: string, name: string): Promise<Solid> =>
 
 /** a part saved from the playground: its mesh in case.imports under MY + slug, in the part frame; name, version and recipe in localStorage */
 export const MY = 'my:';
-export type MyPart = { name: string; version: number; pieces: Piece[] };
+/** featured: seeded by seedFeatured, listed under Featured in edit's Add part */
+export type MyPart = { name: string; version: number; pieces: Piece[]; featured?: boolean };
 const MYKEY = 'case.my';
 export function loadMy(): Record<string, MyPart> {
   try {
@@ -98,6 +100,51 @@ export function seat({ pos, idx }: Solid, min: number[], max: number[]): Solid {
     out[i + 2] = z - pos[i + 2];
   }
   return { pos: out, idx };
+}
+
+/** parts shipped in public/featured as <slug>.stl, lying flat with z their thin axis: the playground's palette adds them, and each is seeded once as a saved part */
+export const FEATURED = [
+  { slug: 'mcknuckle', name: 'McKnuckle' }, // MehTechArt, printables.com/model/1327313, CC BY-NC-SA
+  { slug: 'knuckle-duster', name: 'Knuckle duster' }, // Picanto, printables.com/model/298271, CC BY
+  { slug: 'ar-knuckle', name: 'AR knuckle' }, // Joji_Griez, printables.com/model/431868, CC BY-NC
+  { slug: 'ar-knuckle-twin', name: 'AR knuckle twin' }, // Joji_Griez, printables.com/model/431868, CC BY-NC
+  { slug: 'spiky-knuckle', name: 'Spiky knuckle' }, // mattie, printables.com/model/1384614, CC BY-NC
+  { slug: 'spiked-knuckle', name: 'Spiked knuckle' }, // Kavitate, printables.com/model/355631, public domain
+];
+/** a featured part's mesh, centred like an import, kept in case.imports under IMPORT + slug; fetched once */
+export async function featuredSolid(slug: string): Promise<Solid> {
+  const ref = IMPORT + slug;
+  const kept = await partSolid('', ref);
+  if (kept) return kept;
+  const stl = new STLLoader().parse(await (await fetch(`featured/${slug}.stl`)).arrayBuffer());
+  const g = mergeVertices(new THREE.BufferGeometry().setAttribute('position', stl.getAttribute('position')));
+  g.center();
+  const s = { pos: Float32Array.from(g.getAttribute('position').array), idx: Uint32Array.from(g.index!.array) };
+  await keepImport(ref, s);
+  return s;
+}
+/** a featured part as one stl piece standing on the bed */
+export function featuredPiece(slug: string, { pos }: Solid): Piece {
+  const b = new THREE.Box3().setFromArray(pos);
+  const size = b.getSize(new THREE.Vector3()).toArray();
+  return { kind: 'stl', ref: IMPORT + slug, pos: [0, 0, size[2] / 2], rot: [0, 0, 0], size, op: 'join', blend: 0 };
+}
+/** the featured slugs seeded before; one deleted from the shelf is not seeded again */
+const SEEDED = 'case.featured';
+/** each featured part not seeded yet becomes a saved part: its mesh under MY + slug in the part frame, bed at z 0 */
+export async function seedFeatured() {
+  const done = new Set<string>(JSON.parse(localStorage.getItem(SEEDED) ?? '[]'));
+  for (const { slug, name } of FEATURED.filter((f) => !done.has(f.slug))) {
+    const s = await featuredSolid(slug);
+    const piece = featuredPiece(slug, s);
+    const pos = s.pos.slice();
+    for (let i = 2; i < pos.length; i += 3) pos[i] += piece.size[2] / 2;
+    await keepImport(MY + slug, { pos, idx: s.idx });
+    const my = loadMy();
+    saveMy({ ...my, [MY + slug]: { name, version: (my[MY + slug]?.version ?? 0) + 1, pieces: [piece], featured: true } });
+    done.add(slug);
+    localStorage.setItem(SEEDED, JSON.stringify([...done]));
+  }
 }
 
 export type Shape = 'box' | 'cylinder' | 'sphere' | 'cone' | 'torus';

@@ -34,6 +34,7 @@ styles
 - slider | lens cover for spine, printed flat on its outside face, slides down clear of the lens and flash keepouts
 - leather | printed core for a 0.6 mm leather skin glued over the full back and walls: 0.95 mm walls, 1.4 mm back, 1.8 and 2.0 with the skin on; camera ring and a 1.5 mm rim band stand flush with the skin and cover its edges
 - cig | snap clip for one unlit cigarette along the right edge of the back; PETG softens near 80 C
+- money | money clip on the back for the Indian 500 rupee note folded once: the back is one leaf, a 2.6 mm spring leaf the other, 34 mm wide, 6 mm bend, mouth opening down with a flared lip
 - corner | bottom-right corner only, 45 mm of each edge: squircle corner, USB-C edge and speaker group, a fit test that prints in minutes
 - ribs | full case, ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs
 - ribcorner | the corner coupon with a ribbed back: 1.2 mm between 1.2 mm ribs on a 10 mm grid, 2.0 at the ribs
@@ -41,7 +42,7 @@ styles
 - cover | 2 mm front cover for flip, its barrel runs between the case's knuckles on a 1.75 filament pin
 
 knobs | defaults and values in rules.json knobs
-- BUTTONS | KEYS | CLOSED | BACK_BAND | RING | PLATE | WALLS | MAGSAFE | SLIDER | CIG | COUPON | FLIP | RIBS | RIB_SIDE | BUMPER | LEATHER | PORT | VENT
+- BUTTONS | KEYS | CLOSED | BACK_BAND | RING | PLATE | WALLS | MAGSAFE | SLIDER | CIG | MONEY | COUPON | FLIP | RIBS | RIB_SIDE | BUMPER | LEATHER | PORT | VENT
 
 design
 - outside one rounded shape | 1.55 mm wall rolls into the back over 3.0 mm | 0.8 mm round on the front rim | rim opening flared 0.4 mm
@@ -61,6 +62,7 @@ rules | build skips a phone and style that break one, and says which
 - Ribs pocket the full back; the magnets need it solid.
 - The hinge knuckles stand on the left wall, so the flip cover needs it.
 - A leather skin needs a plain outside: full walls, no ribs, bumpers or MagSafe magnets.
+- The money clip uses the back as its other leaf, so it needs the full plain back: no band, magnets, ribs or leather skin.
 - Leaving the camera without a ring needs a banded back, and no slider or leather skin.
 - Vents run out of the inner channels, so they need ribs on the phone side.
 - Phones whose sheet has no corner profile can't be built. Ruled out: 5s.
@@ -81,7 +83,7 @@ limits | from the apple accessory design guidelines and the phone sheets, checke
 
 checks
 - every build: closed mesh, one solid, glass gap >= 0.85 for front glass, lens cover, back glass
-- 489 of 570 phone x style build and pass | the rest are in rules.json invalid
+- 518 of 600 phone x style build and pass | the rest are in rules.json invalid
 
 previews
 - from the back, one section per phone in previews/README.md | 29 of 30 phones

@@ -2,7 +2,7 @@
  * The page's text at the 3D view's resolution. The DOM under `ui` keeps layout and hit areas
  * but is invisible; every frame each `.ink` element's words and each `img.px` are drawn here
  * at their laid-out boxes, faded by their own and their ancestors' opacity up to `ui`.
- * `.ink` elements hold text only; `.on` adds the glow.
+ * `.ink` elements hold text only; `.on`, or keyboard focus on it or its button, adds the glow.
  */
 export function inkLayer(canvas: HTMLCanvasElement, ui: HTMLElement, glow: string) {
   const g = canvas.getContext('2d')!;
@@ -62,7 +62,7 @@ export function inkLayer(canvas: HTMLCanvasElement, ui: HTMLElement, glow: strin
       g.shadowBlur = 0;
       for (const [w, x, y] of words) g.strokeText(w, x, y);
       g.fillStyle = s.color;
-      if (el.classList.contains('on')) {
+      if (el.classList.contains('on') || el.closest(':focus-visible')) {
         g.shadowColor = glow;
         g.shadowBlur = 6;
       }

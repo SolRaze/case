@@ -3,10 +3,10 @@ import * as THREE from 'three';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import theme from '../themes/memcard.json';
-import { dropImport, exportStl, IMPORT, keepImport, loadMy, MY, partSolid, pieceMatrix, saveMy, type Piece, type Shape } from './cases';
+import { dropImport, exportStl, FEATURED, featuredPiece, featuredSolid, IMPORT, keepImport, loadMy, MY, partSolid, pieceMatrix, saveMy, type Piece, type Shape } from './cases';
 import * as sfx from './sound';
 
-export type Key = 'cross' | 'circle' | 'square' | 'triangle' | 'l1' | 'r1' | 'l2' | 'r2';
+export type Key = 'a' | 'b' | 'y' | 'x' | 'l' | 'r' | 'zl' | 'zr';
 /** the d-pad, drawn in the bar where it steps the held piece */
 export type Dir = 'left' | 'right' | 'up' | 'down';
 type Deps = {
@@ -236,7 +236,7 @@ export function playground(d: Deps) {
   const rumble = () =>
     navigator.getGamepads?.().find((g) => g?.connected)?.vibrationActuator?.playEffect('dual-rumble', { duration: 45, strongMagnitude: 0.15, weakMagnitude: 0.5 }).catch(() => {});
 
-  /** a piece in hand from i; from is how it was, null for one just added, which ○ takes off again */
+  /** a piece in hand from i; from is how it was, null for one just added, which B takes off again */
   function grab(i: number, from: Piece | null) {
     sel = i;
     held = { i, from, tool: 0, lift: 0, snapped: '' };
@@ -302,7 +302,8 @@ export function playground(d: Deps) {
   const rowsN = () => bench.pieces.length + ACTS.length;
   const actOf = (i: number): Act | undefined => ACTS[i - bench.pieces.length];
   const shelf = () => Object.entries(loadMy());
-  const pieceName = (p: Piece, i: number) => (p.kind === 'stl' ? p.ref!.slice(IMPORT.length).replace(/-[a-z0-9]+$/, '') : `${S[p.kind]} ${i + 1}`);
+  const pieceName = (p: Piece, i: number) =>
+    p.kind === 'stl' ? (FEATURED.find((f) => IMPORT + f.slug === p.ref)?.name ?? p.ref!.slice(IMPORT.length).replace(/-[a-z0-9]+$/, '')) : `${S[p.kind]} ${i + 1}`;
 
   /** a step on the held piece: d-pad dx dy, or dz from L2 R2, by the tool */
   function nudge(dx: number, dy: number, dz: number) {
@@ -357,12 +358,12 @@ export function playground(d: Deps) {
     oops = false;
     if (mode === 'held') {
       const h = held!, p = bench.pieces[h.i];
-      if (k === 'cross') {
+      if (k === 'a') {
         sfx.confirm();
         held = null;
         mode = 'browse';
         squashAt = now;
-      } else if (k === 'circle') {
+      } else if (k === 'b') {
         sfx.cancel();
         if (h.from) bench.pieces[h.i] = h.from;
         else bench.pieces.splice(h.i, 1);
@@ -371,44 +372,52 @@ export function playground(d: Deps) {
         mode = 'browse';
         syncGhosts();
         solve();
-      } else if (k === 'square') {
+      } else if (k === 'y') {
         sfx.tick();
         h.tool = (h.tool + 1) % TOOLS.length;
-      } else if (k === 'triangle') {
+      } else if (k === 'x') {
         sfx.tick();
         p.op = p.op === 'join' ? 'cut' : 'join';
         solve();
-      } else if (k === 'l1' || k === 'r1') {
+      } else if (k === 'l' || k === 'r') {
         sfx.tick();
-        p.rot[2] = wrap(p.rot[2] + (k === 'l1' ? ANGLE : -ANGLE));
+        p.rot[2] = wrap(p.rot[2] + (k === 'l' ? ANGLE : -ANGLE));
         ride();
         solve();
-      } else if (!nudge(0, 0, k === 'r2' ? 1 : -1)) return sfx.cancel();
+      } else if (!nudge(0, 0, k === 'zr' ? 1 : -1)) return sfx.cancel();
       else sfx.tick();
     } else if (mode === 'palette') {
-      if (k === 'cross') {
+      if (k === 'a') {
         sfx.confirm();
-        if (row === SHAPES.length) {
+        const f = FEATURED[row - SHAPES.length];
+        if (row < SHAPES.length) add(fresh(SHAPES[row]));
+        else if (f) {
+          mode = 'browse';
+          featuredSolid(f.slug).then(
+            (s) => (add(featuredPiece(f.slug, s)), d.paint()),
+            () => ((oops = true), sfx.cancel(), d.paint()),
+          );
+        } else {
           mode = 'browse';
           file.click();
-        } else add(fresh(SHAPES[row]));
-      } else if (k === 'circle') {
+        }
+      } else if (k === 'b') {
         sfx.cancel();
         mode = 'browse';
       } else return;
     } else if (mode === 'shelf') {
       const s = shelf()[row];
-      if (k === 'circle') {
+      if (k === 'b') {
         sfx.cancel();
         mode = 'browse';
-      } else if (k === 'cross' && s) {
+      } else if (k === 'a' && s) {
         sfx.confirm();
         bench = { name: s[1].name, pieces: s[1].pieces.map(copy) };
         sel = 0;
         mode = 'browse';
         syncGhosts();
         solve();
-      } else if (k === 'triangle' && s) {
+      } else if (k === 'x' && s) {
         sfx.cancel();
         const my = loadMy();
         delete my[s[0]];
@@ -417,27 +426,27 @@ export function playground(d: Deps) {
         row = clamp(row, 0, shelf().length - 1);
       } else return;
     } else if (mode === 'name') {
-      if (k === 'circle') {
+      if (k === 'b') {
         sfx.cancel();
         mode = 'browse';
-      } else if (k === 'triangle') type('Backspace');
-      else if (k === 'square') type(' ');
-      else if (k === 'cross') {
+      } else if (k === 'x') type('Backspace');
+      else if (k === 'y') type(' ');
+      else if (k === 'a') {
         const c = KEYS[key[1]][key[0]];
         type(c === S.space ? ' ' : c === S.del ? 'Backspace' : c === S.ok ? 'Enter' : c);
       }
       return d.paint();
     } else {
       const p = bench.pieces[sel];
-      if (k === 'circle') return d.leave();
-      if (k === 'square') {
+      if (k === 'b') return d.leave();
+      if (k === 'y') {
         sfx.confirm();
         mode = 'palette';
         row = 0;
-      } else if (k === 'cross' && p) {
+      } else if (k === 'a' && p) {
         sfx.confirm();
         grab(sel, copy(p));
-      } else if (k === 'cross') {
+      } else if (k === 'a') {
         const a = actOf(sel)!;
         if (a !== 'import' && a !== 'shapes' && a !== 'shelf' && !bench.pieces.length) return sfx.cancel();
         sfx.confirm();
@@ -453,20 +462,20 @@ export function playground(d: Deps) {
             (m) => exportStl(geometry(m), `${slug(bench.name)}.stl`),
             () => sfx.cancel(),
           );
-      } else if (k === 'triangle' && p) {
+      } else if (k === 'x' && p) {
         sfx.cancel();
         bench.pieces.splice(sel, 1);
         sel = clamp(sel, 0, rowsN() - 1);
         syncGhosts();
         solve();
-      } else if (k === 'l1' && p) {
+      } else if (k === 'l' && p) {
         // a copy in hand where the piece stands
         sfx.confirm();
         bench.pieces.push(copy(p));
         syncGhosts();
         grab(bench.pieces.length - 1, null);
         solve();
-      } else if (k === 'r1' && p) {
+      } else if (k === 'r' && p) {
         // a copy mirrored across the bed's middle line
         if (!p.pos[0] && !p.rot[1] && !p.rot[2]) return sfx.cancel();
         sfx.confirm();
@@ -490,7 +499,7 @@ export function playground(d: Deps) {
       const y = clamp(key[1] + dy, 0, KEYS.length - 1);
       key = [clamp(key[0] + dx, 0, KEYS[y].length - 1), y];
     } else if (mode === 'palette' || mode === 'shelf') {
-      const n = clamp(row + dy, 0, (mode === 'palette' ? SHAPES.length + 1 : shelf().length) - 1);
+      const n = clamp(row + dy, 0, (mode === 'palette' ? SHAPES.length + FEATURED.length + 1 : shelf().length) - 1);
       if (!dy || n === row) return;
       row = n;
     } else if (dy) {
@@ -511,7 +520,7 @@ export function playground(d: Deps) {
   /** a key typed while naming; true when it was taken */
   function type(k: string) {
     if (mode !== 'name') return false;
-    if (k === 'Escape') return press('circle'), true;
+    if (k === 'Escape') return press('b'), true;
     if (k === 'Backspace') {
       if (!typed) return sfx.cancel(), true;
       typed = typed.slice(0, -1);
@@ -584,12 +593,12 @@ export function playground(d: Deps) {
       b.onclick = click;
       return b;
     };
-    // a tap picks a row, a tap on the picked row is ✕
-    const pick = (on: boolean, set: () => void) => () => (on ? press('cross') : (sfx.tick(), set(), d.paint()));
+    // a tap picks a row, a tap on the picked row is A
+    const pick = (on: boolean, set: () => void) => () => (on ? press('a') : (sfx.tick(), set(), d.paint()));
     const title = (s: string): [HTMLElement, boolean] => [li(d.ink('p', s, 'title')), false];
     const list = (names: string[], at: number, set: (i: number) => void) =>
       names.map((s, i): [HTMLElement, boolean] => [li(button(s, i === at, pick(i === at, () => set(i)))), i === at]);
-    if (mode === 'palette') return [title(S.shapes), ...list([...SHAPES.map((s) => S[s]), S.importStl], row, (i) => (row = i))];
+    if (mode === 'palette') return [title(S.shapes), ...list([...SHAPES.map((s) => S[s]), ...FEATURED.map((f) => f.name), S.importStl], row, (i) => (row = i))];
     if (mode === 'shelf') {
       const s = shelf();
       return [title(S.shelf), ...(s.length ? list(s.map(([, m]) => `${m.name}  v${m.version}`), row, (i) => (row = i)) : [[li(d.ink('p', S.shelfEmpty)), false] as [HTMLElement, boolean]])];
@@ -645,16 +654,16 @@ export function playground(d: Deps) {
     if (mode === 'held')
       return [
         ['left', ''], ['up', ''], ['down', ''], ['right', S[TOOLS[held!.tool]]],
-        ['cross', S.drop], ['circle', S.cancel], ['square', S.tool], ['triangle', `${S.union}/${S.difference}`],
-        ['l1', ''], ['r1', S.spin], ['l2', ''], ['r2', TOOLS[held!.tool] === 'size' ? S.size : S.lift],
+        ['a', S.drop], ['b', S.cancel], ['y', S.tool], ['x', `${S.union}/${S.difference}`],
+        ['l', ''], ['r', S.spin], ['zl', ''], ['zr', TOOLS[held!.tool] === 'size' ? S.size : S.lift],
       ];
-    if (mode === 'palette') return [['cross', S.add], ['circle', S.back]];
-    if (mode === 'shelf') return [['cross', S.open], ['circle', S.back], ...(shelf().length ? [['triangle', S.delete] as [Key, string]] : [])];
-    if (mode === 'name') return [['cross', S.enter], ['circle', S.cancel], ['triangle', S.del], ['square', S.space]];
+    if (mode === 'palette') return [['a', S.add], ['b', S.back]];
+    if (mode === 'shelf') return [['a', S.open], ['b', S.back], ...(shelf().length ? [['x', S.delete] as [Key, string]] : [])];
+    if (mode === 'name') return [['a', S.enter], ['b', S.cancel], ['x', S.del], ['y', S.space]];
     const p = bench.pieces[sel];
     return p
-      ? [['cross', S.grab], ['circle', S.back], ['triangle', S.remove], ['square', S.shapes], ['l1', S.dup], ['r1', S.mirror]]
-      : [['cross', S.enter], ['circle', S.back], ['square', S.shapes]];
+      ? [['a', S.grab], ['b', S.back], ['x', S.remove], ['y', S.shapes], ['l', S.dup], ['r', S.mirror]]
+      : [['a', S.enter], ['b', S.back], ['y', S.shapes]];
   }
 
   return {

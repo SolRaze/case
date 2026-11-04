@@ -7,7 +7,7 @@ export type Part = { name: string; op: Op };
 /** a part's place on the back: x and y shift in the case's mm, degrees turned about its own middle counter-clockwise, then z shift in mm */
 export type Move = [number, number, number, number?];
 export type Moves = Record<string, Move>;
-/** the ops ← → step an added part through; off is △'s */
+/** the ops ← → step an added part through; off is X's */
 export const STEPS: Op[] = ['union', 'difference'];
 type Mesh = { pos: Float32Array; idx: Uint32Array };
 

@@ -1,3 +1,4 @@
+# ruff: noqa: F821, I001 - build() injects the knob names with globals().update; bmesh only imports after bpy
 """Phone case for any phone in ref/iphone/sizes.json, the print source. 1 unit = 1 mm.
 
 Geometry comes from the drawing JSON, not from measurement: phone.py reads a
@@ -22,6 +23,8 @@ Knobs, defaults in rules.json; a style in styles.json is a named knob set.
   MAGSAFE    None | "ring" pockets for the ADG 42.1 magnet array | "open" hole
   SLIDER     lens cover sliding down rails on a raised track, `slider`
   CIG        cigarette clip along the right edge of the back
+  MONEY      money clip on the back for the Indian 500 rupee note folded once, the
+             back is one leaf, the fold rides the bend, the mouth opens down
   COUPON     None | mm of each edge kept round the bottom-right corner, a fit test
   LEATHER    None | mm of skin glued over the outside; the print is the core under it,
              the camera ring and a band at the rim top stand flush with the skin;
@@ -59,6 +62,7 @@ import json
 import math
 import subprocess
 import sys
+from itertools import pairwise
 from pathlib import Path
 
 import bpy
@@ -150,6 +154,15 @@ CIG_WALL = 1.4
 CIG_SNAP = 0.85        # clip mouth as a fraction of CIG_D
 CIG_LEN = 30.0
 CIG_Y = -120.0         # clip centre, below the MagSafe charger and clocking magnet
+MONEY_W = 34.0         # MONEY: clip across the back, centred; the folded note's fold is 66
+MONEY_T = 2.6          # leaf and bend thickness
+MONEY_GAP = 6.0        # inside of the bend, about 25 folded notes at the root
+MONEY_LEAF = 54.0      # bend centre to leaf tip
+MONEY_TIP = 0.5        # leaf tip off the back at rest, the notes open it
+MONEY_LIP = 10.0       # flare at the tip, guides the notes in
+MONEY_LIP_ANGLE = 35.0
+MONEY_DROP = 3.0       # bend top below the camera ring's footprint
+MONEY_NOTE = 75.0      # note depth, fold to free edge, held inside the phone's length
 LEATHER_BAND = 1.5     # LEATHER: full-size band at the rim top the skin's edge tucks under
 FLIP_R = 2.5           # FLIP: barrel and knuckle radius, the axis on the rim-top plane
 FLIP_GAP = 0.3         # barrel to knuckle and to the case
@@ -208,7 +221,7 @@ def loft(rings):
     """Rings of equal length, capped at both ends: a closed mesh."""
     bm = bmesh.new()
     vs = [[bm.verts.new(p) for p in r] for r in rings]
-    for a, b in zip(vs, vs[1:]):
+    for a, b in pairwise(vs):
         for i in range(len(a)):
             bm.faces.new((a[i - 1], a[i], b[i], b[i - 1]))
     bm.faces.new(vs[0])
@@ -371,6 +384,8 @@ def build(name="17e", style="case", **knobs):
     assert not (SLIDER and MAGSAFE), "slider rails reach y -52, a charger's top edge is at -45"
     assert not (SLIDER and p["plateau"] == "full"), "the slider can't cover a full-width plateau"
     assert not CIG or CIG_Y - CIG_LEN / 2 > -L, "cigarette clip runs off the bottom"
+    assert not MONEY or (BACK_BAND is None and not MAGSAFE and not LEATHER and not RIBS), \
+        "the money clip needs the full plain back as its other leaf"
     assert not (FLIP and WALLS == "corners"), "the knuckles stand on the left wall"
     assert not LEATHER or (not RIBS and WALLS == "full" and not BUMPER and not MAGSAFE), \
         "the skin needs the whole outside, plain"
@@ -622,7 +637,7 @@ def build(name="17e", style="case", **knobs):
         yc, lt = (free + far) / 2, abs(far - free)
 
         def obround(grow_):
-            return slot(lt + 2 * grow_, 2 * th + 2 * grow_)
+            return slot(lt + 2 * grow_, 2 * th + 2 * grow_)  # noqa: B023 - called only inside this iteration
         outer = side_loft(side, yc, zc, [(-thru, obround(KEY_SLOT)), (OUT - c, obround(KEY_SLOT)),
                                          (OUT + 0.01, obround(KEY_SLOT + c + 0.01)), (thru, obround(KEY_SLOT + c + 0.01))])
         tab = side_loft(side, yc, zc, [(-thru - 1, obround(0)), (OUT - c, obround(0)),
@@ -636,7 +651,7 @@ def build(name="17e", style="case", **knobs):
     # Wall styles: each opening's ends round into the back and over the rim top.
     def wall_cut(length):
         """(u, z) outline of the opening in a wall `length` long, CORNER_L kept at each end."""
-        u0, u1, rt, rb = CORNER_L, length - CORNER_L, WALL_END_TOP, WALL_END_R
+        u0, rt, rb = CORNER_L, WALL_END_TOP, WALL_END_R
         q = [(math.cos(t), math.sin(t)) for t in np.linspace(0, math.pi / 2, 9)]
         left = ([(u0 - rt, PROUD + 5)] + [(u0 - rt + rt * c, PROUD - rt + rt * s) for c, s in q[::-1]]
                 + [(u0 + rb - rb * s, Z_BACK + rb - rb * c) for c, s in q])
@@ -848,6 +863,34 @@ def build(name="17e", style="case", **knobs):
                      CIG_Y + CIG_LEN, CIG_Y - CIG_LEN, ccz - r_out - 1, ccz)
         part += tube & prism(outer, Z_CASE_BACK - 30, Z_CASE_BACK + 0.5)
 
+    # Money clip: a U spring whose other leaf is the back, its bend MONEY_DROP under the
+    # camera ring. Drawn in (u, s), u from the bend
+    # toward the mouth, s out from the back face; the leaf swings down by tilt about the
+    # bend centre until its tip sits MONEY_TIP off the back.
+    if MONEY:
+        r_in, a = MONEY_GAP / 2, math.radians(MONEY_LIP_ANGLE)
+        r_out = r_in + MONEY_T
+        MONEY_Y = min(y for _, y in opening) - foot - MONEY_DROP - r_out
+        assert MONEY_Y - r_in - MONEY_NOTE > -L, "folded note runs off the bottom"
+        tilt = math.atan2(r_in, MONEY_LEAF) - math.asin((MONEY_TIP - r_in) / math.hypot(MONEY_LEAF, r_in))
+
+        def arc(r, a0, a1, n=SEG // 4):
+            return [(r * math.cos(a0 + (a1 - a0) * i / n), r * math.sin(a0 + (a1 - a0) * i / n)) for i in range(n + 1)]
+        end = (MONEY_LEAF + MONEY_LIP * math.cos(a), r_in + MONEY_LIP * math.sin(a))
+        upper = (arc(r_out, math.pi + tilt, math.pi / 2)
+                 + [(MONEY_LEAF - MONEY_T * math.tan(a / 2), r_out),
+                    (end[0] - MONEY_T * math.sin(a), end[1] + MONEY_T * math.cos(a)), end, (MONEY_LEAF, r_in)]
+                 + arc(r_in, math.pi / 2, math.pi + tilt))
+        c, sn = math.cos(-tilt), math.sin(-tilt)
+        upper = [(u * c - v * sn, u * sn + v * c + r_in) for u, v in upper]
+        lower = arc(r_out, math.pi - 0.1, 1.5 * math.pi) + arc(r_in, 1.5 * math.pi, math.pi - 0.1)
+        lower = [(u, v + r_in) for u, v in lower]
+
+        def bar(pts):
+            return loft([[(x, MONEY_Y - u, Z_CASE_BACK - v) for u, v in pts] for x in (W / 2 - MONEY_W / 2, W / 2 + MONEY_W / 2)])
+        clip = bar(upper) + bar(lower)
+        part += clip & prism(outer, Z_CASE_BACK - 30, Z_CASE_BACK + 0.5)
+
     # Flip cover hinge along the left edge, axis along y at the rim top.
     cover = None
     if FLIP:
@@ -1044,7 +1087,7 @@ def main(args):
     if len(names) > 1:
         flags = [a for a in args if a in ("--check", "--no-png")]
         failed = [n for n in names
-                  if subprocess.run([sys.executable, __file__, *chosen, *flags, "--phone", n], cwd=ROOT).returncode]
+                  if subprocess.run([sys.executable, __file__, *chosen, *flags, "--phone", n], check=False, cwd=ROOT).returncode]
         if failed:
             raise SystemExit(f"failed: {', '.join(failed)}")
         return

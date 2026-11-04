@@ -65,6 +65,13 @@
         true
       ]
     },
+    "MONEY": {
+      "default": false,
+      "values": [
+        false,
+        true
+      ]
+    },
     "COUPON": {
       "default": null,
       "values": "null or mm of each edge kept round the bottom-right corner"
@@ -213,6 +220,20 @@
         "MAGSAFE": null
       },
       "why": "the skin needs the whole outside, plain"
+    },
+    {
+      "id": "money-back",
+      "text": "The money clip uses the back as its other leaf, so it needs the full plain back: no band, magnets, ribs or leather skin.",
+      "if": {
+        "MONEY": true
+      },
+      "require": {
+        "BACK_BAND": null,
+        "MAGSAFE": null,
+        "RIBS": null,
+        "LEATHER": null
+      },
+      "why": "the money clip needs the full plain back as its other leaf"
     },
     {
       "id": "open-camera-band",
@@ -438,6 +459,7 @@
       "slider": "sheet has no corner profile",
       "leather": "sheet has no corner profile",
       "cig": "sheet has no corner profile",
+      "money": "sheet has no corner profile",
       "corner": "sheet has no corner profile",
       "ribs": "sheet has no corner profile",
       "ribcorner": "sheet has no corner profile",

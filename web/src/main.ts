@@ -5,7 +5,7 @@ import specs from '../phones.json';
 import { buildLocked, buildPhone, framed, label, type PhoneSpec } from './phone';
 import { buildLogo, buildPlay } from './logo';
 import { READY, order, styleName, year } from './catalog';
-import { built, exportStl, isSet, load, loadMy, loadTemplates, MY, partSolid, placing, saveTemplates, seat, SINK, solid, type Template } from './cases';
+import { built, exportStl, isSet, load, loadMy, loadTemplates, MY, partSolid, placing, saveTemplates, seat, seedFeatured, SINK, solid, type Template } from './cases';
 import { STEPS, combine, opsKey, partList, type Move, type Moves, type Op, type Part } from './parts';
 import { inkLayer } from './ink';
 import * as sfx from './sound';
@@ -23,6 +23,13 @@ C.detail.forEach((v, i) => css.setProperty(`--detail${i}`, v));
 const $ = (id: string) => document.getElementById(id)!;
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
 const clock = () => performance.now() / 1000;
+/** the page the url asked for on load, read before the first paint rewrites it */
+const start = decodeURIComponent(location.hash.slice(1));
+// the entry the page loaded on; a popstate to an entry with no state is a url typed or followed while open
+history.replaceState({ landing: true }, '');
+/** reduced motion: no idle spin or sway, a swipe still turns the phone */
+const still = matchMedia('(prefers-reduced-motion: reduce)');
+const idle = () => (still.matches ? 0 : theme.spin);
 const phones = order(specs as unknown as PhoneSpec[]);
 const spec = (id: string) => phones.find((p) => p.id === id)!;
 const card = spec(theme.card);
@@ -172,7 +179,7 @@ const setParts = new Map<string, Part[]>();
 type Look = Pick<Template, 'style' | 'ops' | 'moves'>;
 const copyLook = (l: Look): Look => ({ style: l.style, ops: l.ops && { ...l.ops }, moves: l.moves && { ...l.moves } });
 let starts: { name: string; look: Look }[] = [];
-/** finished designs kept out of the start row: ✕ on it steps through them, and the bar shows no key for it */
+/** finished designs kept out of the start row: A on it steps through them, and the bar shows no key for it */
 let creations: typeof starts = [];
 let store = loadTemplates([]);
 
@@ -269,7 +276,7 @@ built(card.id).then(async (list) => {
 
 type View = 'boot' | 'models' | 'cases' | 'detail' | 'edit' | 'info' | 'play';
 let view: View = 'boot';
-let from: 'boot' | 'models' = 'boot'; // where ○ on the cases page goes
+let from: 'boot' | 'models' = 'boot'; // where B on the cases page goes
 let msel = 0; // models grid
 let fsel = 0; // front page, an index into fronts()
 let entered = 0; // the theme.front icon the open page came from
@@ -279,18 +286,18 @@ let turn = 0; // the ring's eased rotation, in slots
 let menu = 0;
 let cmd = 0;
 let yes = false;
-let opener = 0; // the row that opened the command list's second level, where ○ puts the cursor back
-let draft: Look | null = null; // edit: the case being made; nothing is saved until ✕
-let editing = -1; // edit: the design ✕ saves over, -1 a new one
+let opener = 0; // the row that opened the command list's second level, where B puts the cursor back
+let draft: Look | null = null; // edit: the case being made; nothing is saved until A
+let editing = -1; // edit: the design A saves over, -1 a new one
 let psel = 0; // edit: 0 the start row, then the parts added
-let adding = false; // edit: □ opened the list of parts not yet added
+let adding = false; // edit: Y opened the list of parts not yet added
 let asel = 0; // edit: the picked row of that list
 let agroup: string | null = null; // edit: the group of parts that list shows; null while it lists the groups
 let past: Look[] = []; // edit: the draft before each change, newest last; Undo takes one back
-let origin: Look | null = null; // edit: the look it opened on; ○ on a draft off it asks before dropping it
-let leaving = false; // edit: ○ asked once, a second ○ drops the draft
+let origin: Look | null = null; // edit: the look it opened on; B on a draft off it asks before dropping it
+let leaving = false; // edit: B asked once, a second B drops the draft
 const orbit = { yaw: 0, tilt: 0 }; // edit: a drag turns the phone to look round the case; a move starts square-on
-// edit: □ on a part moves and turns it on the back; at is its place, from what ○ puts back, snap steps it on the grid and by ANGLE;
+// edit: Y on a part moves and turns it on the back; at is its place, from what B puts back, snap steps it on the grid and by ANGLE;
 // c is the part's middle, lo hi the x y z shifts that keep that middle over the case and within RISE of the back, box the case's outline, part the part's
 let moving: {
   name: string; from: Move; at: Move; snap: boolean; c: THREE.Vector3; lo: number[]; hi: number[]; box: THREE.Box3; part: THREE.Box3; union: boolean;
@@ -305,7 +312,7 @@ let printAt = -1;
 let flip: { i: number; t0: number; dir: 1 | -1 } | null = null;
 let busy = false;
 let camV = 0; // camera along the grid plane, in flat grid units
-let fling = 0; // extra spin from a swipe, decays to the theme's spin
+let fling = 0; // extra spin from a swipe, decays to the idle spin
 let grab = false; // a finger is on the open phone: it turns with the finger, not by itself
 let dist = 4;
 let loading = false;
@@ -313,7 +320,7 @@ let loading = false;
 const RING = 8; // designs on one ring page
 /** the saved designs on built styles, in the order they were made */
 const edited = () => store.list.filter((t) => t.edited && styles.includes(t.style));
-/** the cases page as the showcase page: its ring holds the creations, ✕ opens a copy of one in edit */
+/** the cases page as the showcase page: its ring holds the creations, A opens a copy of one in edit */
 let gallery = false;
 /** showcase's preview: the picked creation alone on the phone, big and turning */
 let peek = false;
@@ -400,7 +407,7 @@ const gone = (i: number): Target => ({ pos: slot(i).setZ(slot(i).z - 2), scale: 
 
 // the picked icon keeps its slot and size, rocks gently about its upright axis and carries the glow
 // a row whose centre leaves the band fades out, so nothing sits under the header or the button bar
-const sway = (picked: boolean) => (picked ? 0.35 * Math.sin(clock() * 1.6) : 0);
+const sway = (picked: boolean) => (picked && !still.matches ? 0.35 * Math.sin(clock() * 1.6) : 0);
 function gridTarget(i: number): Target {
   const y = screenY(i, camV);
   const opacity = clamp(Math.min(y - BOTTOM + 0.16, TOP + 0.16 - y) / 0.06, 0, 1);
@@ -440,7 +447,7 @@ function ringTarget(it: Item, j: number): Target {
   const pos = ahead(hub().x + Math.cos(a) * (pt ? 0.34 : 0.17), hub().y + Math.sin(a) * (pt ? 0.22 : 0.3), D);
   return { pos, scale: fill(pt ? 0.1 : 0.13, D, it.h), opacity: 1, spin: false, sway: sway(j === ring) };
 }
-/** △ on a model: the phone small and rocking, centred over the labels and level with the name in style.css #info */
+/** X on a model: the phone small and rocking, centred over the labels and level with the name in style.css #info */
 function infoTarget(it: Item): Target {
   const col = $('i-list').querySelector('dt')?.getBoundingClientRect();
   const row = $('i-name').getBoundingClientRect();
@@ -476,7 +483,7 @@ function pose(it: Item, t: Target, dt: number, grow = 1) {
   if (t.spin && grab) {
     // pointermove turns it
   } else if (t.spin) {
-    it.spin += dt * (theme.spin + fling);
+    it.spin += dt * (idle() + fling);
     it.tilt = damp(it.tilt, -0.05, 4, dt);
   } else {
     // ease back to the rest pose the short way round
@@ -605,7 +612,7 @@ low.setAnimationLoop((t) => {
 });
 
 // text and buttons
-/** a button: the mark drawn in straight strokes, in its official colour's grey, inside a black disc */
+/** a button: its letter drawn in strokes, in its theme grey, inside a black disc */
 const disc = (mark: string, color: string) =>
   'data:image/svg+xml,' +
   encodeURIComponent(
@@ -613,21 +620,19 @@ const disc = (mark: string, color: string) =>
       `<g fill="none" stroke="${color}" stroke-width="2.6">${mark}</g></svg>`,
   );
 const glyph = {
-  cross: disc('<path d="M6.3 6.3 17.7 17.7M17.7 6.3 6.3 17.7"/>', theme.buttons.cross),
-  circle: disc('<circle cx="12" cy="12" r="6.4"/>', theme.buttons.circle),
-  triangle: disc('<path d="M12 4.6 18.6 16H5.4Z" stroke-linejoin="miter"/>', theme.buttons.triangle),
-  square: disc('<rect x="6.6" y="6.6" width="10.8" height="10.8"/>', theme.buttons.square),
-  // the shoulder buttons, drawn as the turn each makes
-  l1: disc('<path d="M16.8 9.2A5.6 5.6 0 1 0 17.6 13"/><path d="M17.6 4.6V9.6H12.6" stroke-linejoin="miter"/>', theme.buttons.square),
-  r1: disc('<path d="M7.2 9.2A5.6 5.6 0 1 1 6.4 13"/><path d="M6.4 4.6V9.6H11.4" stroke-linejoin="miter"/>', theme.buttons.square),
-  // the triggers, drawn as the way each moves: down and up
-  l2: disc('<path d="M12 5.5V17.5M7 12.5 12 17.5 17 12.5"/>', theme.buttons.square),
-  r2: disc('<path d="M12 18.5V6.5M7 11.5 12 6.5 17 11.5"/>', theme.buttons.square),
+  a: disc('<path d="M7 18 12 6 17 18M8.7 14H15.3"/>', theme.buttons.a),
+  b: disc('<path d="M8 12H13A3 3 0 0 0 13 6H8V18H13.4A3 3 0 0 0 13.4 12"/>', theme.buttons.b),
+  x: disc('<path d="M7.5 6 16.5 18M16.5 6 7.5 18"/>', theme.buttons.x),
+  y: disc('<path d="M7.2 6 12 12.4 16.8 6M12 12.4V18"/>', theme.buttons.y),
+  l: disc('<path d="M9 6V18H16"/>', theme.buttons.y),
+  r: disc('<path d="M8 18V6H13A3.2 3.2 0 0 1 13 12.4H8M12.6 12.4 16.4 18"/>', theme.buttons.y),
+  zl: disc('<path stroke-width="2" d="M4 7H10L4 17H10M13.5 7V17H19.5"/>', theme.buttons.y),
+  zr: disc('<path stroke-width="2" d="M4 7H10L4 17H10M13.5 17V7H17.3A2.7 2.7 0 0 1 17.3 12.4H13.5M17 12.4 20 17"/>', theme.buttons.y),
   // the d-pad, drawn as chevrons
-  left: disc('<path d="M14.5 7 9.5 12 14.5 17"/>', theme.buttons.square),
-  right: disc('<path d="M9.5 7 14.5 12 9.5 17"/>', theme.buttons.square),
-  up: disc('<path d="M7 14.5 12 9.5 17 14.5"/>', theme.buttons.square),
-  down: disc('<path d="M7 9.5 12 14.5 17 9.5"/>', theme.buttons.square),
+  left: disc('<path d="M14.5 7 9.5 12 14.5 17"/>', theme.buttons.y),
+  right: disc('<path d="M9.5 7 14.5 12 9.5 17"/>', theme.buttons.y),
+  up: disc('<path d="M7 14.5 12 9.5 17 14.5"/>', theme.buttons.y),
+  down: disc('<path d="M7 9.5 12 14.5 17 9.5"/>', theme.buttons.y),
 };
 type Press = Exclude<keyof typeof glyph, Dir>;
 /** the console's more-this-way marker: a flat borderless blue triangle, faded at its base and darkening to the tip */
@@ -641,39 +646,46 @@ const arrow = (d: string, base: 0 | 1) =>
 ($('up') as HTMLImageElement).src = arrow('M12 0 24 12H0Z', 1);
 ($('down') as HTMLImageElement).src = arrow('M0 0H24L12 12Z', 0);
 const bars: Record<View, [Press, string][]> = {
-  boot: [['cross', S.enter]],
-  models: [['cross', S.enter], ['circle', S.back], ['triangle', S.options]],
-  cases: [['cross', S.enter], ['circle', S.back], ['triangle', S.options]],
+  boot: [['a', S.enter]],
+  models: [['a', S.enter], ['b', S.back], ['x', S.options]],
+  cases: [['a', S.enter], ['b', S.back], ['x', S.options]],
   detail: [],
-  edit: [['cross', S.save], ['circle', S.back]],
-  info: [['circle', S.back]],
+  edit: [['a', S.save], ['b', S.back]],
+  info: [['b', S.back]],
   play: [],
 };
 
-/** edit's bar: what ✕ does on the picked row, ○, and △ on a part; a move's other controls are rows beside the phone */
+/** edit's bar: what A does on the picked row, B, and X on a part; a move's other controls are rows beside the phone */
 function editBar(): [Press, string][] {
-  if (leaving) return [['cross', S.stay], ['circle', S.discard]];
-  if (adding) return [['cross', agroup === null ? S.enter : S.add], ['circle', S.back]];
-  if (moving) return [['cross', S.place], ['circle', S.cancel]];
+  if (leaving) return [['a', S.stay], ['b', S.discard]];
+  if (adding) return [['a', agroup === null ? S.enter : S.add], ['b', S.back]];
+  if (moving) return [['a', S.place], ['b', S.cancel]];
   const k = rowKind();
   const x = { start: '', part: S.move, add: S.add, undo: S.undo, save: S.save }[k];
-  return [...(x ? [['cross', x] as [Press, string]] : []), ['circle', S.back], ...(k === 'part' ? [['triangle', S.remove] as [Press, string]] : [])];
+  return [...(x ? [['a', x] as [Press, string]] : []), ['b', S.back], ...(k === 'part' ? [['x', S.remove] as [Press, string]] : [])];
 }
 
 const text = (id: string, s: string) => ($(id).textContent = s);
 
-/** the showcase button, top right of a phone's page: □ opens the creations */
+/** the showcase button, top right of a phone's page: Y opens the creations */
 const inspoOpen = () => view === 'detail' && menu === 1 && creations.length > 0;
-($('inspo').firstElementChild as HTMLImageElement).src = glyph.square;
+($('inspo').firstElementChild as HTMLImageElement).src = glyph.y;
 $('inspo').lastElementChild!.textContent = S.inspo;
-$('inspo').onclick = () => press('square');
+// it stays in the page, so a click must not leave it focused to take a later Enter
+$('inspo').onclick = (e) => {
+  (e.currentTarget as HTMLElement).blur();
+  press('y');
+};
 const ink$ = (tag: string, s: string, cls = '') => {
   const e = document.createElement(tag);
   e.className = 'ink' + (cls && ' ' + cls);
   e.textContent = s;
+  // the step arrows read as quotation marks to a screen reader
+  if (s === '‹' || s === '›') e.ariaLabel = s === '‹' ? 'Previous' : 'Next';
   return e;
 };
 const play = playground({ scene, camera, paint, leave, ink: ink$ });
+seedFeatured().then(paint, () => {});
 
 type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order', label: string, ok: boolean];
 /** the command list's rows and whether each can be picked; detail works on the worn design, cases on the picked one */
@@ -695,7 +707,7 @@ const setRows = () =>
     : [];
 /** the op Add part puts a part on: its parts.json op, a saved part joined */
 const addOp = (r: { def: Op }): Op => (r.def === 'off' ? 'union' : r.def);
-/** edit's part rows: the parts on the case, joined ones then cut ones, as the list groups them; □ lists the rest */
+/** edit's part rows: the parts on the case, joined ones then cut ones, as the list groups them; Y lists the rest */
 const partRows = () => {
   const on = setRows();
   return [...on.filter((r) => r.op === 'union'), ...on.filter((r) => r.op === 'difference')];
@@ -704,17 +716,18 @@ const partRows = () => {
 const partName = (n: string) => (n.startsWith(MY) ? (loadMy()[n]?.name ?? n.slice(MY.length)) : n.charAt(0).toUpperCase() + n.slice(1).replace(/-/g, ' '));
 /** what a part is for, from the theme's groups by part name; a part in none of them is Other */
 const GROUPS: Record<string, string[]> = theme.groups;
-const groupOf = (name: string) => (name.startsWith(MY) ? S.myParts : (Object.keys(GROUPS).find((g) => GROUPS[g].includes(name)) ?? S.other));
+const groupOf = (name: string) =>
+  name.startsWith(MY) ? (loadMy()[name]?.featured ? S.featured : S.myParts) : (Object.keys(GROUPS).find((g) => GROUPS[g].includes(name)) ?? S.other);
 /** the parts off the case, by name with C10 after C9 */
 const addable = () =>
   setRows()
     .filter((r) => r.op === 'off' && (r.def !== 'off' || r.name.startsWith(MY)))
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 /** the groups with a part left to add, in the theme's order, Other last */
-const addGroups = () => [...Object.keys(GROUPS), S.myParts, S.other].filter((g) => addable().some((r) => groupOf(r.name) === g));
-/** □'s list one group deep: that group's parts left to add */
+const addGroups = () => [...Object.keys(GROUPS), S.featured, S.myParts, S.other].filter((g) => addable().some((r) => groupOf(r.name) === g));
+/** Y's list one group deep: that group's parts left to add */
 const addRows = () => addable().filter((r) => groupOf(r.name) === agroup);
-/** edit's rows: the start, the parts, then what ✕ can do: add a part, undo, save */
+/** edit's rows: the start, the parts, then what A can do: add a part, undo, save */
 type Kind = 'start' | 'part' | 'add' | 'undo' | 'save';
 const tail = (): Kind[] => [...(addable().length ? ['add' as const] : []), ...(past.length ? ['undo' as const] : []), 'save'];
 const rowKind = (i = psel): Kind => (i === 0 ? 'start' : i <= partRows().length ? 'part' : (tail()[i - partRows().length - 1] ?? 'save'));
@@ -774,7 +787,7 @@ function partGeo(style: string, name: string): Promise<THREE.BufferGeometry> {
     );
   return partGeos.get(url)!;
 }
-/** □ on a part: its ghost over the case, free to go anywhere its middle stays over the base shell */
+/** Y on a part: its ghost over the case, free to go anywhere its middle stays over the base shell */
 async function startMove(name: string) {
   const style = draft!.style;
   const [g, base] = await Promise.all([partGeo(style, name), partGeo(style, setParts.get(style)!.find((p) => p.op === 'base')!.name)]);
@@ -817,7 +830,7 @@ function grid() {
   snapGrid.geometry.dispose();
   snapGrid.geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
 }
-/** edit's picked part, faint over the case where it sits, so the row and the part read as one: a part row's, or in □'s list the part ✕ would add; moving takes over from it */
+/** edit's picked part, faint over the case where it sits, so the row and the part read as one: a part row's, or in Y's list the part A would add; moving takes over from it */
 let picked: { name: string; c: THREE.Vector3; box: THREE.Box3; union: boolean } | null = null;
 const wanted = () => (view === 'edit' && draft && !moving ? (adding ? addRows()[asel] : partRows()[psel - 1]) : undefined);
 async function showPart() {
@@ -906,6 +919,7 @@ const opName: Record<Op, string> = { base: '', union: S.union, difference: S.dif
 
 function paint() {
   document.body.dataset.view = view;
+  syncUrl();
   if (menu) document.body.dataset.menu = '';
   else delete document.body.dataset.menu;
   if (inspoOpen()) document.body.dataset.inspo = '';
@@ -971,20 +985,20 @@ function paint() {
     return li(b);
   };
   const row = ([id, s, ok]: Row, i: number) =>
-    button(s, ok && i === cmd, () => (!ok ? sfx.cancel() : cmd === i ? press('cross') : (sfx.tick(), (cmd = i), paint())), [ok ? '' : 'off', id === 'delete' ? 'del' : ''].filter(Boolean).join(' '));
+    button(s, ok && i === cmd, () => (!ok ? sfx.cancel() : cmd === i ? press('a') : (sfx.tick(), (cmd = i), paint())), [ok ? '' : 'off', id === 'delete' ? 'del' : ''].filter(Boolean).join(' '));
   if (menu === 1) ul.replaceChildren(...rows().map(row));
   else if (menu === 2) ul.replaceChildren(li(ink$('p', S.print)), ...rows().map(row));
   else if (menu === 3) {
     ul.replaceChildren(
       li(ink$('p', S.delete, 'del')),
       li(ink$('p', S.sure)),
-      button(S.yes, yes, () => (yes ? press('cross') : (sfx.tick(), (yes = true), paint()))),
-      button(S.no, !yes, () => (!yes ? press('cross') : (sfx.tick(), (yes = false), paint()))),
+      button(S.yes, yes, () => (yes ? press('a') : (sfx.tick(), (yes = true), paint()))),
+      button(S.no, !yes, () => (!yes ? press('a') : (sfx.tick(), (yes = false), paint()))),
     );
   } else if (menu === 4) ul.replaceChildren(li(ink$('p', S.print)), li(ink$('p', S.printing)), li(ink$('p', S.keep)));
   else ul.replaceChildren();
 
-  // edit's rows: the start, each part, then add, undo and save; a tap picks a row, a tap on the picked row is ✕, ‹ › step it as ← → do
+  // edit's rows: the start, each part, then add, undo and save; a tap picks a row, a tap on the picked row is A, ‹ › step it as ← → do
   const parts = $('parts');
   // rows are a finger tall on a touch screen, and only as many show as fit beside or under the phone
   const rowH = Math.max(parseFloat(getComputedStyle(parts).fontSize) * 1.6, matchMedia('(pointer: coarse)').matches ? 40 : 0);
@@ -1001,14 +1015,14 @@ function paint() {
     return cut;
   };
   if (view === 'edit' && draft && adding) {
-    // □'s list: the groups, then one group's parts; a tap picks a row, a part shows on the case, a second tap is ✕
+    // Y's list: the groups, then one group's parts; a tap picks a row, a part shows on the case, a second tap is A
     const list = agroup === null ? addGroups().map((g) => `${g}  ${addable().filter((r) => groupOf(r.name) === g).length}`) : addRows().map((r) => `${partName(r.name)}  ${opName[addOp(r)]}`);
     parts.replaceChildren(
       li(ink$('p', agroup ?? S.addTitle, 'title')),
       ...windowed(
         list.map((s, i): [HTMLElement, boolean] => {
           const b = ink$('button', s, i === asel ? 'on' : '');
-          b.onclick = () => (i === asel ? press('cross') : (sfx.tick(), (asel = i), paint()));
+          b.onclick = () => (i === asel ? press('a') : (sfx.tick(), (asel = i), paint()));
           return [li(b), i === asel];
         }),
       ),
@@ -1039,16 +1053,16 @@ function paint() {
       b.onclick = () => press(k);
       return b;
     };
-    const l1 = step('‹', 'l1'), r1 = step('›', 'r1');
-    hint(l1, 'l1');
-    r1.append(Object.assign(document.createElement('img'), { className: 'px', src: glyph.r1, alt: '' }));
-    turn.append(ink$('p', S.turn, 'name'), l1, ink$('p', `${at[2]}°`, 'value'), r1);
+    const turnL = step('‹', 'l'), turnR = step('›', 'r');
+    hint(turnL, 'l');
+    turnR.append(Object.assign(document.createElement('img'), { className: 'px', src: glyph.r, alt: '' }));
+    turn.append(ink$('p', S.turn, 'name'), turnL, ink$('p', `${at[2]}°`, 'value'), turnR);
     parts.replaceChildren(
       li(ink$('p', partName(moving.name), 'title')),
       li(ink$('p', `${pos.map(([a, v]) => `${a} ${mm(v)}`).join('   ')} mm`, 'read')),
       ...(side ? [] : [turn]),
-      act('square', S.grid, moving.snap ? S.snap : S.free, () => press('square')),
-      act('triangle', S.view, side ? S.side : S.flat, () => press('triangle')),
+      act('y', S.grid, moving.snap ? S.snap : S.free, () => press('y')),
+      act('x', S.view, side ? S.side : S.flat, () => press('x')),
       act(null, S.reset, '', resetMove),
     );
   } else if (view === 'edit' && draft) {
@@ -1061,9 +1075,9 @@ function paint() {
         e.onclick = click;
         return e;
       };
-      // a tap on the picked part is ✕: it moves the part
+      // a tap on the picked part is A: it moves the part
       const pick = () => {
-        if (on) return void (i && press('cross'));
+        if (on) return void (i && press('a'));
         sfx.tick();
         psel = i;
         leaving = false;
@@ -1093,7 +1107,7 @@ function paint() {
           const n = P.length + 1 + i;
           const b = ink$('button', names[k], n === psel ? 'on' : '');
           b.onclick = () => {
-            if (n === psel) return press('cross');
+            if (n === psel) return press('a');
             sfx.tick();
             psel = n;
             leaving = false;
@@ -1111,20 +1125,29 @@ function paint() {
 
   const bar = $('bar');
   const keys: [Press | Dir, string][] =
-    menu === 4 ? [] : menu ? [['cross', S.enter], ['circle', S.back]] : view === 'edit' ? editBar() : view === 'play' ? play.bar() : view === 'cases' && gallery ? [['cross', S.remix], ['circle', S.back], ...(peek ? [] : [['triangle', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['cross', S.enter], ['circle', S.back]] : bars[view];
-  bar.replaceChildren(
-    ...keys.map(([k, s]) => {
-      const b = document.createElement('button');
-      const img = document.createElement('img');
-      img.className = 'px';
-      img.src = glyph[k];
-      img.alt = '';
-      b.append(img);
-      b.append(ink$('span', s));
-      b.onclick = () => (DIR[k] ? move(...DIR[k]) : press(k as Press));
-      return b;
-    }),
-  );
+    menu === 4 ? [] : menu ? [['a', S.enter], ['b', S.back]] : view === 'edit' ? editBar() : view === 'play' ? play.bar() : view === 'cases' && gallery ? [['a', S.remix], ['b', S.back], ...(peek ? [] : [['x', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['a', S.enter], ['b', S.back]] : bars[view];
+  // marks with no word of their own stay on one line with the next, which names them
+  const groups: HTMLElement[] = [];
+  let group: HTMLElement | null = null;
+  keys.forEach(([k, s], i) => {
+    const b = document.createElement('button');
+    const img = document.createElement('img');
+    img.className = 'px';
+    img.src = glyph[k];
+    img.alt = '';
+    b.append(img);
+    b.append(ink$('span', s));
+    if (!s) b.ariaLabel = `${keys.slice(i).find((x) => x[1])?.[1] ?? ''} ${k}`.trim();
+    b.onclick = () => (DIR[k] ? move(...DIR[k]) : press(k as Press));
+    group ??= document.createElement('div');
+    group.append(b);
+    if (s || i === keys.length - 1) {
+      groups.push(group);
+      group = null;
+    }
+  });
+  bar.replaceChildren(...groups);
+  document.body.style.setProperty('--bar', `${bar.offsetHeight}px`);
 }
 
 const fade = $('fade');
@@ -1259,7 +1282,7 @@ function remove() {
   turn = ring - page() * RING;
 }
 
-/** edit opens on a copy of look; ✕ saves it over design at, or as a new design when at is -1 */
+/** edit opens on a copy of look; A saves it over design at, or as a new design when at is -1 */
 function startEdit(look: Look, at: number) {
   back = view === 'detail' ? 'detail' : 'cases';
   draft = copyLook(look);
@@ -1277,10 +1300,68 @@ function startEdit(look: Look, at: number) {
   wear(draft);
 }
 
+// the url: the page and what is picked on it, so a reload or a link lands there; a draft or an open menu is not kept.
+// Off the front page one extra history entry sits on top, so the browser's back is B: it pops the entry, B runs, and the entry comes back while off the front page
+let guarded = false;
+let unguarding = false;
+function route() {
+  if (view === 'models' || view === 'info') return `${view}/${phones[msel].id}`;
+  if (view === 'cases') return `${gallery ? 'showcase' : 'cases'}/${ring + 1}`;
+  return view === 'boot' ? '' : view;
+}
+function syncUrl() {
+  if (unguarding) return;
+  const r = route();
+  const url = r ? `#${r}` : location.pathname + location.search;
+  if (view !== 'boot' && !guarded) {
+    history.pushState({ guard: true }, '', url);
+    guarded = true;
+  } else if (view === 'boot' && guarded) {
+    // back on the front page by B: drop the extra entry, its popstate writes the url
+    guarded = false;
+    unguarding = true;
+    history.back();
+  } else if (decodeURIComponent(location.hash.slice(1)) !== r) history.replaceState(history.state, '', url);
+}
+addEventListener('popstate', () => {
+  if (!history.state) return location.reload();
+  if (unguarding) {
+    unguarding = false;
+    return syncUrl();
+  }
+  guarded = false;
+  if (!busy && !flip) press('b');
+  if (!busy) paint();
+});
+/** a link's page: in through its front page icon as a press would, then on to the page under it */
+function arrive(r: string) {
+  const [page, arg = ''] = r.split('/');
+  const under = ['models', 'info', 'detail', 'showcase'].includes(page) ? 'models' : page === 'cases' || page === 'edit' ? 'cases' : page === 'play' ? 'play' : null;
+  if (!under) return;
+  // with no designs the phone is off the front page, its cases are reached from the models
+  let i = fronts().findIndex((f) => opens(f) === under);
+  if (i < 0) i = fronts().findIndex((f) => opens(f) === 'models');
+  if (i < 0) return;
+  fsel = i;
+  const phone = phones.findIndex((p) => p.id === arg);
+  if (phone >= 0) msel = phone;
+  if (page === 'cases') ring = Math.max(parseInt(arg) - 1, 0) || 0;
+  if (page === 'detail' || page === 'showcase' || (under === 'cases' && opens(fronts()[i]) === 'models')) msel = models.indexOf(fit);
+  enterFront();
+  setTimeout(() => {
+    if (page === 'info') {
+      view = 'info';
+      return paint();
+    }
+    if (view === 'models' && (page === 'detail' || page === 'showcase' || under === 'cases')) press('a');
+    if (page === 'showcase' && inspoOpen()) press('y');
+  }, 400);
+}
+
 /** a key while the command list is open */
 function command(k: Press) {
   if (menu === 4) return;
-  if (k === 'circle') {
+  if (k === 'b') {
     sfx.cancel();
     // back one level, the cursor on the row that opened it
     cmd = menu === 1 ? 0 : opener;
@@ -1291,7 +1372,7 @@ function command(k: Press) {
     }
     return paint();
   }
-  if (k === 'square') {
+  if (k === 'y') {
     if (!inspoOpen()) return;
     sfx.confirm();
     gallery = true;
@@ -1300,7 +1381,7 @@ function command(k: Press) {
     tryOn();
     return paint();
   }
-  if (k !== 'cross') return;
+  if (k !== 'a') return;
   if (menu === 3) {
     if (yes) {
       sfx.confirm();
@@ -1337,17 +1418,17 @@ function press(k: Press) {
   if (busy || flip) return;
   if (view === 'play') return play.press(k);
   if (view === 'boot') {
-    if (k === 'cross') enterFront();
+    if (k === 'a') enterFront();
     return;
   }
   if (view === 'models') {
-    if (k === 'circle') return leave();
-    if (k === 'triangle') {
+    if (k === 'b') return leave();
+    if (k === 'x') {
       sfx.confirm();
       view = 'info';
       return paint();
     }
-    if (k !== 'cross') return;
+    if (k !== 'a') return;
     if (models[msel] !== fit) return sfx.cancel();
     sfx.confirm();
     view = 'detail';
@@ -1359,14 +1440,14 @@ function press(k: Press) {
   else if (view === 'cases') {
     if (menu) return command(k);
     if (gallery) {
-      if (k === 'cross') {
+      if (k === 'a') {
         sfx.confirm();
         peek = false;
         startEdit(creations[ring].look, -1);
-      } else if (k === 'triangle' || (k === 'circle' && peek)) {
+      } else if (k === 'x' || (k === 'b' && peek)) {
         sfx[peek ? 'cancel' : 'confirm']();
         peek = !peek;
-      } else if (k === 'circle') {
+      } else if (k === 'b') {
         sfx.cancel();
         gallery = false;
         wear(store.list[store.worn]);
@@ -1377,18 +1458,18 @@ function press(k: Press) {
       } else return sfx.cancel();
       return paint();
     }
-    if (k === 'circle') {
+    if (k === 'b') {
       if (from === 'boot') return leave();
       sfx.cancel();
       view = 'models';
       follow();
-    } else if (k === 'triangle') {
+    } else if (k === 'x') {
       if (!shown().length) return sfx.cancel();
       sfx.confirm();
       menu = 1;
       cmd = 0;
-    } else if (k === 'cross') {
-      // ✕ puts the picked design on the phone; on the bare phone it opens the model's detail, where New is
+    } else if (k === 'a') {
+      // A puts the picked design on the phone; on the bare phone it opens the model's detail, where New is
       const i = tpl();
       sfx.confirm();
       store.worn = i;
@@ -1402,38 +1483,38 @@ function press(k: Press) {
     }
   } else if (view === 'edit') {
     if (!draft) return;
-    // ○ on a changed draft asks first: ○ again drops it, anything else keeps editing
+    // B on a changed draft asks first: B again drops it, anything else keeps editing
     if (leaving) {
       leaving = false;
-      if (k !== 'circle') {
+      if (k !== 'b') {
         sfx.tick();
         return paint();
       }
-    } else if (k === 'circle' && !adding && !moving && origin && !sameLook(draft, origin)) {
+    } else if (k === 'b' && !adding && !moving && origin && !sameLook(draft, origin)) {
       sfx.cancel();
       leaving = true;
       return paint();
     }
-    // the add list: ✕ opens the picked group, then adds the picked part on its parts.json op; ○ goes back a level, then shuts the list
+    // the add list: A opens the picked group, then adds the picked part on its parts.json op; B goes back a level, then shuts the list
     if (adding) {
       const groups = addGroups();
       if (agroup === null) {
-        if (k === 'cross' && groups[asel]) {
+        if (k === 'a' && groups[asel]) {
           sfx.confirm();
           agroup = groups[asel];
           asel = 0;
-        } else if (k === 'circle') {
+        } else if (k === 'b') {
           sfx.cancel();
           adding = false;
         } else return;
         return paint();
       }
       const r = addRows()[asel];
-      if (k === 'cross' && r) {
+      if (k === 'a' && r) {
         sfx.confirm();
         setOp(r.name, r.def, addOp(r));
         psel = partRows().findIndex((x) => x.name === r.name) + 1;
-      } else if (k === 'circle') {
+      } else if (k === 'b') {
         sfx.cancel();
         // a lone group opened straight away; there is no group list to go back to
         if (groups.length > 1) {
@@ -1445,10 +1526,10 @@ function press(k: Press) {
       adding = false;
       return paint();
     }
-    // moving: ✕ places the part and solves, □ swaps grid and free, ○ puts it back, △ sends it home
+    // moving: A places the part and solves, Y swaps grid and free, B puts it back, X sends it home
     if (moving) {
       const m = moving;
-      if (k === 'cross') {
+      if (k === 'a') {
         sfx.confirm();
         moving = null;
         if (m.at.some((v, i) => v !== m.from[i])) {
@@ -1456,27 +1537,27 @@ function press(k: Press) {
           setMove(m.name, m.at);
           wear(draft);
         }
-      } else if (k === 'square') {
+      } else if (k === 'y') {
         sfx.tick();
         m.snap = !m.snap;
         if (m.snap) shift(m.at);
-      } else if (k === 'circle') {
+      } else if (k === 'b') {
         sfx.cancel();
         moving = null;
-      } else if (k === 'triangle') {
+      } else if (k === 'x') {
         sfx.tick();
         side = !side;
         grid();
-      } else if (k === 'l1' || k === 'r1') {
+      } else if (k === 'l' || k === 'r') {
         if (side) return sfx.cancel();
-        if (!turnBy(k === 'l1' ? 1 : -1)) return sfx.cancel();
+        if (!turnBy(k === 'l' ? 1 : -1)) return sfx.cancel();
         sfx.tick();
       }
       placeGhost();
       return paint();
     }
-    // □ opens the add list from any row
-    if (k === 'square') {
+    // Y opens the add list from any row
+    if (k === 'y') {
       if (!addable().length) return sfx.cancel();
       sfx.confirm();
       adding = true;
@@ -1484,8 +1565,8 @@ function press(k: Press) {
       agroup = addGroups().length > 1 ? null : addGroups()[0];
       return paint();
     }
-    // △ takes the picked part off
-    if (k === 'triangle') {
+    // X takes the picked part off
+    if (k === 'x') {
       const r = partRows()[psel - 1];
       if (!r) return sfx.cancel();
       sfx.cancel();
@@ -1493,8 +1574,8 @@ function press(k: Press) {
       psel = Math.min(psel, partRows().length);
       return paint();
     }
-    // ✕ works the picked row: a part moves, Add part opens the list, Undo steps back, Save saves; the start row steps the creations
-    if (k === 'cross') {
+    // A works the picked row: a part moves, Add part opens the list, Undo steps back, Save saves; the start row steps the creations
+    if (k === 'a') {
       const kind = rowKind();
       if (kind === 'start') {
         const next = creations[(creations.findIndex((c) => sameLook(c.look, draft!)) + 1) % creations.length];
@@ -1505,7 +1586,7 @@ function press(k: Press) {
         wear(draft);
         return paint();
       }
-      if (kind === 'add') return press('square');
+      if (kind === 'add') return press('y');
       if (kind === 'part') {
         sfx.confirm();
         return void startMove(partRows()[psel - 1].name);
@@ -1527,7 +1608,7 @@ function press(k: Press) {
       // a remix saved from the showcase page lands on the user's own cases
       gallery = false;
       ring = edited().indexOf(t);
-    } else if (k === 'circle') {
+    } else if (k === 'b') {
       sfx.cancel();
       wear(store.list[store.worn]);
     } else return;
@@ -1542,7 +1623,7 @@ function press(k: Press) {
       cmd = 0;
     }
   } else if (view === 'info') {
-    if (k !== 'circle') return;
+    if (k !== 'b') return;
     sfx.cancel();
     view = 'models';
     follow();
@@ -1563,7 +1644,7 @@ function move(dx: number, dy: number) {
     msel = n;
     follow();
   } else if (view === 'edit') {
-    // ↑/↓ pick a row; ← → on the start row change the start, on a part step its op; in □'s list ↑/↓ pick a part
+    // ↑/↓ pick a row; ← → on the start row change the start, on a part step its op; in Y's list ↑/↓ pick a part
     // moving, the arrows step the part one grid line, or a fine step when free, the way they point on screen
     if (!draft) return;
     leaving = false;
@@ -1637,18 +1718,18 @@ addEventListener('keydown', (e) => {
     arrowright: () => move(1, 0),
     arrowup: () => move(0, -1),
     arrowdown: () => move(0, 1),
-    enter: () => press('cross'),
-    x: () => press('cross'),
-    ' ': () => press('cross'),
-    escape: () => press('circle'),
-    backspace: () => press('circle'),
-    o: () => press('circle'),
-    t: () => press('triangle'),
-    s: () => press('square'),
-    q: () => press('l1'),
-    e: () => press('r1'),
+    enter: () => press('a'),
+    a: () => press('a'),
+    ' ': () => press('a'),
+    escape: () => press('b'),
+    backspace: () => press('b'),
+    b: () => press('b'),
+    x: () => press('x'),
+    y: () => press('y'),
+    l: () => press('l'),
+    r: () => press('r'),
     m: sfx.toggleMute,
-    r: resetMove,
+    '-': resetMove,
     z: () => {
       if (view !== 'edit' || !draft || moving || adding || !undo()) return sfx.cancel();
       sfx.tick();
@@ -1657,13 +1738,15 @@ addEventListener('keydown', (e) => {
   };
   // the browser's own chords stay the browser's; naming in the playground takes the keys it types; a held key repeats only where a step should
   if (e.metaKey || e.ctrlKey || e.altKey) return;
+  // a button reached with Tab takes its own Enter and Space
+  if ((k === 'enter' || k === ' ') && e.target instanceof HTMLButtonElement && e.target.matches(':focus-visible')) return;
   if (view === 'play' && !busy && play.type(e.key)) return e.preventDefault();
-  // shift with ↑ ↓ is the triggers: the playground's up and down
+  // shift with ↑ ↓ is ZR and ZL: the playground's up and down
   if (e.shiftKey && (k === 'arrowup' || k === 'arrowdown')) {
     e.preventDefault();
-    return press(k === 'arrowup' ? 'r2' : 'l2');
+    return press(k === 'arrowup' ? 'zr' : 'zl');
   }
-  if (e.repeat && !k.startsWith('arrow') && k !== 'q' && k !== 'e') return;
+  if (e.repeat && !k.startsWith('arrow') && k !== 'l' && k !== 'r') return;
   if (map[k]) {
     e.preventDefault();
     map[k]();
@@ -1671,9 +1754,9 @@ addEventListener('keydown', (e) => {
 });
 // a controller works the page as the keys do: the standard mapping's face buttons, shoulders and triggers press, the d-pad and the left stick move,
 // the right stick turns the playground's bed. A held direction, shoulder or trigger repeats after HOLD, then every AGAIN; held is each one's next repeat time
-const PAD: [number, Press][] = [[0, 'cross'], [1, 'circle'], [2, 'square'], [3, 'triangle'], [4, 'l1'], [5, 'r1'], [6, 'l2'], [7, 'r2']];
+const PAD: Press[] = ['a', 'b', 'x', 'y', 'l', 'r', 'zl', 'zr'];
 const DIR: Record<string, [number, number]> = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] };
-const REPEAT = new Set(['l1', 'r1', 'l2', 'r2']);
+const REPEAT = new Set(['l', 'r', 'zl', 'zr']);
 const HOLD = 0.4, AGAIN = 0.08, STICK = 0.5, DEAD = 0.2;
 const held = new Map<string, number>();
 function pad(now: number, dt: number) {
@@ -1683,7 +1766,9 @@ function pad(now: number, dt: number) {
   const [x = 0, y = 0, rx = 0, ry = 0] = p.axes;
   if (view === 'play' && Math.hypot(rx, ry) > DEAD) play.drag(rx * dt * 300, ry * dt * 300);
   const on: Record<string, boolean> = { left: b(14) || x < -STICK, right: b(15) || x > STICK, up: b(12) || y < -STICK, down: b(13) || y > STICK };
-  for (const [i, k] of PAD) on[k] = b(i);
+  // the standard mapping is by position: a Nintendo pad's bottom button is B and its left is Y, so its face pairs swap
+  const swap = /nintendo|joy-?con|pro controller|057e/i.test(p.id);
+  PAD.forEach((k, i) => (on[k] = b(swap && i < 4 ? i ^ 1 : i)));
   for (const k in on) {
     const next = held.get(k);
     if (!on[k]) held.delete(k);
@@ -1695,11 +1780,16 @@ function pad(now: number, dt: number) {
   }
 }
 
+// a changed draft is lost with the tab, so closing it asks
+addEventListener('beforeunload', (e) => {
+  if (view === 'edit' && draft && origin && !sameLook(draft, origin)) e.preventDefault();
+});
+
 // audio may only start inside a gesture
 addEventListener('pointerdown', sfx.unlock, { capture: true, once: true });
 addEventListener('keydown', sfx.unlock, { capture: true, once: true });
 
-// touch: tap picks, a second tap on the picked icon is ✕; vertical drag scrolls the grid,
+// touch: tap picks, a second tap on the picked icon is A; vertical drag scrolls the grid,
 // on the cases and detail pages a touch holds the phone and a drag turns and tips it, let go mid-swipe and it flings on
 const ray = new THREE.Raycaster();
 const canvas = $('view');
@@ -1755,7 +1845,7 @@ canvas.addEventListener('pointerup', (e) => {
   if (grab) {
     grab = false;
     // a swipe still moving at release carries on, a held stop does not
-    if (e.timeStamp - d.t < 80) fling = clamp(d.v - theme.spin, -30, 30);
+    if (e.timeStamp - d.t < 80) fling = clamp(d.v - idle(), -30, 30);
   }
   const dx = e.clientX - d.x;
   if (Math.hypot(dx, e.clientY - d.y) > 8) return;
@@ -1769,7 +1859,7 @@ canvas.addEventListener('pointerup', (e) => {
   const i = list.findIndex((it) => it.holder === o);
   if (i < 0) return;
   const cur = view === 'boot' ? fsel : view === 'models' ? msel : ring;
-  if (i === cur) return press('cross');
+  if (i === cur) return press('a');
   if (view === 'boot') fsel = i;
   else if (view === 'cases') {
     ring = i;
@@ -1812,3 +1902,4 @@ front.forEach((it, i) => {
 });
 camera.position.copy(camAt());
 paint();
+arrive(start);

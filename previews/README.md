@@ -142,9 +142,9 @@ one section per phone, every style that builds, seen from the back | python case
 
 <a name="17e"></a>17e
 
-| base | case | slot | magsafe | sides | corners | frame | edge | plateframe | plate | spine | slider | leather | cig | corner | ribs | ribcorner | flip | cover |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ![base](17e/base.png) | ![case](17e/case.png) | ![slot](17e/slot.png) | ![magsafe](17e/magsafe.png) | ![sides](17e/sides.png) | ![corners](17e/corners.png) | ![frame](17e/frame.png) | ![edge](17e/edge.png) | ![plateframe](17e/plateframe.png) | ![plate](17e/plate.png) | ![spine](17e/spine.png) | ![slider](17e/slider.png) | ![leather](17e/leather.png) | ![cig](17e/cig.png) | ![corner](17e/corner.png) | ![ribs](17e/ribs.png) | ![ribcorner](17e/ribcorner.png) | ![flip](17e/flip.png) | ![cover](17e/cover.png) |
+| base | case | slot | magsafe | sides | corners | frame | edge | plateframe | plate | spine | slider | leather | cig | money | corner | ribs | ribcorner | flip | cover |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ![base](17e/base.png) | ![case](17e/case.png) | ![slot](17e/slot.png) | ![magsafe](17e/magsafe.png) | ![sides](17e/sides.png) | ![corners](17e/corners.png) | ![frame](17e/frame.png) | ![edge](17e/edge.png) | ![plateframe](17e/plateframe.png) | ![plate](17e/plate.png) | ![spine](17e/spine.png) | ![slider](17e/slider.png) | ![leather](17e/leather.png) | ![cig](17e/cig.png) | ![money](17e/money.png) | ![corner](17e/corner.png) | ![ribs](17e/ribs.png) | ![ribcorner](17e/ribcorner.png) | ![flip](17e/flip.png) | ![cover](17e/cover.png) |
 
 <a name="air"></a>air
 
