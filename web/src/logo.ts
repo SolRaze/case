@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Finish } from './phone';
+import { rough, type Finish } from './phone';
 
 /** an apple with a bite and a leaf, drawn for this site; outline units, y up, 118 tall */
 function outline() {
@@ -40,8 +40,8 @@ export function buildLogo(h: number, depth: number, finish: Finish, seg: number)
   geo.center();
   const m = (color: string, o: Partial<THREE.MeshStandardMaterialParameters>) =>
     new THREE.MeshStandardMaterial({ color, transparent: true, flatShading: seg <= 8, ...o });
-  const face = m(finish.body, { roughness: 0.35, metalness: 0.05 });
-  const side = m(finish.frame, { roughness: 0.3, metalness: 0.8 });
+  const face = m(finish.body, { roughness: rough(finish, 0.35), metalness: 0.05 });
+  const side = m(finish.frame, { roughness: rough(finish, 0.3), metalness: 0.8 });
   const object = new THREE.Group();
   object.add(new THREE.Mesh(geo, [face, side]));
   return { object, materials: [face, side] };
@@ -54,8 +54,8 @@ export function buildLogo(h: number, depth: number, finish: Finish, seg: number)
 export function buildPlay(h: number, finish: Finish, seg: number) {
   const m = (color: string, o: Partial<THREE.MeshStandardMaterialParameters>) =>
     new THREE.MeshStandardMaterial({ color, transparent: true, flatShading: seg <= 8, ...o });
-  const bed = m(finish.body, { roughness: 0.35, metalness: 0.05 });
-  const solid = m(finish.frame, { roughness: 0.3, metalness: 0.8 });
+  const bed = m(finish.body, { roughness: rough(finish, 0.35), metalness: 0.05 });
+  const solid = m(finish.frame, { roughness: rough(finish, 0.3), metalness: 0.8 });
   const w = h * 0.7, t = h * 0.05, r = h * 0.08;
   const plate = new THREE.Shape();
   plate.moveTo(-w / 2 + r, -h / 2);

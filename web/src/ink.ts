@@ -3,11 +3,13 @@
  * but is invisible; every frame each `.ink` element's words and each `img.px` are drawn here
  * at their laid-out boxes, faded by their own and their ancestors' opacity up to `ui`.
  * `.ink` elements hold text only; `.on`, or keyboard focus on it or its button, adds the glow.
+ * Every `img.px` is a button disc, r 11 of 24; a set `ring` strokes its rim, so a black disc holds on a dark field.
  */
 export function inkLayer(canvas: HTMLCanvasElement, ui: HTMLElement, glow: string) {
   const g = canvas.getContext('2d')!;
   const range = document.createRange();
   let pr = 1;
+  const self = { resize, draw, ring: '' };
 
   function alpha(el: Element) {
     let a = 1;
@@ -37,6 +39,13 @@ export function inkLayer(canvas: HTMLCanvasElement, ui: HTMLElement, glow: strin
         if (!el.complete || !el.naturalWidth) continue;
         const r = el.getBoundingClientRect();
         g.drawImage(el, r.left, r.top, r.width, r.height);
+        if (self.ring) {
+          g.strokeStyle = self.ring;
+          g.lineWidth = r.width / 24;
+          g.beginPath();
+          g.arc(r.left + r.width / 2, r.top + r.height / 2, (r.width * 11) / 24, 0, Math.PI * 2);
+          g.stroke();
+        }
         continue;
       }
       const s = getComputedStyle(el);
@@ -70,5 +79,5 @@ export function inkLayer(canvas: HTMLCanvasElement, ui: HTMLElement, glow: strin
     }
   }
 
-  return { resize, draw };
+  return self;
 }

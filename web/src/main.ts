@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import '@fontsource/arimo/latin-700.css';
-import theme from '../themes/memcard.json';
+import theme from './theme';
 import specs from '../phones.json';
-import { buildLocked, buildPhone, framed, label, type PhoneSpec } from './phone';
+import { buildLocked, buildPhone, edges, lockedEdge, framed, label, look, lookT, sheetLook, type PhoneSpec } from './phone';
 import { buildLogo, buildPlay } from './logo';
+import { fromHour, lit } from './sky';
 import { READY, order, styleName, year } from './catalog';
 import { built, exportStl, isSet, load, loadMy, loadTemplates, MY, partSolid, placing, saveTemplates, seat, seedFeatured, SINK, solid, type Template } from './cases';
 import { STEPS, combine, opsKey, partList, type Move, type Moves, type Op, type Part } from './parts';
@@ -54,10 +55,12 @@ hi.localClippingEnabled = true; // edit's ghost is cut to the case's outline, as
 const ink = inkLayer($('ink') as HTMLCanvasElement, $('ui'), C.pick);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 100);
-// key and rim ride with the camera, aimed at the icons' distance; neither may sit near the view axis,
+// key and rim ride with the camera, aimed at the icons' distance; away from a sky theme neither may sit near the view axis,
 // or a straight-on black back mirrors it and reads grey
 const key = new THREE.DirectionalLight(0xffffff, 2.2);
-key.position.set(-3, 4, -1);
+// key comes from the field's bright corner: style.css runs the field at 115deg, so its light is at 295deg, 25 degrees above level
+const LIT = THREE.MathUtils.degToRad(115 + 180);
+key.position.set(5 * Math.sin(LIT), 5 * Math.cos(LIT), -1);
 const rim = new THREE.DirectionalLight(0xffffff, 1.2);
 rim.position.set(3, -1, -7);
 const sky = new THREE.HemisphereLight(0xffffff, 0x404040, 1.6);
@@ -68,6 +71,54 @@ for (const l of [key, rim]) {
 }
 camera.add(key, rim);
 scene.add(camera, sky);
+
+// a sky theme lights by the hour, local time or ?t=<hour>, and on a phone its tilt swings the light up to 20 degrees
+// as if the light stayed in the room; reduced motion keeps the tilt out
+/** a sky theme's models in satin, so the moving light shows on their faces, not only their edges */
+const finish = theme.sky ? { ...theme.finish, satin: 0.6 } : theme.finish;
+let glowNight = 1; // the selection glow's scale: dimmed by night, or it outshines the field
+if (theme.sky) {
+  const at = Number(new URLSearchParams(location.search).get('t') ?? NaN);
+  // the key at 3x: on the near-black finish it is the only light that shows which side the sun or moon is on
+  const KEY = key.intensity * 3, SKY = sky.intensity, RIM = rim.intensity, R = rim.position.clone();
+  let tilt = 0;
+  const relight = () => {
+    const d = new Date();
+    const l = fromHour(Number.isNaN(at) ? d.getHours() + d.getMinutes() / 60 : at);
+    l.angle += tilt;
+    const s = lit(l, C.field);
+    $('bg').style.background = s.background;
+    // 25deg off the view axis, not the static 57: faces turned toward the light catch its sheen, so the models follow it;
+    // straight-on black backs read greyer for it
+    key.position.set(2 * s.key[0], 2 * s.key[1], 0);
+    key.color.setHSL(...s.tint);
+    key.intensity = KEY * s.keyScale;
+    // the rim swings with the light by its turn from the 115deg field as written, so 9:00 keeps the glints where they were
+    const turn = THREE.MathUtils.degToRad(l.angle - 115);
+    rim.position.set(R.x * Math.cos(turn) + R.y * Math.sin(turn), R.y * Math.cos(turn) - R.x * Math.sin(turn), R.z);
+    rim.color.setHSL(...s.tint);
+    rim.intensity = RIM * s.keyScale;
+    sky.intensity = SKY * s.skyScale;
+    // by night: locked phones' wireframe and the button discs' rims lift off the field, the glow drops
+    lockedEdge(l.night ? '#4a505c' : '#000000');
+    ink.ring = l.night ? '#ffffff38' : '';
+    glowNight = l.night ? 0.45 : 1;
+  };
+  relight();
+  setInterval(relight, 60_000);
+  const onTilt = (e: DeviceOrientationEvent) => {
+    if (still.matches || e.gamma === null || e.beta === null) return;
+    // left-right tilt whichever way the screen is turned
+    const turn = screen.orientation?.angle ?? 0;
+    const side = turn === 90 ? e.beta : turn === 270 || turn === -90 ? -e.beta : turn === 180 ? -e.gamma : e.gamma;
+    tilt += ((clamp(side, -45, 45) / 45) * 20 - tilt) * 0.15;
+    relight();
+  };
+  addEventListener('deviceorientation', onTilt);
+  // iOS gives no tilt until asked from a tap; the first tap asks once
+  const ask = (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }).requestPermission;
+  if (ask && !still.matches) addEventListener('pointerup', () => ask().catch(() => {}), { once: true });
+}
 
 /** a hot white core whose light bleeds past the icon's edges: the selection glows */
 function glowSprite() {
@@ -115,12 +166,15 @@ function item(object: THREE.Object3D, materials: THREE.Material[], h: number): I
   object.scale.setScalar(MM);
   holder.add(object);
   holder.visible = false;
+  materials = [...materials, sheetLook(object)];
   scene.add(holder);
   return { holder, materials, h: h * MM, pos: new THREE.Vector3(), scale: 1, opacity: 0, spin: REST.y, tilt: REST.x, born: 0, ready: true };
 }
 
 // the models page: one finish for every phone, a black silhouette where no case is finished yet
-const bodies = phones.map((p) => (READY.has(p.id) ? buildPhone(p, theme.finish, 8) : buildLocked(p, 8)));
+// mono draws every model's creases
+look(theme.sheet ? 1 : 0, theme.sheet);
+const bodies = phones.map((p) => (READY.has(p.id) ? buildPhone(p, finish, 8) : buildLocked(p, 8)));
 const models = bodies.map((b, i) => item(b.object, b.materials, phones[i].L));
 const fit = models[phones.indexOf(card)];
 
@@ -129,6 +183,7 @@ const caseMat = new THREE.MeshStandardMaterial({
   color: theme.case.color, roughness: 0.3, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide,
 });
 const caseMesh = new THREE.Mesh(new THREE.BufferGeometry(), caseMat);
+const caseLine = sheetLook(caseMesh);
 const centre = new THREE.Vector3(card.W / 2, -card.L / 2, -card.T / 2);
 // edit's move: the part where it will go, drawn over the case, and the grid it snaps to
 // the ghost is lit and drawn once per pixel: its depth-only copy goes first, so its own far faces do not stack into blotches
@@ -169,7 +224,7 @@ const snapGrid = new THREE.LineSegments(
 // the front page: a phone opens its cases page, the apple opens the models, the bed opens the playground
 const front = theme.front.map((f) => {
   const { object, materials } =
-    f.icon === 'logo' ? buildLogo(LOGO_H, card.T, theme.finish, f.seg) : f.icon === 'play' ? buildPlay(LOGO_H, theme.finish, f.seg) : buildPhone(spec(f.icon), theme.finish, f.seg);
+    f.icon === 'logo' ? buildLogo(LOGO_H, card.T, finish, f.seg) : f.icon === 'play' ? buildPlay(LOGO_H, finish, f.seg) : buildPhone(spec(f.icon), finish, f.seg);
   return item(object, materials, f.icon === 'logo' || f.icon === 'play' ? LOGO_H : spec(f.icon).L);
 });
 
@@ -219,6 +274,7 @@ function wear(t?: Look) {
       if (n !== asked) return;
       solving = 0;
       caseMesh.geometry = g;
+      edges(caseMesh);
       paint();
     },
     () => {
@@ -242,6 +298,7 @@ function itemOf(t: Template) {
   const fill = (): Promise<void> =>
     caseOf(t).then((g) => {
       mesh.geometry = g;
+      edges(mesh);
       it!.ready = true;
     }, fill);
   fill();
@@ -567,6 +624,7 @@ low.setAnimationLoop((t) => {
   caseMesh.scale.setScalar(s);
   caseMesh.position.copy(centre).multiplyScalar(1 - s);
   caseMat.opacity = alpha;
+  caseLine.opacity = alpha * lookT();
   if (ghost.visible) clipGhost();
   caseMesh.visible = alpha > 0.003;
 
@@ -578,7 +636,7 @@ low.setAnimationLoop((t) => {
     const g = view === 'boot' ? 1 : Math.min(pop(lit, now), 1);
     const h = lit.h * lit.scale;
     const toCam = camera.position.clone().sub(lit.pos);
-    const o = theme.dot * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * g;
+    const o = theme.dot * glowNight * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * g;
     if (view === 'boot') {
       dot.position.copy(lit.pos).add(toCam.clone().setLength(0.3));
       dot.scale.setScalar(h * 0.55);
@@ -616,7 +674,7 @@ low.setAnimationLoop((t) => {
 const disc = (mark: string, color: string) =>
   'data:image/svg+xml,' +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11.5" fill="#000"/>` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#000" stroke="${theme.sheet?.edge ?? 'none'}" stroke-width="1"/>` +
       `<g fill="none" stroke="${color}" stroke-width="2.6">${mark}</g></svg>`,
   );
 const glyph = {

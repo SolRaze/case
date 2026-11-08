@@ -17,7 +17,9 @@ export type PhoneSpec = {
   flash_z: number;
 };
 
-export type Finish = { body: string; frame: string; plateau: string };
+/** satin: the least roughness on the finish's own colours; a sky theme raises it so faces turned to the light carry its sheen */
+export type Finish = { body: string; frame: string; plateau: string; satin?: number };
+export const rough = (f: Finish, r: number) => Math.max(r, f.satin ?? 0);
 
 // render choices, not on the drawings: edge round-over and plateau corner radius
 const EDGE = 0.8;
@@ -69,9 +71,9 @@ function disc(x: number, y: number, r: number, z0: number, h: number, seg: numbe
 export function buildPhone(p: PhoneSpec, finish: Finish, seg = 24) {
   const m = (color: string, o: Partial<THREE.MeshStandardMaterialParameters> = {}) =>
     new THREE.MeshStandardMaterial({ color, transparent: true, flatShading: seg <= 8, ...o });
-  const glass = m(finish.body, { roughness: 0.35, metalness: 0.05 });
-  const frame = m(finish.frame, { roughness: 0.3, metalness: 0.8 });
-  const frosted = m(finish.plateau, { roughness: 0.5, metalness: 0.1 });
+  const glass = m(finish.body, { roughness: rough(finish, 0.35), metalness: 0.05 });
+  const frame = m(finish.frame, { roughness: rough(finish, 0.3), metalness: 0.8 });
+  const frosted = m(finish.plateau, { roughness: rough(finish, 0.5), metalness: 0.1 });
   const ringMetal = m('#b9bec4', { roughness: 0.25, metalness: 0.9 });
   const lensGlass = m('#07080c', { roughness: 0.05, metalness: 0.3 });
   const flashLens = m('#ececec', { roughness: 0.4, emissive: '#262626' });
@@ -115,11 +117,20 @@ export function buildPhone(p: PhoneSpec, finish: Finish, seg = 24) {
   return { object: framed(p, g), frame: g, materials };
 }
 
+const lockInks: THREE.LineBasicMaterial[] = [];
+let lockEdge = '#000000';
+/** the locked phones' wireframe colour, black by day; a night field lifts it or the phones vanish into it */
+export function lockedEdge(c: string) {
+  lockEdge = c;
+  for (const m of lockInks) m.color.set(c);
+}
+
 /** a phone with no finished case yet: the body and a padlock, see-through black under a black wireframe */
 export function buildLocked(p: PhoneSpec, seg = 8) {
   // userData.alpha: main.ts pose scales the fade by it, so the phone stays see-through
   const fill = new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, userData: { alpha: 0.55 } });
-  const ink = new THREE.LineBasicMaterial({ color: '#000000', transparent: true, userData: { alpha: 0.85 } });
+  const ink = new THREE.LineBasicMaterial({ color: lockEdge, transparent: true, userData: { alpha: 0.85 } });
+  lockInks.push(ink);
   // black solid with its black wireframe on top
   const solid = (geo: THREE.BufferGeometry) => [new THREE.Mesh(geo, fill), new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), ink)];
   const g = new THREE.Group();
@@ -154,4 +165,94 @@ export function label(id: string) {
   const w = id.split('-');
   if (w[0] === 'se') return `SE ${w.slice(1).join('/')}`;
   return w.map((s) => (/^\d/.test(s) ? s : s[0].toUpperCase() + s.slice(1))).join(' ');
+}
+
+/** the preview look: body black, crease lines pale; t is how far the models have turned to it, 0 the theme's own finish */
+export type Sheet = { body?: string; edge: string; grey?: boolean };
+type Orig = { color: THREE.Color; emissive?: THREE.Color; metalness?: number; roughness?: number };
+const lit = new Set<THREE.MeshStandardMaterial>();
+const inked = new Set<THREE.LineBasicMaterial>(); // lines the model was built with
+const creases = new Set<THREE.LineBasicMaterial>(); // lines sheetLook drew
+const veiled = new Set<THREE.MeshBasicMaterial>(); // see-through fills, solid at t 1
+let sheet: Sheet = { body: '#0f0f12', edge: '#b3b3b8' };
+let t = 0;
+export const lookT = () => t;
+
+/**
+ * Readies a built model for the preview look: its materials join the look's sets with their own values kept,
+ * creases over 30 degrees get lines. Returns the crease line material so the caller's fade reaches it.
+ */
+export function sheetLook(root: THREE.Object3D) {
+  const line = new THREE.LineBasicMaterial({ color: sheet.edge, transparent: true, userData: { alpha: t } });
+  creases.add(line);
+  const meshes: THREE.Mesh[] = [];
+  root.traverse((o) => {
+    if (o instanceof THREE.LineSegments) {
+      const m = o.material as THREE.LineBasicMaterial;
+      m.userData.orig ??= { color: m.color.clone() };
+      inked.add(m);
+    } else if (o instanceof THREE.Mesh) meshes.push(o);
+  });
+  for (const o of meshes) {
+    for (const m of [o.material].flat())
+      if (m instanceof THREE.MeshStandardMaterial) {
+        m.userData.orig ??= { color: m.color.clone(), emissive: m.emissive.clone(), metalness: m.metalness, roughness: m.roughness };
+        // faces pushed back so the crease lines on them win the depth test
+        m.polygonOffset = true;
+        m.polygonOffsetFactor = 1;
+        m.polygonOffsetUnits = 2;
+        lit.add(m);
+      } else if (m instanceof THREE.MeshBasicMaterial && m.userData.alpha !== undefined) {
+        m.userData.veil ??= m.userData.alpha;
+        m.polygonOffset = true;
+        m.polygonOffsetFactor = 1;
+        m.polygonOffsetUnits = 2;
+        veiled.add(m);
+      }
+    o.userData.edge = line;
+    edges(o);
+  }
+  look(t);
+  return line;
+}
+
+/** turns every readied model t of the way from its own finish to the preview look */
+export function look(to: number, s: Sheet = sheet) {
+  t = to;
+  sheet = s;
+  const body = new THREE.Color(s.body ?? 0);
+  const edge = new THREE.Color(s.edge);
+  const black = new THREE.Color(0);
+  // a sheet without a body keeps each model's own finish and only adds the creases
+  const fill = s.body ? t : 0;
+  for (const m of lit) {
+    const o = m.userData.orig as Orig;
+    m.color.copy(o.color).lerp(body, fill);
+    if (s.grey) m.color.setScalar(m.color.r * 0.2126 + m.color.g * 0.7152 + m.color.b * 0.0722);
+    m.emissive.copy(o.emissive!).lerp(black, fill);
+    m.metalness = THREE.MathUtils.lerp(o.metalness!, 0, fill);
+    m.roughness = THREE.MathUtils.lerp(o.roughness!, 0.5, fill);
+  }
+  for (const m of veiled) m.userData.alpha = THREE.MathUtils.lerp(m.userData.veil, 1, fill);
+  for (const m of inked) m.color.copy((m.userData.orig as Orig).color).lerp(edge, t);
+  for (const m of creases) {
+    m.color.copy(edge);
+    m.userData.alpha = t; // main.ts pose multiplies a model's fade by it
+  }
+}
+
+/** redraws a sheetLook mesh's crease lines after its geometry changes; no-op on a mesh sheetLook never saw */
+export function edges(mesh: THREE.Mesh) {
+  const line = mesh.userData.edge as THREE.LineBasicMaterial | undefined;
+  if (!line) return;
+  const old = mesh.getObjectByName('edges');
+  if (old) {
+    mesh.remove(old);
+    (old as THREE.LineSegments).geometry.dispose();
+  }
+  if (!mesh.geometry.attributes.position) return;
+  const l = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 30), line);
+  l.name = 'edges';
+  l.layers.mask = mesh.layers.mask;
+  mesh.add(l);
 }
