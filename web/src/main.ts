@@ -77,14 +77,16 @@ scene.add(camera, sky);
 /** a sky theme's models in satin, so the moving light shows on their faces, not only their edges */
 const finish = theme.sky ? { ...theme.finish, satin: 0.6 } : theme.finish;
 let glowNight = 1; // the selection glow's scale: dimmed by night, or it outshines the field
+let pin: number | null = null; // the playground's Light pins the hour; null follows the clock
+let relight = () => {};
 if (theme.sky) {
   const at = Number(new URLSearchParams(location.search).get('t') ?? NaN);
   // the key at 3x: on the near-black finish it is the only light that shows which side the sun or moon is on
   const KEY = key.intensity * 3, SKY = sky.intensity, RIM = rim.intensity, R = rim.position.clone();
   let tilt = 0;
-  const relight = () => {
+  relight = () => {
     const d = new Date();
-    const l = fromHour(Number.isNaN(at) ? d.getHours() + d.getMinutes() / 60 : at);
+    const l = fromHour(pin ?? (Number.isNaN(at) ? d.getHours() + d.getMinutes() / 60 : at));
     l.angle += tilt;
     const s = lit(l, C.field);
     $('bg').style.background = s.background;
@@ -742,7 +744,7 @@ const ink$ = (tag: string, s: string, cls = '') => {
   if (s === '‹' || s === '›') e.ariaLabel = s === '‹' ? 'Previous' : 'Next';
   return e;
 };
-const play = playground({ scene, camera, paint, leave, ink: ink$ });
+const play = playground({ scene, camera, paint, leave, ink: ink$, hour: (h) => ((pin = h), relight()) });
 seedFeatured().then(paint, () => {});
 
 type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order', label: string, ok: boolean];

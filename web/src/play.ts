@@ -5,6 +5,7 @@ import { mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeomet
 import theme from './theme';
 import { dropImport, exportStl, FEATURED, featuredPiece, featuredSolid, IMPORT, keepImport, loadMy, MY, partSolid, pieceMatrix, saveMy, type Piece, type Shape } from './cases';
 import * as sfx from './sound';
+import { fromHour } from './sky';
 
 export type Key = 'a' | 'b' | 'y' | 'x' | 'l' | 'r' | 'zl' | 'zr';
 /** the d-pad, drawn in the bar where it steps the held piece */
@@ -15,6 +16,8 @@ type Deps = {
   paint: () => void;
   leave: () => void;
   ink: (tag: string, s: string, cls?: string) => HTMLElement;
+  /** pins the field and lights to an hour; null hands them back to the clock */
+  hour: (h: number | null) => void;
 };
 
 const S = theme.strings;
@@ -86,7 +89,8 @@ type Job = { pieces: Piece[]; edge: number; live: boolean; ok: (m: Mesh) => void
 export function playground(d: Deps) {
   let bench = loadBench();
   const save = () => localStorage.setItem(BENCH, JSON.stringify(bench));
-  let mode: 'browse' | 'palette' | 'held' | 'name' | 'shelf' = 'browse';
+  let mode: 'browse' | 'palette' | 'held' | 'name' | 'shelf' | 'light' = 'browse';
+  let hour = 9; // light: the hour pinned on the field
   let sel = 0; // browse: the pieces, then the actions
   let row = 0; // palette and shelf
   let key = [0, 0]; // name: the keyboard's column and row
@@ -124,6 +128,33 @@ export function playground(d: Deps) {
   const ghosts: THREE.Mesh[] = [];
   const ghostMat = () =>
     new THREE.MeshStandardMaterial({ color: C.pick, emissive: C.pick, emissiveIntensity: 0.35, roughness: 0.6, transparent: true, opacity: 0.4, depthWrite: false });
+  // light: a dome over the bed drawn in lines, the light's path across it and the sun or moon on it, a ray to the bed's middle
+  const ORB = 200;
+  const TIP = THREE.MathUtils.degToRad(20); // the path leans back from upright
+  const ring = (f: (t: number) => [number, number, number], n = 64, half = false) => {
+    const pts: THREE.Vector3[] = [];
+    for (let i = 0; i <= n; i++) pts.push(new THREE.Vector3(...f(((half ? 1 : 2) * Math.PI * i) / n)));
+    return new THREE.BufferGeometry().setFromPoints(pts);
+  };
+  const along = (t: number): [number, number, number] => [-ORB * Math.cos(t), ORB * Math.sin(t) * Math.sin(TIP), ORB * Math.sin(t) * Math.cos(TIP)];
+  const domeMat = new THREE.LineBasicMaterial({ color: C.dim, transparent: true, opacity: 0.5 });
+  const orb = new THREE.Group();
+  orb.add(
+    new THREE.Line(ring((t) => [ORB * Math.cos(t), ORB * Math.sin(t), 0]), domeMat),
+    new THREE.Line(ring((t) => [ORB * Math.cos(t), 0, ORB * Math.sin(t)], 32, true), domeMat),
+    new THREE.Line(ring((t) => [0, ORB * Math.cos(t), ORB * Math.sin(t)], 32, true), domeMat),
+    ...[30, 60].map((a) => {
+      const r = ORB * Math.cos(THREE.MathUtils.degToRad(a)), z = ORB * Math.sin(THREE.MathUtils.degToRad(a));
+      return new THREE.Line(ring((t) => [r * Math.cos(t), r * Math.sin(t), z]), domeMat);
+    }),
+    new THREE.Line(ring(along, 48, true), new THREE.LineBasicMaterial({ color: C.pick })),
+  );
+  const orbLight = new THREE.Mesh(new THREE.SphereGeometry(10, 24, 16), new THREE.MeshBasicMaterial({ color: '#ffd27a' }));
+  const beam = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({ color: C.pick, transparent: true, opacity: 0.6 }));
+  orb.add(orbLight, beam);
+  orb.visible = false;
+  world.add(orb);
+  const hhmm = (h: number) => `${String(Math.floor(h)).padStart(2, '0')}:${Math.round((h % 1) * 60) === 30 ? '30' : '00'}`;
   pivot.traverse((o) => o.layers.set(1));
   pivot.visible = false;
   d.scene.add(pivot);
@@ -296,9 +327,10 @@ export function playground(d: Deps) {
     saveMy({ ...my, [ref]: { name, version: (my[ref]?.version ?? 0) + 1, pieces: bench.pieces.map(copy) } });
   }
 
-  type Act = 'shapes' | 'import' | 'save' | 'shelf' | 'export';
-  const ACTS: Act[] = ['shapes', 'import', 'save', 'shelf', 'export'];
-  const actName: Record<Act, string> = { shapes: S.shapes, import: S.importStl, save: S.savePart, shelf: S.shelf, export: S.exportStl };
+  type Act = 'shapes' | 'import' | 'save' | 'shelf' | 'export' | 'light';
+  // Light only where the theme lights by the hour
+  const ACTS: Act[] = ['shapes', 'import', 'save', 'shelf', 'export', ...(theme.sky ? (['light'] as const) : [])];
+  const actName: Record<Act, string> = { shapes: S.shapes, import: S.importStl, save: S.savePart, shelf: S.shelf, export: S.exportStl, light: S.light };
   const rowsN = () => bench.pieces.length + ACTS.length;
   const actOf = (i: number): Act | undefined => ACTS[i - bench.pieces.length];
   const shelf = () => Object.entries(loadMy());
@@ -425,6 +457,11 @@ export function playground(d: Deps) {
         dropImport(s[0]).catch(() => {});
         row = clamp(row, 0, shelf().length - 1);
       } else return;
+    } else if (mode === 'light') {
+      if (k !== 'b') return;
+      sfx.cancel();
+      mode = 'browse';
+      d.hour(null);
     } else if (mode === 'name') {
       if (k === 'b') {
         sfx.cancel();
@@ -448,11 +485,17 @@ export function playground(d: Deps) {
         grab(sel, copy(p));
       } else if (k === 'a') {
         const a = actOf(sel)!;
-        if (a !== 'import' && a !== 'shapes' && a !== 'shelf' && !bench.pieces.length) return sfx.cancel();
+        if (a !== 'import' && a !== 'shapes' && a !== 'shelf' && a !== 'light' && !bench.pieces.length) return sfx.cancel();
         sfx.confirm();
         if (a === 'shapes') (mode = 'palette'), (row = 0);
         else if (a === 'import') file.click();
         else if (a === 'shelf') (mode = 'shelf'), (row = 0);
+        else if (a === 'light') {
+          const t = new Date();
+          hour = Math.round((t.getHours() + t.getMinutes() / 60) * 2) / 2 % 24;
+          mode = 'light';
+          d.hour(hour);
+        }
         else if (a === 'save') {
           mode = 'name';
           typed = bench.name.slice(0, NAME);
@@ -495,6 +538,10 @@ export function playground(d: Deps) {
     oops = false;
     if (mode === 'held') {
       if (!nudge(dx, dy, 0)) return;
+    } else if (mode === 'light') {
+      // ← → half an hour, ↑ ↓ three
+      hour = (((hour + dx * 0.5 - dy * 3) % 24) + 24) % 24;
+      d.hour(hour);
     } else if (mode === 'name') {
       const y = clamp(key[1] + dy, 0, KEYS.length - 1);
       key = [clamp(key[0] + dx, 0, KEYS[y].length - 1), y];
@@ -559,6 +606,13 @@ export function playground(d: Deps) {
     // the part pops when a solve lands
     const pop = popAt >= 0 ? clamp((t - popAt) / 0.25, 0, 1) : 1;
     body.scale.setScalar(1 + 0.035 * Math.sin(Math.PI * pop));
+    orb.visible = mode === 'light';
+    if (orb.visible) {
+      const l = fromHour(hour);
+      orbLight.position.set(...along(Math.PI * l.along));
+      (orbLight.material as THREE.MeshBasicMaterial).color.set(l.night ? '#bcd0ff' : '#ffd27a');
+      beam.geometry.setFromPoints([new THREE.Vector3(), orbLight.position]);
+    }
     // the held piece's ghost shows strong, the picked one faint; a cut in red; a drop squashes it
     const sq = squashAt >= 0 ? clamp((t - squashAt) / 0.22, 0, 1) : 1;
     const wob = Math.sin(Math.PI * sq);
@@ -598,6 +652,7 @@ export function playground(d: Deps) {
     const title = (s: string): [HTMLElement, boolean] => [li(d.ink('p', s, 'title')), false];
     const list = (names: string[], at: number, set: (i: number) => void) =>
       names.map((s, i): [HTMLElement, boolean] => [li(button(s, i === at, pick(i === at, () => set(i)))), i === at]);
+    if (mode === 'light') return [title(S.light), [li(d.ink('p', `${hhmm(hour)}  ${fromHour(hour).night ? S.moon : S.sun}`, 'read')), false]];
     if (mode === 'palette') return [title(S.shapes), ...list([...SHAPES.map((s) => S[s]), ...FEATURED.map((f) => f.name), S.importStl], row, (i) => (row = i))];
     if (mode === 'shelf') {
       const s = shelf();
@@ -657,6 +712,7 @@ export function playground(d: Deps) {
         ['a', S.drop], ['b', S.cancel], ['y', S.tool], ['x', `${S.union}/${S.difference}`],
         ['l', ''], ['r', S.spin], ['zl', ''], ['zr', TOOLS[held!.tool] === 'size' ? S.size : S.lift],
       ];
+    if (mode === 'light') return [['left', ''], ['up', ''], ['down', ''], ['right', hhmm(hour)], ['b', S.back]];
     if (mode === 'palette') return [['a', S.add], ['b', S.back]];
     if (mode === 'shelf') return [['a', S.open], ['b', S.back], ...(shelf().length ? [['x', S.delete] as [Key, string]] : [])];
     if (mode === 'name') return [['a', S.enter], ['b', S.cancel], ['x', S.del], ['y', S.space]];
@@ -677,6 +733,7 @@ export function playground(d: Deps) {
     },
     exit() {
       shown = pivot.visible = false;
+      if (mode === 'light') d.hour(null);
     },
     get shown() {
       return shown;
