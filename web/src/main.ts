@@ -100,9 +100,9 @@ if (theme.sky) {
     rim.intensity = RIM * s.keyScale;
     sky.intensity = SKY * s.skyScale;
     // by night: locked phones' wireframe and the button discs' rims lift off the field, the glow drops
-    lockedEdge(l.night ? '#4a505c' : '#000000');
-    ink.ring = l.night ? '#ffffff38' : '';
-    glowNight = l.night ? 0.45 : 1;
+    lockedEdge(l.dark ? '#4a505c' : '#000000');
+    ink.ring = l.dark ? '#ffffff38' : '';
+    glowNight = l.dark ? 0.45 : 1;
   };
   relight();
   setInterval(relight, 60_000);
