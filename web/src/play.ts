@@ -3,12 +3,12 @@ import * as THREE from 'three';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import theme from './theme';
-import { dropImport, exportStl, FEATURED, featuredPiece, featuredSolid, IMPORT, keepImport, loadMy, MY, partSolid, pieceMatrix, saveMy, type Piece, type Shape } from './cases';
+import { dropImport, exportStl, FEATURED, IMPORT, keepImport, loadMy, MY, partSolid, pieceMatrix, saveMy, type MyPart, type Piece, type Shape } from './cases';
 import * as sfx from './sound';
 import { fromHour } from './sky';
 import { rough, type Finish } from './phone';
 
-export type Key = 'a' | 'b' | 'y' | 'x' | 'l' | 'r' | 'zl' | 'zr';
+export type Key = 'a' | 'b' | 'y' | 'x' | 'l' | 'r' | 'zl' | 'zr' | 'plus';
 /** the d-pad, drawn in the bar where it steps the held piece */
 export type Dir = 'left' | 'right' | 'up' | 'down';
 type Deps = {
@@ -94,14 +94,13 @@ type Job = { pieces: Piece[]; edge: number; live: boolean; ok: (m: Mesh) => void
 export function playground(d: Deps) {
   let bench = loadBench();
   const save = () => localStorage.setItem(BENCH, JSON.stringify(bench));
-  let mode: 'browse' | 'palette' | 'held' | 'name' | 'shelf' | 'light' = 'browse';
+  // browse is the bench's pieces, shelf the parts to add; menu holds what acts on the whole bench and goes back to where it opened
+  let mode: 'browse' | 'menu' | 'held' | 'name' | 'shelf' | 'light' = 'browse';
+  let from: 'browse' | 'shelf' = 'browse';
   let hour = 9; // light: the hour pinned on the field
   let sel = 0; // browse: the pieces, then the actions
-  let row = 0; // palette and shelf
-  let deep = false; // the palette's Featured list is open
-  /** the palette's rows: the shapes, Featured, which opens the featured parts, and Import STL; with Featured open, its parts */
-  const palRows = (): ({ shape: Shape } | { f: (typeof FEATURED)[number] } | 'featured' | 'import')[] =>
-    deep ? FEATURED.map((f) => ({ f })) : [...SHAPES.map((shape) => ({ shape })), 'featured', 'import'];
+  let row = 0; // shelf
+  let item = 0; // menu
   let key = [0, 0]; // name: the keyboard's column and row
   let typed = '';
   let oops = false; // the last import was no closed solid; the title says so until the next key
@@ -168,37 +167,30 @@ export function playground(d: Deps) {
   pivot.visible = false;
   d.scene.add(pivot);
 
-  // Shapes and Shelf: the picked row's part stands large and turning in the bed's place, sliding in from the list's side on each move, as the console's save browser brings an icon forward
-  const show = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: theme.case.color, roughness: 0.45, transparent: true }));
-  show.layers.set(1);
-  const tip = new THREE.Group().add(show);
-  tip.rotation.x = -Math.PI / 2; // parts are z-up
-  const stand = new THREE.Group().add(tip);
-  stand.visible = false;
-  d.scene.add(stand);
-  let showing = '';
-  let showAt = 0;
-  /** the picked row's part: an id, how to get its mesh, and a shape's size as it lands on the bed */
-  function picked(): [string, () => Promise<THREE.BufferGeometry>, number[]?] | null {
-    if (mode === 'palette') {
-      const r = palRows()[row];
-      if (typeof r !== 'object') return null;
-      if ('shape' in r) return [r.shape, async () => UNIT[r.shape], SIZES[r.shape].map((v) => v / 2)];
-      const f = r.f;
-      return [f.slug, () => featuredSolid(f.slug).then(() => stlGeo(IMPORT + f.slug))];
-    }
-    return null;
+  // Shelf: the shapes, the featured parts and the saved ones as a memory card's game data, small icons in a grid that pop in one by one, shown all or one kind (L R);
+  // the picked one rocks over a glow and names itself in the title; A puts it on the bench, X on a saved part brings it forward large beside its Open and Delete, Delete asks first
+  type Cat = 'all' | 'shapes' | 'featured' | 'mine';
+  const CATS: Cat[] = ['all', 'shapes', 'featured', 'mine'];
+  let cat: Cat = 'all';
+  type Entry = { key: string; name: string; shape?: Shape; my?: MyPart };
+  /** the shelf's parts in the shown kind; all is every kind in turn */
+  function entries(): Entry[] {
+    const my = Object.entries(loadMy()).map(([key, m]): Entry => ({ key, name: m.name, my: m }));
+    const by: Record<Exclude<Cat, 'all'>, Entry[]> = {
+      shapes: SHAPES.map((shape) => ({ key: shape, name: S[shape], shape })),
+      featured: my.filter((e) => e.my!.featured),
+      mine: my.filter((e) => !e.my!.featured),
+    };
+    return cat === 'all' ? [...by.shapes, ...by.featured, ...by.mine] : by[cat];
   }
-
-  // Shelf: the saved parts as a memory card's game data, small turning icons in rows that pop in one by one; the picked one rocks over a glow
-  // and names itself in the title; A brings it forward large and turning beside its Open and Delete, Delete asks first
+  let stock: Entry[] = []; // the shelf's parts as shown, one per icon
   type Icon = { key: string; holder: THREE.Group; mesh: THREE.Mesh; big: number; born: number; at: THREE.Vector3 };
   // every icon one pose: leaning back LEAN to show its depth, turned YAW to show its side
   const LEAN = 0.35;
   const YAW = 0.3;
   let icons: Icon[] = [];
   let card = 0; // shelf: 0 the icons, 1 the picked part's actions, 2 its delete asked
-  let act = 0; // card 1: Open, Delete
+  let opt = 0; // card 1: Open, Delete
   let yes = false; // card 2
   let cols = 3; // icons across the shelf's run
   let scroll = 0; // the shelf's first line in view, eased to aimScroll
@@ -207,7 +199,9 @@ export function playground(d: Deps) {
   let cellPx = 100; // one icon line, in screen pixels
   let tall = false; // portrait: the shelf runs sideways under the bed, else down beside it
   const COL = 0.62; // landscape: the right column's left edge, in view widths; style.css places the list and bar on it
-  let shelfTop = 0.5; // landscape: the shelf's top, in view heights, eased: under the list, or the list's place once opened
+  let shelfTop = 0.5; // landscape: the shelf's top, in view heights, eased under the list and its kinds row
+  /** a shelf icon dragged by mouse or finger, at a screen point in view fractions -1 to 1; out once it has left the shelf for the bed */
+  let carry: { i: number; x: number; y: number; out: boolean } | null = null;
   let zoom = 1.3; // the bed's size: ZL ZR, the wheel or a pinch; it opens zoomed in
   let rise = 0; // the bed's height on screen, in view heights: R3 then the right stick, shift or right drag, two fingers
   let stickRises = false; // R3 swaps the right stick between turning the bed and raising it
@@ -218,7 +212,7 @@ export function playground(d: Deps) {
   /** scroll just enough to keep the picked icon's line in view */
   const follow = () => (aimScroll = clamp(clamp(aimScroll, lineOf(row) - inView + 1, lineOf(row)), 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0)));
   /** is a screen point, in fractions 0 to 1, over the shelf rather than the bed */
-  /** the shelf stands beside the bench in landscape too, unpicked; portrait has no room under the bench's list */
+  /** the shelf stands under the bench's list in landscape, unpicked too; portrait has no room under the list, so it shows only picked */
   const shelfOn = () => mode === 'shelf' || (mode === 'browse' && !tall);
   const onShelf = (x: number, y: number) => shelfOn() && !card && (tall ? y > 0.56 : x > COL && y > shelfTop);
   /** the wheel or a drag over the shelf scrolls it, by pixels along its run */
@@ -253,9 +247,16 @@ export function playground(d: Deps) {
   const dot = glowSprite(1, 0.35);
   for (const s of [halo, dot]) s.layers.set(1), shelfRoot.add(s);
   /** builds the icons from the saved parts, row and card back on the first */
+  /** a shape as it lands on the bed, for its icon */
+  function shapeGeo(k: Shape) {
+    const g = UNIT[k].clone().scale(SIZES[k][0] / 2, SIZES[k][1] / 2, SIZES[k][2] / 2);
+    g.computeBoundingBox();
+    return g;
+  }
   function fillShelf() {
     for (const it of icons) shelfRoot.remove(it.holder);
-    icons = shelf().map(([key], i) => {
+    stock = entries();
+    icons = stock.map(({ key, shape }, i) => {
       const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: d.finish.body, roughness: rough(d.finish, 0.35), metalness: 0.05, transparent: true, opacity: 0 }));
       mesh.layers.set(1);
       const orient = new THREE.Group().add(mesh);
@@ -265,7 +266,7 @@ export function playground(d: Deps) {
       holder.visible = false;
       shelfRoot.add(holder);
       const it: Icon = { key, holder, mesh, big: 0, born: now + 0.2 + i * 0.08, at: new THREE.Vector3() };
-      stlGeo(key).then(
+      (shape ? Promise.resolve(shapeGeo(shape)) : stlGeo(key)).then(
         (g) => {
           mesh.geometry = g;
           mesh.position.copy(g.boundingBox!.getCenter(new THREE.Vector3()).negate());
@@ -301,14 +302,14 @@ export function playground(d: Deps) {
     const w = h * d.camera.aspect;
     // icon size and spacing measured off the console's browser (Reference/screens/ps2), in view heights: 0.2 apart, an icon 0.19 at its largest side.
     // Landscape: 2 across at the right edge, clear of the bench's list, running down, 3 lines in view. Portrait: 2 rows under the bed, 2 in view, running sideways
-    // Landscape: under the list in its column, rising into the list's place once opened; lines in view are what fits above the bar
+    // Landscape: under the list in its column, rising as the list shortens; lines in view are what fits above the bar
     cols = 2;
     const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.2 * h, ((0.96 - COL) * w) / 2.1);
     const k = still.matches ? 1 : 1 - Math.exp(-8 * dt);
     if (!pt) {
-      const list = document.getElementById('parts')!.getBoundingClientRect();
+      const rows = document.getElementById('parts')!.getBoundingClientRect();
       const floor = (document.querySelector('footer')?.getBoundingClientRect().top ?? innerHeight) / innerHeight - 0.02;
-      const want = mode === 'shelf' ? 0.18 : list.bottom / innerHeight + 0.04;
+      const want = rows.bottom / innerHeight + 0.03;
       shelfTop += (want - shelfTop) * k;
       inView = Math.max(1, Math.floor(((floor - want) * h) / (cell * 1.05)));
     } else inView = 2;
@@ -323,7 +324,7 @@ export function playground(d: Deps) {
       const across = i % cols;
       const fore = card > 0 && on;
       const spot = pt
-        ? new THREE.Vector3((v - (inView - 1) / 2) * cell, -0.12 * h - across * cell * 1.05, -DIST)
+        ? new THREE.Vector3((v - (inView - 1) / 2) * cell, -0.07 * h - across * cell * 1.05, -DIST)
         : new THREE.Vector3((COL - 0.5) * w + cell / 2 + across * cell * 1.1, (0.5 - shelfTop) * h - cell / 2 - v * cell * 1.05, -DIST);
       // the pop: overshoots, then settles, as the cards page's icons do
       const p = clamp((t - it.born) / 0.3, 0, 1);
@@ -333,7 +334,9 @@ export function playground(d: Deps) {
       const size = fore ? (0.3 * h) / it.big : (icon * (it.big / biggest()) ** SPREAD) / it.big;
       // every part centred in its cell, so the cells read as a grid and the highlight sits the same on each
       it.at.copy(d.camera.position).add(spot);
-      it.holder.position.lerp(fore ? pivot.position.clone() : it.at, k);
+      // a carried icon rides under the pointer
+      const to = carry?.out && carry.i === i ? d.camera.position.clone().add(new THREE.Vector3((carry.x * w) / 2, (carry.y * h) / 2, -DIST)) : fore ? pivot.position.clone() : it.at;
+      it.holder.position.lerp(to, carry?.i === i ? 1 : k);
       it.holder.scale.setScalar(THREE.MathUtils.lerp(it.holder.scale.x || size, size, k) * (fore ? 1 : grow));
       it.holder.rotation.set(0, fore ? (still.matches ? YAW : t * 0.6) : YAW + (on && card === 0 && mode === 'shelf' && !still.matches ? 0.25 * Math.sin(t * 1.6) : 0), 0);
       const m = it.mesh.material as THREE.MeshStandardMaterial;
@@ -361,11 +364,14 @@ export function playground(d: Deps) {
   /** a tap on the shelf, in view fractions -1 to 1: an icon picks, the picked one is A */
   const tapRay = new THREE.Raycaster();
   tapRay.layers.set(1);
-  function tap(x: number, y: number) {
-    if (!shelfOn() || card) return;
+  const iconAt = (x: number, y: number) => {
     tapRay.setFromCamera(new THREE.Vector2(x, y), d.camera);
     const hit = tapRay.intersectObjects(icons.map((it) => it.mesh))[0];
-    const i = icons.findIndex((it) => it.mesh === hit?.object);
+    return icons.findIndex((it) => it.mesh === hit?.object);
+  };
+  function tap(x: number, y: number) {
+    if (!shelfOn() || card) return;
+    const i = iconAt(x, y);
     if (i < 0) return;
     if (mode !== 'shelf') mode = 'shelf';
     else if (i === row) return press('a');
@@ -373,6 +379,61 @@ export function playground(d: Deps) {
     follow();
     sfx.tick();
     d.paint();
+  }
+
+  // drag and drop, in view fractions -1 to 1: a press on an icon lifts it, leaving the shelf carries it, letting go over the bed puts it where it lands
+  /** true when the press took an icon */
+  function lift(x: number, y: number) {
+    if (!shelfOn() || card || mode === 'held') return false;
+    const i = iconAt(x, y);
+    if (i < 0) return false;
+    carry = { i, x, y, out: false };
+    return true;
+  }
+  /** true while the icon is carried, so the drag neither scrolls the shelf nor turns the bed */
+  function carryTo(x: number, y: number) {
+    if (!carry) return false;
+    Object.assign(carry, { x, y });
+    if (!carry.out && !onShelf((x + 1) / 2, (1 - y) / 2)) {
+      carry.out = true;
+      row = carry.i;
+      sfx.tick();
+    }
+    return carry.out;
+  }
+  /** no point: the drag was cancelled, the icon goes home */
+  function drop(x?: number, y?: number) {
+    const c = carry;
+    carry = null;
+    if (x === undefined || y === undefined || !c?.out || !stock[c.i]) return;
+    // back over the shelf: nothing moves
+    if (onShelf((x + 1) / 2, (1 - y) / 2)) return sfx.cancel();
+    tapRay.setFromCamera(new THREE.Vector2(x, y), d.camera);
+    const hit = tapRay.intersectObject(plate)[0];
+    const at = hit ? world.worldToLocal(hit.point.clone()) : new THREE.Vector3();
+    place(stock[c.i], [clamp(Math.round(at.x), -BED / 2, BED / 2), clamp(Math.round(at.y), -BED / 2, BED / 2)]);
+    d.paint();
+  }
+
+  /** a shelf part onto the bench: a shape or a one-piece part in hand to move, a part of several pieces set down whole with its first picked; at, a bed point in mm, sets it down there */
+  function place(e: Entry, at?: [number, number]) {
+    sfx.confirm();
+    const ps = e.shape ? [fresh(e.shape)] : e.my!.pieces.map(copy);
+    if (at) for (const p of ps) (p.pos[0] += at[0]), (p.pos[1] += at[1]);
+    if (ps.length === 1 && !at) return add(ps[0]);
+    sel = bench.pieces.length;
+    bench.pieces.push(...ps);
+    mode = 'browse';
+    syncGhosts();
+    if (ps.length === 1) {
+      // set down on what is under it
+      grab(sel, null);
+      held!.lift = 0;
+      ride();
+      held = null;
+      mode = 'browse';
+    }
+    solve();
   }
 
   /** a piece's ghost: its shape, sized and placed; an stl piece's waits for its mesh */
@@ -543,13 +604,33 @@ export function playground(d: Deps) {
     saveMy({ ...my, [ref]: { name, version: (my[ref]?.version ?? 0) + 1, pieces: bench.pieces.map(copy) } });
   }
 
-  type Act = 'shapes' | 'import' | 'save' | 'shelf' | 'export' | 'light';
-  // Light only where the theme lights by the hour
-  const ACTS: Act[] = ['shapes', 'import', 'save', 'shelf', 'export', ...(theme.sky ? (['light'] as const) : [])];
-  const actName: Record<Act, string> = { shapes: S.shapes, import: S.importStl, save: S.savePart, shelf: S.shelf, export: S.exportStl, light: S.light };
-  const rowsN = () => bench.pieces.length + ACTS.length;
-  const actOf = (i: number): Act | undefined => ACTS[i - bench.pieces.length];
-  const shelf = () => Object.entries(loadMy());
+  // the menu: what acts on the whole bench; Light only where the theme lights by the hour
+  type Act = 'import' | 'save' | 'export' | 'light';
+  const ACTS: Act[] = ['import', 'save', 'export', ...(theme.sky ? (['light'] as const) : [])];
+  const actName: Record<Act, string> = { import: S.importStl, save: S.savePart, export: S.exportStl, light: S.light };
+  /** what a menu row does; false when there is nothing for it to act on */
+  function act(a: Act) {
+    if ((a === 'save' || a === 'export') && !bench.pieces.length) return false;
+    mode = from;
+    if (a === 'import') file.click();
+    else if (a === 'light') {
+      const t = new Date();
+      hour = Math.round((t.getHours() + t.getMinutes() / 60) * 2) / 2 % 24;
+      mode = 'light';
+      d.hour(hour);
+    } else if (a === 'save') {
+      mode = 'name';
+      typed = bench.name.slice(0, NAME);
+      key = [KEYS[3].length - 1, 3];
+    } else
+      void solveWith(bench.pieces, false).then(
+        (m) => exportStl(geometry(m), `${slug(bench.name)}.stl`),
+        () => sfx.cancel(),
+      );
+    return true;
+  }
+  /** the bench, or with nothing on it the shelf */
+  const home = () => (bench.pieces.length ? 'browse' : 'shelf');
   const pieceName = (p: Piece, i: number) =>
     p.kind === 'stl' ? (FEATURED.find((f) => IMPORT + f.slug === p.ref)?.name ?? p.ref!.slice(IMPORT.length).replace(/-[a-z0-9]+$/, '')) : `${S[p.kind]} ${i + 1}`;
 
@@ -608,6 +689,13 @@ export function playground(d: Deps) {
       zoomBy(k === 'zr' ? 1.15 : 1 / 1.15);
       return sfx.tick();
     }
+    // + opens the menu from the bench or the shelf, and shuts it
+    if (k === 'plus') {
+      if (mode === 'menu') (mode = from), sfx.cancel();
+      else if ((mode === 'browse' || mode === 'shelf') && !card) (from = mode), (mode = 'menu'), (item = 0), sfx.confirm();
+      else return;
+      return d.paint();
+    }
     if (mode === 'held') {
       const h = held!, p = bench.pieces[h.i];
       if (k === 'a') {
@@ -619,9 +707,9 @@ export function playground(d: Deps) {
         sfx.cancel();
         if (h.from) bench.pieces[h.i] = h.from;
         else bench.pieces.splice(h.i, 1);
-        sel = clamp(sel, 0, rowsN() - 1);
+        sel = clamp(sel, 0, bench.pieces.length - 1);
         held = null;
-        mode = 'browse';
+        mode = home();
         syncGhosts();
         solve();
       } else if (k === 'y') {
@@ -638,47 +726,39 @@ export function playground(d: Deps) {
         solve();
       } else if (!nudge(0, 0, k === 'zr' ? 1 : -1)) return sfx.cancel();
       else sfx.tick();
-    } else if (mode === 'palette') {
-      const r = palRows()[row];
-      if (k === 'a' && r === 'featured') {
-        sfx.confirm();
-        deep = true;
-        row = 0;
-      } else if (k === 'a' && r === 'import') {
-        sfx.confirm();
-        mode = 'browse';
-        file.click();
-      } else if (k === 'a' && typeof r === 'object') {
-        sfx.confirm();
-        if ('shape' in r) add(fresh(r.shape));
-        else {
-          const f = r.f;
-          mode = 'browse';
-          featuredSolid(f.slug).then(
-            (s) => (add(featuredPiece(f.slug, s)), d.paint()),
-            () => ((oops = true), sfx.cancel(), d.paint()),
-          );
-        }
-      } else if (k === 'b') {
-        sfx.cancel();
-        // the featured list goes back to its row in the palette, the palette to the bench
-        if (deep) (deep = false), (row = SHAPES.length);
-        else mode = 'browse';
-      } else return;
+    } else if (mode === 'menu') {
+      if (k === 'b') (mode = from), sfx.cancel();
+      else if (k !== 'a') return;
+      else if (!act(ACTS[item])) return sfx.cancel();
+      else sfx.confirm();
     } else if (mode === 'shelf') {
-      const s = shelf()[row];
+      const s = stock[row];
       if (k === 'b') {
-        sfx.cancel();
-        if (card) card--;
-        else mode = 'browse';
-      } else if (k !== 'a' || !s) return;
-      else if (card === 0) {
+        if (card) sfx.cancel(), card--;
+        else if (bench.pieces.length) sfx.cancel(), (mode = 'browse');
+        else return d.leave();
+      } else if (!card && k === 'y') {
+        if (!bench.pieces.length) return sfx.cancel();
+        sfx.tick();
+        mode = 'browse';
+      } else if (!card && (k === 'l' || k === 'r')) {
+        // the shown kind steps round
+        sfx.tick();
+        cat = CATS[(CATS.indexOf(cat) + (k === 'r' ? 1 : CATS.length - 1)) % CATS.length];
+        row = 0;
+        aimScroll = 0;
+        fillShelf();
+      } else if (!s) return;
+      else if (!card && k === 'a') place(s);
+      else if (!card && k === 'x') {
+        if (!s.my) return sfx.cancel();
         sfx.confirm();
         card = 1;
-        act = 0;
-      } else if (card === 1 && act === 0) {
+        opt = 0;
+      } else if (k !== 'a' || !s.my) return;
+      else if (card === 1 && opt === 0) {
         sfx.confirm();
-        bench = { name: s[1].name, pieces: s[1].pieces.map(copy) };
+        bench = { name: s.name, pieces: s.my.pieces.map(copy) };
         sel = 0;
         mode = 'browse';
         syncGhosts();
@@ -693,9 +773,9 @@ export function playground(d: Deps) {
       } else {
         sfx.confirm();
         const my = loadMy();
-        delete my[s[0]];
+        delete my[s.key];
         saveMy(my);
-        dropImport(s[0]).catch(() => {});
+        dropImport(s.key).catch(() => {});
         fillShelf();
       }
     } else if (mode === 'light') {
@@ -718,39 +798,16 @@ export function playground(d: Deps) {
       const p = bench.pieces[sel];
       if (k === 'b') return d.leave();
       if (k === 'y') {
-        sfx.confirm();
-        mode = 'palette';
-        row = 0;
-        deep = false;
+        sfx.tick();
+        mode = 'shelf';
       } else if (k === 'a' && p) {
         sfx.confirm();
         grab(sel, copy(p));
-      } else if (k === 'a') {
-        const a = actOf(sel)!;
-        if (a !== 'import' && a !== 'shapes' && a !== 'shelf' && a !== 'light' && !bench.pieces.length) return sfx.cancel();
-        sfx.confirm();
-        if (a === 'shapes') (mode = 'palette'), (row = 0), (deep = false);
-        else if (a === 'import') file.click();
-        else if (a === 'shelf') (mode = 'shelf'), (row = 0), fillShelf();
-        else if (a === 'light') {
-          const t = new Date();
-          hour = Math.round((t.getHours() + t.getMinutes() / 60) * 2) / 2 % 24;
-          mode = 'light';
-          d.hour(hour);
-        }
-        else if (a === 'save') {
-          mode = 'name';
-          typed = bench.name.slice(0, NAME);
-          key = [KEYS[3].length - 1, 3];
-        } else
-          void solveWith(bench.pieces, false).then(
-            (m) => exportStl(geometry(m), `${slug(bench.name)}.stl`),
-            () => sfx.cancel(),
-          );
       } else if (k === 'x' && p) {
         sfx.cancel();
         bench.pieces.splice(sel, 1);
-        sel = clamp(sel, 0, rowsN() - 1);
+        sel = clamp(sel, 0, bench.pieces.length - 1);
+        mode = home();
         syncGhosts();
         solve();
       } else if (k === 'l' && p) {
@@ -792,25 +849,32 @@ export function playground(d: Deps) {
         if (!dx && !dy) return;
         yes = !yes;
       } else if (card === 1) {
-        const n = clamp(act + dy, 0, 1);
-        if (n === act) return;
-        act = n;
+        const n = clamp(opt + dy, 0, 1);
+        if (n === opt) return;
+        opt = n;
       } else {
         // along the run steps a line, across it steps within one
         const [along, across] = tall ? [dx, dy] : [dy, dx];
         const n = row + across + along * cols;
-        if (n < 0 || n >= icons.length || (across && lineOf(n) !== lineOf(row))) return;
-        row = n;
-        follow();
+        if (n < 0 || n >= icons.length || (across && lineOf(n) !== lineOf(row))) {
+          // up off the shelf's top goes to the bench's list over it
+          if (dy >= 0 || !bench.pieces.length) return;
+          sel = bench.pieces.length - 1;
+          mode = 'browse';
+        } else {
+          row = n;
+          follow();
+        }
       }
-    } else if (mode === 'palette') {
-      const n = clamp(row + dy, 0, palRows().length - 1);
-      if (!dy || n === row) return;
-      row = n;
+    } else if (mode === 'menu') {
+      const n = clamp(item + dy, 0, ACTS.length - 1);
+      if (!dy || n === item) return;
+      item = n;
     } else if (dy) {
-      const n = clamp(sel + dy, 0, rowsN() - 1);
-      if (n === sel) return;
-      sel = n;
+      // down off the list's end goes to the shelf under it
+      if (sel + dy >= bench.pieces.length) mode = 'shelf';
+      else if (sel + dy < 0) return;
+      else sel += dy;
     } else {
       // ← → on a piece swaps join and cut
       const p = bench.pieces[sel];
@@ -867,36 +931,12 @@ export function playground(d: Deps) {
     const up = pt && mode === 'shelf' && !card;
     pivot.position.y += (up ? 0.08 : 0) * h + rise * h;
     // an empty bed has nothing on it to frame, so it draws bigger
-    // landscape's bed already spans its half, so it grows less
-    fill += ((bench.pieces.length || showing ? 1 : pt ? 1.3 : 1.1) - fill) * k;
+    // landscape's bed already spans its half, so it grows less; portrait's shelf needs the room
+    fill += ((bench.pieces.length || up ? 1 : pt ? 1.3 : 1.1) - fill) * k;
     pivot.scale.setScalar((pt ? (up ? 0.5 : 0.65) : 1) * zoom * fill);
-    const want = picked();
-    const id = want ? `${mode}/${want[0]}` : '';
-    if (id !== showing) {
-      showing = id;
-      stand.visible = false;
-      want?.[1]().then(
-        (g) => {
-          if (showing !== id) return;
-          show.geometry = g;
-          show.scale.fromArray(want[2] ?? [1, 1, 1]);
-          show.position.copy(g.boundingBox!.getCenter(new THREE.Vector3()).negate().multiply(show.scale));
-          stand.visible = true;
-          showAt = now;
-        },
-        () => {},
-      );
-    }
-    // the bed steps aside while a part is shown
-    world.visible = !showing && !(mode === 'shelf' && card);
+    // the bed steps aside while a saved part is brought forward
+    world.visible = !(mode === 'shelf' && card);
     shelfFrame(t, dt, h, pt);
-    if (stand.visible) {
-      const e = 1 - (1 - clamp((t - showAt) / 0.25, 0, 1)) ** 3;
-      stand.position.copy(pivot.position).add(new THREE.Vector3((1 - e) * 0.25 * h, 0, 0));
-      stand.rotation.set(0.35, t * 0.6, 0);
-      stand.scale.setScalar((0.45 * h) / show.geometry.boundingBox!.getSize(new THREE.Vector3()).multiply(show.scale).length());
-      (show.material as THREE.MeshStandardMaterial).opacity = e;
-    }
     // the part pops when a solve lands
     const pop = popAt >= 0 ? clamp((t - popAt) / 0.25, 0, 1) : 1;
     body.scale.setScalar(1 + 0.035 * Math.sin(Math.PI * pop));
@@ -947,18 +987,32 @@ export function playground(d: Deps) {
     const list = (names: string[], at: number, set: (i: number) => void) =>
       names.map((s, i): [HTMLElement, boolean] => [li(button(s, i === at, pick(i === at, () => set(i)))), i === at]);
     if (mode === 'light') return [title(S.light), [li(d.ink('p', `${hhmm(hour)}  ${fromHour(hour).night ? S.moon : S.sun}`, 'read')), false]];
-    if (mode === 'palette')
+    if (mode === 'menu')
       return [
-        title(deep ? S.featured : S.shapes),
-        ...list(palRows().map((r) => (r === 'featured' ? `${S.featured}  ${FEATURED.length}` : r === 'import' ? S.importStl : 'shape' in r ? S[r.shape] : r.f.name)), row, (i) => (row = i)),
+        title(S.menu),
+        // Save and Export dim with nothing on the bench
+        ...list(ACTS.map((a) => actName[a]), item, (i) => (item = i)).map(([l, on], i): [HTMLElement, boolean] => {
+          if ((ACTS[i] === 'save' || ACTS[i] === 'export') && !bench.pieces.length) l.classList.add('off');
+          return [l, on];
+        }),
       ];
+    // the shelf's kinds, the shown one marked; a tap shows another
+    const tabs = document.createElement('div');
+    tabs.append(
+      ...CATS.map((c) => {
+        const b = button(S[c], c === cat, () => c !== cat && (sfx.tick(), (cat = c), (row = 0), (aimScroll = 0), fillShelf(), d.paint()), 'kind');
+        b.setAttribute('aria-pressed', `${c === cat}`);
+        return b;
+      }),
+    );
+    const kinds: [HTMLElement, boolean] = [li(tabs, 'kinds'), false];
     if (mode === 'shelf') {
-      const m = shelf()[row]?.[1];
-      if (!m) return [title(S.shelf), [li(d.ink('p', S.shelfEmpty)), false]];
+      const m = stock[row];
+      if (!m) return [kinds, [li(d.ink('p', S.shelfEmpty)), false]];
       // the icons are the list; a screen reader hears the picked one's name
-      if (!card) return [[li(Object.assign(document.createElement('p'), { className: 'sr', textContent: m.name })), false]];
-      const head: [HTMLElement, boolean][] = [title(m.name), [li(d.ink('p', `v${m.version}`, 'read')), false]];
-      if (card === 1) return [...head, ...list([S.open, S.delete], act, (i) => (act = i))];
+      if (!card) return [kinds, [li(Object.assign(document.createElement('p'), { className: 'sr', textContent: m.name })), false]];
+      const head: [HTMLElement, boolean][] = [title(m.name), [li(d.ink('p', `v${m.my!.version}`, 'read')), false]];
+      if (card === 1) return [...head, ...list([S.open, S.delete], opt, (i) => (opt = i))];
       return [...head, [li(d.ink('p', S.sure)), false], ...list([S.yes, S.no], yes ? 0 : 1, (i) => (yes = i === 0))];
     }
     if (mode === 'name') {
@@ -1000,11 +1054,8 @@ export function playground(d: Deps) {
       );
       return [l, on];
     });
-    const n = bench.pieces.length;
-    return [
-      ...P,
-      ...ACTS.map((a, i): [HTMLElement, boolean] => [li(button(actName[a], n + i === sel, pick(n + i === sel, () => (sel = n + i))), i ? 'act' : 'act first'), n + i === sel]),
-    ];
+    // landscape shows the shelf under the list, so its kinds row heads it
+    return tall ? P : [...P, kinds];
   }
 
   // every key the mode takes has a button: the bar is the touch and mouse way to each; a third word names a group of marks for a screen reader in place of its label
@@ -1016,40 +1067,54 @@ export function playground(d: Deps) {
         ['l', ''], ['r', S.spin], ['zl', ''], ['zr', TOOLS[held!.tool] === 'size' ? S.size : S.lift],
       ];
     if (mode === 'light') return [['left', ''], ['up', ''], ['down', ''], ['right', hhmm(hour), S.light], ['b', S.back]];
-    if (mode === 'palette') return [['a', typeof palRows()[row] === 'object' ? S.add : S.open], ['b', S.back]];
-    if (mode === 'shelf') return card ? [['a', card === 1 ? (act ? S.delete : S.open) : yes ? S.yes : S.no], ['b', S.close]] : [...(icons.length ? [['a', S.enter] as [Key, string]] : []), ['b', S.back], ['zl', ''], ['zr', S.zoom]];
+    if (mode === 'menu') return [['a', S.open], ['b', S.close]];
+    if (mode === 'shelf') {
+      if (card) return [['a', card === 1 ? (opt ? S.delete : S.open) : yes ? S.yes : S.no], ['b', S.close]];
+      const s = stock[row];
+      return [
+        ...(s ? [['a', S.add] as [Key, string]] : []),
+        ['b', S.back],
+        ...(s?.my ? [['x', S.options] as [Key, string]] : []),
+        ...(bench.pieces.length ? [['y', S.bench] as [Key, string]] : []),
+        ['l', ''], ['r', S.category], ['plus', S.menu],
+      ];
+    }
     if (mode === 'name') return [['a', S.type], ['b', S.cancel], ['x', S.del], ['y', S.space]];
     const p = bench.pieces[sel];
     return p
-      ? [['a', S.grab], ['b', S.back], ['x', S.remove], ['y', S.shapes], ['l', S.dup], ['r', S.mirror]]
-      : [['a', S.enter], ['b', S.back], ['y', S.shapes], ['zl', ''], ['zr', S.zoom]];
+      ? [['a', S.grab], ['b', S.back], ['x', S.remove], ['y', S.shelf], ['l', S.dup], ['r', S.mirror], ['plus', S.menu]]
+      : [['b', S.back], ['y', S.shelf], ['plus', S.menu]];
   }
 
   return {
     enter() {
       shown = pivot.visible = true;
-      mode = 'browse';
       held = null;
-      sel = clamp(sel, 0, rowsN() - 1);
+      carry = null;
+      mode = home();
+      sel = clamp(sel, 0, Math.max(bench.pieces.length - 1, 0));
       fillShelf();
       syncGhosts();
       solve();
     },
     exit() {
-      shown = pivot.visible = stand.visible = shelfRoot.visible = false;
-      showing = '';
+      shown = pivot.visible = shelfRoot.visible = false;
+      carry = null;
       if (mode === 'light') d.hour(null);
     },
     get shown() {
       return shown;
     },
     title: (): [string, string] =>
-      mode === 'shelf' && card === 0 && icons[row] ? [shelf()[row]?.[1].name ?? S.shelf, S.shelf] : [mode === 'name' ? S.savePart : S.play, oops ? S.notSolid : running || queue.length ? S.loading : bench.name || (bench.pieces.length ? '' : S.emptyBench)],
+      mode === 'shelf' && card === 0 && stock[row] ? [stock[row].name, S.shelf] : [mode === 'name' ? S.savePart : S.play, oops ? S.notSolid : running || queue.length ? S.loading : bench.name || (bench.pieces.length ? '' : S.emptyBench)],
     press,
     move,
     type,
     drag,
     tap,
+    lift,
+    carryTo,
+    drop,
     zoomBy,
     /** R3: the right stick turns the bed, or raises it */
     stickSwap: () => ((stickRises = !stickRises), sfx.tick()),

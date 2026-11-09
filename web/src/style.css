@@ -81,7 +81,12 @@ body:not([data-view=detail]) #detail > p { display: none; }
 #parts .moved .name:not(.on) { color: var(--title); }
 #parts .group { min-height: 0; margin-top: .5em; font-size: .78em; letter-spacing: .08em; text-transform: uppercase; color: var(--title); opacity: .75; }
 #parts .more { flex: 1; justify-content: center; color: var(--more); font-size: .7em; }
-#parts .act.first { margin-top: .5em; }
+/* the playground shelf's kinds: the shown one in the title colour, the rest dim */
+#parts .off { opacity: .35; }
+#parts .kinds { margin-top: .5em; }
+#parts .kinds div { display: flex; gap: 1.1em; }
+#parts .kind { color: var(--dim); }
+#parts .kind.on { color: var(--title); }
 /* the playground's naming keyboard */
 #parts .key { min-width: 1.7em; justify-content: center; }
 @media (min-aspect-ratio: 1/1) {

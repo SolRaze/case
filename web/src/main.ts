@@ -672,6 +672,8 @@ const glyph = {
   r: disc('<path d="M8 18V6H13A3.2 3.2 0 0 1 13 12.4H8M12.6 12.4 16.4 18"/>', theme.buttons.y),
   zl: disc('<path stroke-width="2" d="M4 7H10L4 17H10M13.5 7V17H19.5"/>', theme.buttons.y),
   zr: disc('<path stroke-width="2" d="M4 7H10L4 17H10M13.5 17V7H17.3A2.7 2.7 0 0 1 17.3 12.4H13.5M17 12.4 20 17"/>', theme.buttons.y),
+  // + or Start: the playground's menu
+  plus: disc('<path d="M12 6.5V17.5M6.5 12H17.5"/>', theme.buttons.y),
   // the d-pad, drawn as chevrons
   left: disc('<path d="M14.5 7 9.5 12 14.5 17"/>', theme.buttons.y),
   right: disc('<path d="M9.5 7 14.5 12 9.5 17"/>', theme.buttons.y),
@@ -1505,6 +1507,8 @@ function command(k: Press) {
 function press(k: Press) {
   if (busy || flip) return;
   if (view === 'play') return play.press(k);
+  // + belongs to the playground alone
+  if (k === 'plus') return;
   if (view === 'boot') {
     if (menu) return command(k);
     if (k === 'x') {
@@ -1822,6 +1826,8 @@ addEventListener('keydown', (e) => {
     l: () => press('l'),
     r: () => press('r'),
     m: sfx.toggleMute,
+    '+': () => press('plus'),
+    '=': () => press('plus'),
     '-': resetMove,
     z: () => {
       if (view !== 'edit' || !draft || moving || adding || !undo()) return sfx.cancel();
@@ -1884,10 +1890,13 @@ function pad(now: number, dt: number) {
   const b = (i: number) => !!p.buttons[i]?.pressed;
   const [x = 0, y = 0, rx = 0, ry = 0] = p.axes;
   if (view === 'play' && Math.hypot(rx, ry) > DEAD) play.drag(rx * dt * 300, ry * dt * 300, 0, 0, play.stickRises);
-  // R3, the right stick's click, is 11 on the standard mapping and on the raw pads seen so far
+  // R3, the right stick's click, and + or Start are 11 and 9 on the standard mapping and on the raw pads seen so far
   if (b(11) && !held.has('r3') && view === 'play') play.stickSwap();
   if (b(11)) held.set('r3', now);
   else held.delete('r3');
+  if (b(9) && !held.has('plus')) press('plus');
+  if (b(9)) held.set('plus', now);
+  else held.delete('plus');
   const standard = p.mapping === 'standard';
   const [hl, hr, hu, hd] = standard ? [false, false, false, false] : hat(p.axes);
   const on: Record<string, boolean> = { left: b(14) || hl || x < -STICK, right: b(15) || hr || x > STICK, up: b(12) || hu || y < -STICK, down: b(13) || hd || y > STICK };
@@ -1932,6 +1941,8 @@ const spread = () => {
 canvas.addEventListener('pointerdown', (e) => {
   touches.set(e.pointerId, [e.clientX, e.clientY]);
   down = { x: e.clientX, y: e.clientY, last: e.clientX, lastY: e.clientY, t: e.timeStamp, v: 0 };
+  // one pointer on a playground shelf icon lifts it, for a drag onto the bed
+  if (view === 'play' && touches.size === 1) play.lift(...ndc(e));
   if ((view === 'cases' || view === 'detail') && menu < 2) {
     grab = true;
     fling = 0;
@@ -1954,6 +1965,8 @@ canvas.addEventListener('pointermove', (e) => {
     touches.set(e.pointerId, [e.clientX, e.clientY]);
     if (was > 0) play.zoomBy(spread() / was);
     play.drag(0, mid() - midWas, 0, 0, true);
+  } else if (view === 'play' && play.carryTo(...ndc(e))) {
+    // a lifted icon out over the bed rides the pointer
   } else if (view === 'play') {
     // the drag acts where it started: over the shelf it scrolls, over the bed it turns, or with shift or the right button raises it
     play.drag(e.clientX - down.last, e.clientY - down.lastY, down.x / innerWidth, down.y / innerHeight, e.shiftKey || (e.buttons & 2) > 0);
@@ -1977,11 +1990,19 @@ canvas.addEventListener('pointermove', (e) => {
     down.t = e.timeStamp;
   }
 });
-const untouch = (e: PointerEvent) => touches.delete(e.pointerId);
+/** a pointer's place in view fractions -1 to 1, y up */
+const ndc = (e: PointerEvent): [number, number] => [(e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1];
+const untouch = (e: PointerEvent) => {
+  if (view === 'play' && touches.size === 1) play.drop(...ndc(e));
+  touches.delete(e.pointerId);
+};
 // the right button drags the playground's bed up and down, so its menu stays shut there
 canvas.addEventListener('contextmenu', (e) => view === 'play' && e.preventDefault());
 canvas.addEventListener('pointerup', untouch);
-canvas.addEventListener('pointercancel', untouch);
+canvas.addEventListener('pointercancel', (e) => {
+  touches.delete(e.pointerId);
+  if (view === 'play') play.drop();
+});
 canvas.addEventListener(
   'wheel',
   (e) => {
