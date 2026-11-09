@@ -6,6 +6,7 @@ import theme from './theme';
 import { dropImport, exportStl, FEATURED, featuredPiece, featuredSolid, IMPORT, keepImport, loadMy, MY, partSolid, pieceMatrix, saveMy, type Piece, type Shape } from './cases';
 import * as sfx from './sound';
 import { fromHour } from './sky';
+import { rough, type Finish } from './phone';
 
 export type Key = 'a' | 'b' | 'y' | 'x' | 'l' | 'r' | 'zl' | 'zr';
 /** the d-pad, drawn in the bar where it steps the held piece */
@@ -18,6 +19,8 @@ type Deps = {
   ink: (tag: string, s: string, cls?: string) => HTMLElement;
   /** pins the field and lights to an hour; null hands them back to the clock */
   hour: (h: number | null) => void;
+  /** the models' finish: the shelf's parts wear its body colour and satin */
+  finish: Finish;
 };
 
 const S = theme.strings;
@@ -27,8 +30,8 @@ const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
 const still = matchMedia('(prefers-reduced-motion: reduce)');
 const MM = 0.01; // main.ts's scene unit is 100 mm
 const DIST = 7; // the bed's distance from the camera
-// mm, solder's build volume: printer.cfg stepper_x and stepper_y position_max 235, stepper_z 200
-const BED = 235;
+// mm, the bed drawn and the most a piece may move or grow; the height stays solder's stepper_z 200
+const BED = 180;
 const HEIGHT = 200;
 const GRID = 1; // mm one move or size step
 const SNAP = 2; // mm a moving piece's middle jumps onto another's, or the bed's
@@ -203,14 +206,16 @@ export function playground(d: Deps) {
   let inView = 3; // lines of icons in view
   let cellPx = 100; // one icon line, in screen pixels
   let tall = false; // portrait: the shelf runs sideways under the bed, else down beside it
-  let zoom = 1; // the bed's size: ZL ZR, the wheel or a pinch
-  const zoomBy = (f: number) => (zoom = clamp(zoom * f, 0.5, 2.5));
+  let zoom = 1.3; // the bed's size: ZL ZR, the wheel or a pinch; it opens zoomed in
+  const zoomBy = (f: number) => (zoom = clamp(zoom * f, 0.5, 3));
   /** icon i's line along the shelf's run, and its place across it */
   const lineOf = (i: number) => Math.floor(i / cols);
   /** scroll just enough to keep the picked icon's line in view */
   const follow = () => (aimScroll = clamp(clamp(aimScroll, lineOf(row) - inView + 1, lineOf(row)), 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0)));
   /** is a screen point, in fractions 0 to 1, over the shelf rather than the bed */
-  const onShelf = (x: number, y: number) => mode === 'shelf' && !card && (tall ? y > 0.56 : x > 0.5);
+  /** the shelf stands beside the bench in landscape too, unpicked; portrait has no room under the bench's list */
+  const shelfOn = () => mode === 'shelf' || (mode === 'browse' && !tall);
+  const onShelf = (x: number, y: number) => shelfOn() && !card && (tall ? y > 0.56 : x > 0.72);
   /** the wheel or a drag over the shelf scrolls it, by pixels along its run */
   const roll = (px: number) => (aimScroll = clamp(aimScroll + px / cellPx, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0)));
   const shelfRoot = new THREE.Group();
@@ -246,7 +251,7 @@ export function playground(d: Deps) {
   function fillShelf() {
     for (const it of icons) shelfRoot.remove(it.holder);
     icons = shelf().map(([key], i) => {
-      const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: theme.case.color, roughness: 0.45, transparent: true, opacity: 0 }));
+      const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: d.finish.body, roughness: rough(d.finish, 0.35), metalness: 0.05, transparent: true, opacity: 0 }));
       mesh.layers.set(1);
       const orient = new THREE.Group().add(mesh);
       const tip = new THREE.Group().add(orient);
@@ -287,15 +292,15 @@ export function playground(d: Deps) {
   const SPREAD = 0.5;
   const biggest = () => Math.max(1e-6, ...icons.map((it) => it.big));
   function shelfFrame(t: number, dt: number, h: number, pt: boolean) {
-    shelfRoot.visible = mode === 'shelf';
+    tall = pt;
+    shelfRoot.visible = shelfOn();
     if (!shelfRoot.visible) return;
     const w = h * d.camera.aspect;
     // icon size and spacing measured off the console's browser (Reference/screens/ps2), in view heights: 0.2 apart, an icon 0.19 at its largest side.
-    // Landscape: 3 across in the right half, mirroring the bed, running down, 3 lines in view. Portrait: 2 rows under the bed, running sideways
-    tall = pt;
-    cols = pt ? 2 : 3;
-    const cell = pt ? Math.min(0.2 * h, w / 3.3) : Math.min(0.25 * h, (0.46 * w) / 3);
-    inView = pt ? Math.max(Math.floor(w / cell), 1) : 3;
+    // Landscape: 2 across at the right edge, clear of the bench's list, running down, 3 lines in view. Portrait: 2 rows under the bed, 2 in view, running sideways
+    cols = 2;
+    const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.25 * h, (0.26 * w) / 2.2);
+    inView = pt ? 2 : 3;
     cellPx = (cell / h) * innerHeight;
     const icon = 0.95 * cell;
     const k = still.matches ? 1 : 1 - Math.exp(-8 * dt);
@@ -309,7 +314,7 @@ export function playground(d: Deps) {
       const fore = card > 0 && on;
       const spot = pt
         ? new THREE.Vector3((v - (inView - 1) / 2) * cell, -0.12 * h - across * cell * 1.05, -DIST)
-        : new THREE.Vector3(0.25 * w + (across - (cols - 1) / 2) * cell * 1.1, 0.24 * h - v * cell * 1.05, -DIST);
+        : new THREE.Vector3(0.35 * w + (across - (cols - 1) / 2) * cell * 1.1, 0.24 * h - v * cell * 1.05, -DIST);
       // the pop: overshoots, then settles, as the cards page's icons do
       const p = clamp((t - it.born) / 0.3, 0, 1);
       const grow = still.matches ? p && 1 : p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
@@ -320,13 +325,13 @@ export function playground(d: Deps) {
       if (!fore) spot.y += (it.tall * size - icon) / 2;
       it.holder.position.lerp(fore ? pivot.position.clone() : d.camera.position.clone().add(spot), k);
       it.holder.scale.setScalar(THREE.MathUtils.lerp(it.holder.scale.x || size, size, k) * (fore ? 1 : grow));
-      it.holder.rotation.set(0, fore ? (still.matches ? YAW : t * 0.6) : YAW + (on && card === 0 && !still.matches ? 0.25 * Math.sin(t * 1.6) : 0), 0);
+      it.holder.rotation.set(0, fore ? (still.matches ? YAW : t * 0.6) : YAW + (on && card === 0 && mode === 'shelf' && !still.matches ? 0.25 * Math.sin(t * 1.6) : 0), 0);
       const m = it.mesh.material as THREE.MeshStandardMaterial;
       const shown = card > 0 ? (on ? 1 : 0) : clamp(Math.min(v + 0.5, inView - 0.5 - v) * 2, 0, 1);
       m.opacity += (shown - m.opacity) * k;
     });
     const lit = icons[row];
-    halo.visible = dot.visible = !!lit && card === 0 && lit.holder.visible;
+    halo.visible = dot.visible = !!lit && mode === 'shelf' && card === 0 && lit.holder.visible;
     if (halo.visible) {
       // an underglow behind the picked part, rimming its outline
       const seen = Math.max(lit.big * lit.holder.scale.x, 0.7 * icon); // the part's longest side as drawn, small parts lifted
@@ -342,12 +347,13 @@ export function playground(d: Deps) {
   const tapRay = new THREE.Raycaster();
   tapRay.layers.set(1);
   function tap(x: number, y: number) {
-    if (mode !== 'shelf' || card) return;
+    if (!shelfOn() || card) return;
     tapRay.setFromCamera(new THREE.Vector2(x, y), d.camera);
     const hit = tapRay.intersectObjects(icons.map((it) => it.mesh))[0];
     const i = icons.findIndex((it) => it.mesh === hit?.object);
     if (i < 0) return;
-    if (i === row) return press('a');
+    if (mode !== 'shelf') mode = 'shelf';
+    else if (i === row) return press('a');
     row = i;
     follow();
     sfx.tick();
@@ -844,7 +850,7 @@ export function playground(d: Deps) {
     // portrait's shelf takes the lower half, so the bed sits higher and smaller over it
     const up = pt && mode === 'shelf' && !card;
     pivot.position.y += up ? 0.08 * h : 0;
-    pivot.scale.setScalar((pt ? (up ? 0.6 : 0.8) : 1) * zoom);
+    pivot.scale.setScalar((pt ? (up ? 0.5 : 0.65) : 1) * zoom);
     const want = picked();
     const id = want ? `${mode}/${want[0]}` : '';
     if (id !== showing) {
@@ -1006,6 +1012,7 @@ export function playground(d: Deps) {
       mode = 'browse';
       held = null;
       sel = clamp(sel, 0, rowsN() - 1);
+      fillShelf();
       syncGhosts();
       solve();
     },

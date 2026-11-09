@@ -736,7 +736,7 @@ const ink$ = (tag: string, s: string, cls = '') => {
   if (s === '‹' || s === '›') e.ariaLabel = s === '‹' ? 'Previous' : 'Next';
   return e;
 };
-const play = playground({ scene, camera, paint, leave, ink: ink$, hour: (h) => ((pin = h), relight()) });
+const play = playground({ scene, camera, paint, leave, ink: ink$, hour: (h) => ((pin = h), relight()), finish });
 seedFeatured().then(paint, () => {});
 
 type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order' | (typeof looks)[number], label: string, ok: boolean];
