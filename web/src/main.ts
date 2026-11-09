@@ -117,9 +117,13 @@ if (theme.sky) {
     relight();
   };
   addEventListener('deviceorientation', onTilt);
-  // iOS gives no tilt until asked from a tap; the first tap asks once
-  const ask = (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }).requestPermission;
-  if (ask && !still.matches) addEventListener('pointerup', () => ask().catch(() => {}), { once: true });
+  // iOS gives no tilt until asked from a touchend (pointerup is no gesture there); called on the class or it throws.
+  // the listener stays until iOS answers, so a call it refuses is asked again on the next tap
+  const DOE = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> };
+  if (DOE.requestPermission && !still.matches) {
+    const ask = () => DOE.requestPermission!().then(() => removeEventListener('touchend', ask), () => {});
+    addEventListener('touchend', ask);
+  }
 }
 
 /** a hot white core whose light bleeds past the icon's edges: the selection glows */
