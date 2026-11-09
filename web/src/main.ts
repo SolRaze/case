@@ -1813,17 +1813,33 @@ const DIR: Record<string, [number, number]> = { left: [-1, 0], right: [1, 0], up
 const REPEAT = new Set(['l', 'r', 'zl', 'zr']);
 const HOLD = 0.4, AGAIN = 0.08, STICK = 0.5, DEAD = 0.2;
 const held = new Map<string, number>();
+/**
+ * the button index of A, B, X, Y. The standard mapping is by position: a Nintendo pad's bottom button is B and its left is Y,
+ * so its pairs swap; only Nintendo's own pads, a third-party one naming the Switch can already report by label.
+ * A pad without the standard mapping sends its raw order; generic pads number the faces Y B A X, case.pad ("2,1,3,0") overrides.
+ * Steam Input presents every pad as a standard one.
+ */
+function face(p: Gamepad): number[] {
+  if (p.mapping === 'standard') return /nintendo|joy-?con|pro controller|057e/i.test(p.id) ? [1, 0, 3, 2] : [0, 1, 2, 3];
+  const own = localStorage.getItem('case.pad')?.split(',').map(Number);
+  return own?.length === 4 && own.every((n) => n >= 0) ? own : [2, 1, 3, 0];
+}
+/** a raw pad's d-pad as one hat axis: -1 up, stepping 2/7 clockwise round to 1 up-left, anything past 1 at rest; left right up down */
+function hat(v: number | undefined): [boolean, boolean, boolean, boolean] {
+  if (v === undefined || v > 1.1 || v < -1.1) return [false, false, false, false];
+  const step = Math.round((v + 1) * 3.5) % 8; // 0 up, 1 up-right ... 7 up-left
+  return [step >= 5 && step <= 7, step >= 1 && step <= 3, step === 7 || step <= 1, step >= 3 && step <= 5];
+}
 function pad(now: number, dt: number) {
   const p = navigator.getGamepads?.().find((g) => g?.connected);
   if (!p) return;
   const b = (i: number) => !!p.buttons[i]?.pressed;
   const [x = 0, y = 0, rx = 0, ry = 0] = p.axes;
   if (view === 'play' && Math.hypot(rx, ry) > DEAD) play.drag(rx * dt * 300, ry * dt * 300);
-  const on: Record<string, boolean> = { left: b(14) || x < -STICK, right: b(15) || x > STICK, up: b(12) || y < -STICK, down: b(13) || y > STICK };
-  // the standard mapping is by position: a Nintendo pad's bottom button is B and its left is Y, so its face pairs swap
-  // only Nintendo's own pads: a third-party pad naming the Switch can already report by label, and swapping it crosses the letters
-  const swap = /nintendo|joy-?con|pro controller|057e/i.test(p.id);
-  PAD.forEach((k, i) => (on[k] = b(swap && i < 4 ? i ^ 1 : i)));
+  const standard = p.mapping === 'standard';
+  const [hl, hr, hu, hd] = standard ? [false, false, false, false] : hat(p.axes[9]);
+  const on: Record<string, boolean> = { left: b(14) || hl || x < -STICK, right: b(15) || hr || x > STICK, up: b(12) || hu || y < -STICK, down: b(13) || hd || y > STICK };
+  PAD.forEach((k, i) => (on[k] = b(i < 4 ? face(p)[i] : i)));
   for (const k in on) {
     const next = held.get(k);
     if (!on[k]) held.delete(k);
