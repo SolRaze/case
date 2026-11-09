@@ -496,7 +496,7 @@ function infoTarget(it: Item): Target {
   const row = $('i-name').getBoundingClientRect();
   const x = col ? (col.left + col.right) / 2 / innerWidth - 0.5 : -0.3;
   const y = 0.5 - (row.top + row.bottom) / 2 / innerHeight;
-  return { pos: ahead(x, y, D), scale: fill(portrait() ? 0.2 : 0.3, D, it.h), opacity: 1, spin: false, sway: sway(true) };
+  return { pos: ahead(x, y, D), scale: fill(0.3, D, it.h), opacity: 1, spin: false, sway: sway(true) };
 }
 function frontTarget(i: number): Target {
   const shown = fronts();
