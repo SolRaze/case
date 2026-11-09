@@ -1865,20 +1865,31 @@ function buttons(p: Gamepad): number[] {
   const own = localStorage.getItem('case.pad')?.split(',').map(Number) ?? [];
   return (own.length === 4 || own.length === 8) && own.every((n) => Number.isInteger(n) && n >= 0) ? [...own, ...raw.slice(own.length)] : raw;
 }
-/** a raw pad's d-pad as one hat axis: -1 up, stepping 2/7 clockwise round to 1 up-left, anything past 1 at rest; left right up down */
-function hat(v: number | undefined): [boolean, boolean, boolean, boolean] {
+/**
+ * a raw pad's d-pad, left right up down. Windows and macOS send one hat axis at 9: -1 up, stepping 2/7 clockwise round to 1 up-left, anything past 1 at rest.
+ * Linux sends the hat as two axes, x then y, after the sticks: the last two of six
+ */
+function hat(a: readonly number[]): [boolean, boolean, boolean, boolean] {
+  if (a.length === 6) return [a[4] < -STICK, a[4] > STICK, a[5] < -STICK, a[5] > STICK];
+  const v = a[9];
   if (v === undefined || v > 1.1 || v < -1.1) return [false, false, false, false];
   const step = Math.round((v + 1) * 3.5) % 8; // 0 up, 1 up-right ... 7 up-left
   return [step >= 5 && step <= 7, step >= 1 && step <= 3, step === 7 || step <= 1, step >= 3 && step <= 5];
 }
 function pad(now: number, dt: number) {
-  const p = navigator.getGamepads?.().find((g) => g?.connected);
+  // Steam adds a standard virtual pad beside the raw one it reads; the standard one wins, or both would press
+  const all = navigator.getGamepads?.().filter((g) => g?.connected) ?? [];
+  const p = all.find((g) => g!.mapping === 'standard') ?? all[0];
   if (!p) return;
   const b = (i: number) => !!p.buttons[i]?.pressed;
   const [x = 0, y = 0, rx = 0, ry = 0] = p.axes;
-  if (view === 'play' && Math.hypot(rx, ry) > DEAD) play.drag(rx * dt * 300, ry * dt * 300);
+  if (view === 'play' && Math.hypot(rx, ry) > DEAD) play.drag(rx * dt * 300, ry * dt * 300, 0, 0, play.stickRises);
+  // R3, the right stick's click, is 11 on the standard mapping and on the raw pads seen so far
+  if (b(11) && !held.has('r3') && view === 'play') play.stickSwap();
+  if (b(11)) held.set('r3', now);
+  else held.delete('r3');
   const standard = p.mapping === 'standard';
-  const [hl, hr, hu, hd] = standard ? [false, false, false, false] : hat(p.axes[9]);
+  const [hl, hr, hu, hd] = standard ? [false, false, false, false] : hat(p.axes);
   const on: Record<string, boolean> = { left: b(14) || hl || x < -STICK, right: b(15) || hr || x > STICK, up: b(12) || hu || y < -STICK, down: b(13) || hd || y > STICK };
   const at = buttons(p);
   PAD.forEach((k, i) => (on[k] = b(at[i])));
