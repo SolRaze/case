@@ -20,14 +20,46 @@ function outline() {
   return [body, leaf];
 }
 
+/** a plain t-shirt, drawn for this site; outline units, y up, 118 tall */
+function shirt() {
+  const s = new THREE.Shape();
+  s.moveTo(-14, 59);
+  s.bezierCurveTo(-8, 50, 8, 50, 14, 59);
+  s.lineTo(30, 54);
+  s.quadraticCurveTo(38, 51, 44, 44);
+  s.lineTo(62, 18);
+  s.quadraticCurveTo(64, 14, 60, 11);
+  s.lineTo(46, 2);
+  s.quadraticCurveTo(42, 0, 40, 4);
+  s.lineTo(36, 10);
+  s.lineTo(36, -55);
+  s.quadraticCurveTo(36, -59, 32, -59);
+  s.lineTo(-32, -59);
+  s.quadraticCurveTo(-36, -59, -36, -55);
+  s.lineTo(-36, 10);
+  s.lineTo(-40, 4);
+  s.quadraticCurveTo(-42, 0, -46, 2);
+  s.lineTo(-60, 11);
+  s.quadraticCurveTo(-64, 14, -62, 18);
+  s.lineTo(-44, 44);
+  s.quadraticCurveTo(-38, 51, -30, 54);
+  s.lineTo(-14, 59);
+  return [s];
+}
+
 /**
  * The apple as a slab h mm tall and depth mm thick, centred, face toward +z; the same
  * material split as buildPhone: caps in the finish's body, the side wall in its frame.
  */
-export function buildLogo(h: number, depth: number, finish: Finish, seg: number) {
+export const buildLogo = (h: number, depth: number, finish: Finish, seg: number) => slab(outline(), h, depth, finish, seg);
+
+/** the apparel icon, a slab like the apple */
+export const buildShirt = (h: number, depth: number, finish: Finish, seg: number) => slab(shirt(), h, depth, finish, seg);
+
+function slab(shapes: THREE.Shape[], h: number, depth: number, finish: Finish, seg: number) {
   const k = h / 118;
   const bevel = 0.8 / k;
-  const geo = new THREE.ExtrudeGeometry(outline(), {
+  const geo = new THREE.ExtrudeGeometry(shapes, {
     depth: depth / k - 2 * bevel,
     bevelEnabled: true,
     bevelThickness: bevel,

@@ -79,6 +79,16 @@
       "size": 0.7
     },
     {
+      "icon": "shirt",
+      "pose": [
+        -0.95,
+        0,
+        0
+      ],
+      "seg": 6,
+      "size": 0.7
+    },
+    {
       "icon": "play",
       "pose": [
         -0.95,
@@ -103,6 +113,11 @@
     "copy": "Copy",
     "new": "New",
     "play": "Playground",
+    "shirt": "Apparel",
+    "theme": "Theme",
+    "sky": "Day and night",
+    "gradient": "Gradient",
+    "mono": "Mono",
     "importStl": "Import STL",
     "notSolid": "Not a closed solid",
     "shapes": "Shapes",
@@ -119,6 +134,7 @@
     "dup": "Copy",
     "mirror": "Mirror",
     "spin": "Spin",
+    "zoom": "Zoom",
     "savePart": "Save part",
     "shelf": "Shelf",
     "shelfEmpty": "Nothing saved yet",

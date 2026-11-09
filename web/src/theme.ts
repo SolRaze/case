@@ -6,6 +6,10 @@ export type Sheet = { body?: string; edge: string; grey?: boolean };
 /** sky: the field and key light follow the hour and the device's tilt, sky.ts */
 type Theme = Omit<typeof memcard, 'sky'> & { sheet?: Sheet; sky?: boolean };
 
-/** ?theme=mono picks the theme; memcard otherwise */
-const themes: Record<string, Theme> = { memcard, mono };
-export default themes[new URLSearchParams(location.search).get('theme') ?? ''] ?? memcard;
+/** the looks the front page's Theme menu offers: memcard lit by the hour, memcard's still gradient, mono */
+export const looks = ['sky', 'gradient', 'mono'] as const;
+const themes: Record<string, Theme> = { sky: memcard, gradient: { ...memcard, sky: false }, mono, memcard };
+/** ?theme= wins over the look picked in the menu, case.theme in localStorage; sky otherwise */
+const pick = new URLSearchParams(location.search).get('theme') ?? localStorage.getItem('case.theme') ?? '';
+export const look = pick === 'memcard' || !themes[pick] ? 'sky' : pick;
+export default themes[look];

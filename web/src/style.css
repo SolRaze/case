@@ -138,3 +138,13 @@ body:not([data-menu]) #detail button, body:not([data-inspo]) #inspo { pointer-ev
 [data-busy] :is(header, #name, #inspo, #detail, #parts, footer) { opacity: 0; transition: opacity .12s, visibility .12s; }
 
 #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+
+/* read by screen readers, not drawn */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+[data-view=boot] #detail > p { display: none; }

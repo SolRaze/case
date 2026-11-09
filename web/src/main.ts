@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import '@fontsource/arimo/latin-700.css';
-import theme from './theme';
+import theme, { look as themeLook, looks } from './theme';
 import specs from '../phones.json';
 import { buildLocked, buildPhone, edges, lockedEdge, framed, label, look, lookT, sheetLook, type PhoneSpec } from './phone';
-import { buildLogo, buildPlay } from './logo';
+import { buildLogo, buildPlay, buildShirt } from './logo';
 import { fromHour, lit } from './sky';
 import { READY, order, styleName, year } from './catalog';
 import { built, exportStl, isSet, load, loadMy, loadTemplates, MY, partSolid, placing, saveTemplates, seat, seedFeatured, SINK, solid, type Template } from './cases';
@@ -90,9 +90,8 @@ if (theme.sky) {
     l.angle += tilt;
     const s = lit(l, C.field);
     $('bg').style.background = s.background;
-    // 25deg off the view axis, not the static 57: faces turned toward the light catch its sheen, so the models follow it;
-    // straight-on black backs read greyer for it
-    key.position.set(2 * s.key[0], 2 * s.key[1], 0);
+    // placed as the static key, only turned by the hour: near the view axis a straight-on black back mirrors it and reads grey
+    key.position.set(5 * s.key[0], 5 * s.key[1], -1);
     key.color.setHSL(...s.tint);
     key.intensity = KEY * s.keyScale;
     // the rim swings with the light by its turn from the 115deg field as written, so 9:00 keeps the glints where they were
@@ -227,11 +226,12 @@ const snapGrid = new THREE.LineSegments(
   }
 }
 
-// the front page: a phone opens its cases page, the apple opens the models, the bed opens the playground
+// the front page: a phone opens its cases page, the apple opens the models, the bed opens the playground, the shirt opens nothing yet
+const isGlyph = (icon: string) => icon === 'logo' || icon === 'play' || icon === 'shirt';
 const front = theme.front.map((f) => {
   const { object, materials } =
-    f.icon === 'logo' ? buildLogo(LOGO_H, card.T, finish, f.seg) : f.icon === 'play' ? buildPlay(LOGO_H, finish, f.seg) : buildPhone(spec(f.icon), finish, f.seg);
-  return item(object, materials, f.icon === 'logo' || f.icon === 'play' ? LOGO_H : spec(f.icon).L);
+    f.icon === 'logo' ? buildLogo(LOGO_H, card.T, finish, f.seg) : f.icon === 'shirt' ? buildShirt(LOGO_H, card.T, finish, f.seg) : f.icon === 'play' ? buildPlay(LOGO_H, finish, f.seg) : buildPhone(spec(f.icon), finish, f.seg);
+  return item(object, materials, isGlyph(f.icon) ? LOGO_H : spec(f.icon).L);
 });
 
 // the built styles and part sets; the parts of each set, read once; the starts edit offers in its first row
@@ -374,7 +374,7 @@ let back: 'cases' | 'detail' = 'cases'; // where edit returns
 let printAt = -1;
 let flip: { i: number; t0: number; dir: 1 | -1 } | null = null;
 let busy = false;
-let camV = 0; // camera along the grid plane, in flat grid units
+let drag = 0; // models: how far a held swipe has carried the row, in phones
 let fling = 0; // extra spin from a swipe, decays to the idle spin
 let grab = false; // a finger is on the open phone: it turns with the finger, not by itself
 let dist = 4;
@@ -403,7 +403,7 @@ function designName(t: Template) {
   return same.length > 1 ? `${n} ${same.indexOf(t) + 1}` : n;
 }
 /** the front page's icons, as theme.front indices: the phones with a design, the apple and the playground */
-const fronts = () => theme.front.flatMap((f, i) => (f.icon === 'logo' || f.icon === 'play' || (f.icon === card.id && edited().length) ? [i] : []));
+const fronts = () => theme.front.flatMap((f, i) => (isGlyph(f.icon) || (f.icon === card.id && edited().length) ? [i] : []));
 const opens = (i: number) => (theme.front[i].icon === 'logo' ? 'models' : theme.front[i].icon === 'play' ? 'play' : 'cases');
 const portrait = () => camera.aspect < 1;
 
@@ -411,43 +411,12 @@ const rowOf = (i: number) => Math.floor(i / COLS);
 const flat = (i: number) => ({ x: ((i % COLS) - (COLS - 1) / 2) * CELL.w, v: -rowOf(i) * CELL.h });
 const onPlane = (x: number, v: number) => new THREE.Vector3(x, v * Math.cos(TILT), -v * Math.sin(TILT));
 const slot = (i: number) => onPlane(flat(i).x, flat(i).v);
-const camAt = (v = camV) => onPlane(0, v).add(new THREE.Vector3(0, 0, dist));
+const camAt = () => new THREE.Vector3(0, 0, dist);
 /** a point d in front of the camera's resting place, fx and fy in fractions of the view's width and height there */
 const ahead = (fx: number, fy: number, d: number) =>
   camAt().add(new THREE.Vector3(fx * 2 * d * T * camera.aspect, fy * 2 * d * T, -d));
 /** the scale that makes something h tall fill frac of the view's height at distance d */
 const fill = (frac: number, d: number, h: number) => (frac * 2 * d * T) / h;
-
-/** where grid item i lands on screen, as a fraction of the view's height from its centre */
-function screenY(i: number, v: number) {
-  const p = slot(i).sub(camAt(v));
-  return p.y / (-p.z * 2 * T);
-}
-/** the camera position that puts item i at screen height y; screenY falls as v rises */
-function solve(i: number, y: number) {
-  let lo = flat(i).v - 3 * CELL.h;
-  let hi = flat(i).v + 3 * CELL.h;
-  for (let k = 0; k < 30; k++) {
-    const mid = (lo + hi) / 2;
-    if (screenY(i, mid) > y) lo = mid;
-    else hi = mid;
-  }
-  return (lo + hi) / 2;
-}
-// rows stay between the header and the button bar
-const TOP = 0.5 - 0.24;
-const BOTTOM = -0.5 + 0.3;
-const camLimits = () => {
-  const max = solve(0, TOP);
-  return { min: Math.min(max, solve(models.length - 1, BOTTOM)), max };
-};
-/** scroll just enough to keep the selected row inside the band */
-function follow() {
-  const i = msel;
-  camV = clamp(camV, solve(i, TOP), solve(i, BOTTOM));
-  const { min, max } = camLimits();
-  camV = clamp(camV, min, max);
-}
 
 function layout() {
   const w = innerWidth;
@@ -462,19 +431,29 @@ function layout() {
   ink.resize(pr);
   // fit the columns across, and at least two rows of height
   dist = Math.max((COLS * CELL.w + 0.4) / 2 / (T * camera.aspect), (CELL.h * 2.4) / 2 / T);
-  follow();
 }
 
 type Target = { pos: THREE.Vector3; scale: number; opacity: number; spin: boolean; tilt?: number; sway?: number; yaw?: number };
 const gone = (i: number): Target => ({ pos: slot(i).setZ(slot(i).z - 2), scale: 0.6, opacity: 0, spin: false });
 
-// the picked icon keeps its slot and size, rocks gently about its upright axis and carries the glow
-// a row whose centre leaves the band fades out, so nothing sits under the header or the button bar
+// the models page is one row: the picked phone big in the middle, its neighbours stepped back and turned in at the sides, the picked one rocks and carries the glow
 const sway = (picked: boolean) => (picked && !still.matches ? 0.35 * Math.sin(clock() * 1.6) : 0);
+/** the row's step, as a fraction of the view's width */
+/** one scale for the row, from the tallest phone, so phones keep their real sizes against each other */
+const tallest = Math.max(...models.map((m) => m.h));
+const STEP = () => (portrait() ? 0.5 : 0.2);
 function gridTarget(i: number): Target {
-  const y = screenY(i, camV);
-  const opacity = clamp(Math.min(y - BOTTOM + 0.16, TOP + 0.16 - y) / 0.06, 0, 1);
-  return view === 'models' ? { pos: slot(i), scale: 1, opacity, spin: false, sway: sway(i === msel) } : gone(i);
+  if (view !== 'models') return gone(i);
+  const o = i - msel + drag;
+  const a = Math.abs(o);
+  return {
+    pos: ahead(o * STEP(), 0.03, D + Math.min(a, 2) * 1.2),
+    scale: fill(portrait() ? 0.4 : 0.5, D, tallest),
+    opacity: clamp(2.5 - a, 0, 1),
+    spin: false,
+    yaw: -clamp(o, -1, 1) * 0.5,
+    sway: sway(i === msel && !drag),
+  };
 }
 /** the cases page's middle, in fractions of the view: the ring sits round it */
 const hub = () => (portrait() ? { x: 0, y: 0.06 } : { x: -0.2, y: 0.02 });
@@ -609,10 +588,9 @@ low.setAnimationLoop((t) => {
     loading = busyPop;
     paint();
   }
-  // more rows past the band on the models page, more ring pages on the cases page
-  const { min, max } = camLimits();
+  // more ring pages on the cases page
   const pages = Math.ceil(list.length / RING);
-  const more = view === 'models' ? [camV < max - 1e-3, camV > min + 1e-3] : view === 'cases' && !menu ? [page() > 0, page() < pages - 1] : [false, false];
+  const more = view === 'cases' && !menu ? [page() > 0, page() < pages - 1] : [false, false];
   (['up', 'down'] as const).forEach((k, i) => {
     if (more[i] !== k in document.body.dataset) more[i] ? (document.body.dataset[k] = '') : delete document.body.dataset[k];
   });
@@ -710,7 +688,7 @@ const arrow = (d: string, base: 0 | 1) =>
 ($('up') as HTMLImageElement).src = arrow('M12 0 24 12H0Z', 1);
 ($('down') as HTMLImageElement).src = arrow('M0 0H24L12 12Z', 0);
 const bars: Record<View, [Press, string][]> = {
-  boot: [['a', S.enter]],
+  boot: [['a', S.enter], ['x', S.theme]],
   models: [['a', S.enter], ['b', S.back], ['x', S.options]],
   cases: [['a', S.enter], ['b', S.back], ['x', S.options]],
   detail: [],
@@ -751,7 +729,7 @@ const ink$ = (tag: string, s: string, cls = '') => {
 const play = playground({ scene, camera, paint, leave, ink: ink$, hour: (h) => ((pin = h), relight()) });
 seedFeatured().then(paint, () => {});
 
-type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order', label: string, ok: boolean];
+type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order' | (typeof looks)[number], label: string, ok: boolean];
 /** the command list's rows and whether each can be picked; detail works on the worn design, cases on the picked one */
 function rows(): Row[] {
   const has = shown().length > 0;
@@ -761,6 +739,7 @@ function rows(): Row[] {
       : [['new', S.new, starts.length > 0], ['delete', S.delete, false]];
   if (menu === 1) return [['edit', S.edit, has], ['copy', S.copy, has], ['print', S.print, has], ['delete', S.delete, has]];
   if (menu === 2) return [['export', S.export, true], ['order', S.order, !!theme.order]];
+  if (menu === 5) return looks.map((l) => [l, S[l], true]);
   return [];
 }
 
@@ -981,6 +960,8 @@ function resetMove() {
 }
 const opName: Record<Op, string> = { base: '', union: S.union, difference: S.difference, off: S.off };
 
+/** "1 case", "2 cases": the theme's count words are plurals ending in s */
+const many = (n: number, word: string) => `${n} ${n === 1 ? word.replace(/s$/, '') : word}`;
 function paint() {
   document.body.dataset.view = view;
   syncUrl();
@@ -992,7 +973,7 @@ function paint() {
   const list = ringList();
   const pages = Math.ceil(list.length / RING);
   text('brand', S.brand);
-  const count = view === 'models' ? `${models.length} ${S.models}` : view === 'cases' ? `${list.length} ${S.cases}` : '';
+  const count = view === 'models' ? many(models.length, S.models) : view === 'cases' ? many(list.length, S.cases) : '';
   text('sub', count);
   text('loading', S.loading);
   if (loading) document.body.dataset.loading = '';
@@ -1002,8 +983,8 @@ function paint() {
   let n2 = '';
   if (view === 'boot') {
     const f = theme.front[fronts()[fsel]].icon;
-    n1 = f === 'logo' ? S.title : f === 'play' ? S.play : label(f);
-    n2 = f === 'logo' ? `${models.length} ${S.models}` : f === 'play' ? '' : `${list.length} ${S.cases}`;
+    n1 = f === 'logo' ? S.title : f === 'play' ? S.play : f === 'shirt' ? S.shirt : label(f);
+    n2 = f === 'logo' ? many(models.length, S.models) : isGlyph(f) ? '' : many(list.length, S.cases);
   } else if (view === 'models') {
     n1 = label(p.id);
   } else if (view === 'cases') {
@@ -1060,6 +1041,7 @@ function paint() {
       button(S.no, !yes, () => (!yes ? press('a') : (sfx.tick(), (yes = false), paint()))),
     );
   } else if (menu === 4) ul.replaceChildren(li(ink$('p', S.print)), li(ink$('p', S.printing)), li(ink$('p', S.keep)));
+  else if (menu === 5) ul.replaceChildren(li(ink$('p', S.theme)), ...rows().map(row));
   else ul.replaceChildren();
 
   // edit's rows: the start, each part, then add, undo and save; a tap picks a row, a tap on the picked row is A, ‹ › step it as ← → do
@@ -1260,7 +1242,6 @@ function enterFront() {
       play.enter();
     } else {
       view = 'models';
-      follow();
       camera.position.copy(camAt());
       const now = clock();
       // the rows in view come in one by one; the rest land with the last of them
@@ -1428,11 +1409,10 @@ function command(k: Press) {
   if (k === 'b') {
     sfx.cancel();
     // back one level, the cursor on the row that opened it
-    cmd = menu === 1 ? 0 : opener;
-    menu = menu === 1 ? 0 : 1;
+    cmd = menu === 1 || menu === 5 ? 0 : opener;
+    menu = menu === 1 || menu === 5 ? 0 : 1;
     if (view === 'detail' && !menu) {
       view = 'models';
-      follow();
     }
     return paint();
   }
@@ -1462,6 +1442,12 @@ function command(k: Press) {
   const r = rows()[cmd];
   if (!r?.[2]) return sfx.cancel();
   sfx.confirm();
+  // a look is read once at load: keep it, drop any ?theme=, reload
+  if (menu === 5) {
+    localStorage.setItem('case.theme', r[0]);
+    location.replace(location.pathname);
+    return;
+  }
   const i = view === 'detail' ? store.worn : tpl();
   const t = store.list[i];
   if (r[0] === 'new') startEdit(starts[0].look, -1);
@@ -1482,7 +1468,14 @@ function press(k: Press) {
   if (busy || flip) return;
   if (view === 'play') return play.press(k);
   if (view === 'boot') {
-    if (k === 'a') enterFront();
+    if (menu) return command(k);
+    if (k === 'x') {
+      sfx.confirm();
+      menu = 5;
+      cmd = looks.indexOf(themeLook as (typeof looks)[number]);
+      return paint();
+    }
+    if (k === 'a') return theme.front[fronts()[fsel]].icon === 'shirt' ? sfx.cancel() : enterFront();
     return;
   }
   if (view === 'models') {
@@ -1526,7 +1519,6 @@ function press(k: Press) {
       if (from === 'boot') return leave();
       sfx.cancel();
       view = 'models';
-      follow();
     } else if (k === 'x') {
       if (!shown().length) return sfx.cancel();
       sfx.confirm();
@@ -1690,7 +1682,6 @@ function press(k: Press) {
     if (k !== 'b') return;
     sfx.cancel();
     view = 'models';
-    follow();
   }
   paint();
 }
@@ -1698,15 +1689,14 @@ function press(k: Press) {
 function move(dx: number, dy: number) {
   if (busy || flip) return;
   if (view === 'play') return play.move(dx, dy);
-  if (view === 'boot') {
+  if (view === 'boot' && !menu) {
     const n = clamp(fsel + dx, 0, fronts().length - 1);
     if (n === fsel) return;
     fsel = n;
   } else if (view === 'models') {
-    const n = msel + dx + dy * COLS;
-    if (n < 0 || n >= models.length || (dx && rowOf(n) !== rowOf(msel))) return;
+    const n = msel + dx;
+    if (!dx || n < 0 || n >= models.length) return;
     msel = n;
-    follow();
   } else if (view === 'edit') {
     // ↑/↓ pick a row; ← → on the start row change the start, on a part step its op; in Y's list ↑/↓ pick a part
     // moving, the arrows step the part one grid line, or a fine step when free, the way they point on screen
@@ -1831,7 +1821,8 @@ function pad(now: number, dt: number) {
   if (view === 'play' && Math.hypot(rx, ry) > DEAD) play.drag(rx * dt * 300, ry * dt * 300);
   const on: Record<string, boolean> = { left: b(14) || x < -STICK, right: b(15) || x > STICK, up: b(12) || y < -STICK, down: b(13) || y > STICK };
   // the standard mapping is by position: a Nintendo pad's bottom button is B and its left is Y, so its face pairs swap
-  const swap = /nintendo|joy-?con|pro controller|057e/i.test(p.id);
+  // third-party Switch pads carry their own vendor id (PowerA 20d6 also makes Xbox pads), so they match by name words
+  const swap = /nintendo|joy-?con|pro controller|057e|switch|nsw|spectra/i.test(p.id);
   PAD.forEach((k, i) => (on[k] = b(swap && i < 4 ? i ^ 1 : i)));
   for (const k in on) {
     const next = held.get(k);
@@ -1859,9 +1850,16 @@ const ray = new THREE.Raycaster();
 const canvas = $('view');
 /** radians per pixel dragged across the open phone */
 const TURN = 0.012;
-let down: { x: number; y: number; camV: number; last: number; lastY: number; t: number; v: number; from?: Move } | null = null;
+let down: { x: number; y: number; last: number; lastY: number; t: number; v: number; from?: Move } | null = null;
+// two fingers on the playground pinch its bed's zoom
+const touches = new Map<number, [number, number]>();
+const spread = () => {
+  const [a, b] = [...touches.values()];
+  return Math.hypot(a[0] - b[0], a[1] - b[1]);
+};
 canvas.addEventListener('pointerdown', (e) => {
-  down = { x: e.clientX, y: e.clientY, camV, last: e.clientX, lastY: e.clientY, t: e.timeStamp, v: 0 };
+  touches.set(e.pointerId, [e.clientX, e.clientY]);
+  down = { x: e.clientX, y: e.clientY, last: e.clientX, lastY: e.clientY, t: e.timeStamp, v: 0 };
   if ((view === 'cases' || view === 'detail') && menu < 2) {
     grab = true;
     fling = 0;
@@ -1876,13 +1874,18 @@ canvas.addEventListener('pointermove', (e) => {
     const f = (down.from ??= [...moving.at]);
     shift([f[0] + x, f[1] + y, moving.at[2], (f[3] ?? 0) + z]);
     paint();
+  } else if (view === 'play' && touches.size === 2 && touches.has(e.pointerId)) {
+    const was = spread();
+    touches.set(e.pointerId, [e.clientX, e.clientY]);
+    if (was > 0) play.zoomBy(spread() / was);
   } else if (view === 'play') {
-    play.drag(e.clientX - down.last, e.clientY - down.lastY);
+    // the drag acts where it started: over the shelf it scrolls, over the bed it turns
+    play.drag(e.clientX - down.last, e.clientY - down.lastY, down.x / innerWidth, down.y / innerHeight);
     down.last = e.clientX;
     down.lastY = e.clientY;
   } else if (view === 'models') {
-    const { min, max } = camLimits();
-    camV = clamp(down.camV + ((e.clientY - down.y) / innerHeight) * 2 * dist * T, min, max);
+    // the row follows the finger, never past its ends
+    drag = clamp((e.clientX - down.x) / (STEP() * innerWidth), msel - models.length + 1, msel);
   } else if (view === 'edit') {
     orbit.yaw = clamp(orbit.yaw + (e.clientX - down.last) * TURN, -3, 3);
     orbit.tilt = clamp(orbit.tilt + (e.clientY - down.lastY) * TURN, -0.7, 0.7);
@@ -1898,8 +1901,21 @@ canvas.addEventListener('pointermove', (e) => {
     down.t = e.timeStamp;
   }
 });
+const untouch = (e: PointerEvent) => touches.delete(e.pointerId);
+canvas.addEventListener('pointerup', untouch);
+canvas.addEventListener('pointercancel', untouch);
+canvas.addEventListener(
+  'wheel',
+  (e) => {
+    if (view !== 'play') return;
+    e.preventDefault();
+    play.wheel(e.deltaY + e.deltaX, e.clientX / innerWidth, e.clientY / innerHeight);
+  },
+  { passive: false },
+);
 canvas.addEventListener('pointercancel', () => {
   down = null;
+  drag = 0;
   grab = false;
 });
 canvas.addEventListener('pointerup', (e) => {
@@ -1912,7 +1928,19 @@ canvas.addEventListener('pointerup', (e) => {
     if (e.timeStamp - d.t < 80) fling = clamp(d.v - idle(), -30, 30);
   }
   const dx = e.clientX - d.x;
+  if (drag) {
+    // a swipe lands on the nearest phone, a quick flick at least one along
+    const n = clamp(Math.round(msel - drag - (e.timeStamp - d.t < 250 ? Math.sign(drag) * 0.4 : 0)), 0, models.length - 1);
+    drag = 0;
+    if (n !== msel) {
+      msel = n;
+      sfx.tick();
+      paint();
+    }
+    return;
+  }
   if (Math.hypot(dx, e.clientY - d.y) > 8) return;
+  if (view === 'play') return play.tap((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   const list = view === 'boot' ? fronts().map((i) => front[i]) : view === 'models' ? models : view === 'cases' && !menu ? shown() : [];
   if (!list.length) return;
   ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
@@ -1931,7 +1959,6 @@ canvas.addEventListener('pointerup', (e) => {
   }
   else {
     msel = i;
-    follow();
   }
   sfx.tick();
   paint();

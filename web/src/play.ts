@@ -159,6 +159,194 @@ export function playground(d: Deps) {
   pivot.visible = false;
   d.scene.add(pivot);
 
+  // Shapes and Shelf: the picked row's part stands large and turning in the bed's place, sliding in from the list's side on each move, as the console's save browser brings an icon forward
+  const show = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: theme.case.color, roughness: 0.45, transparent: true }));
+  show.layers.set(1);
+  const tip = new THREE.Group().add(show);
+  tip.rotation.x = -Math.PI / 2; // parts are z-up
+  const stand = new THREE.Group().add(tip);
+  stand.visible = false;
+  d.scene.add(stand);
+  let showing = '';
+  let showAt = 0;
+  /** the picked row's part: an id, how to get its mesh, and a shape's size as it lands on the bed */
+  function picked(): [string, () => Promise<THREE.BufferGeometry>, number[]?] | null {
+    if (mode === 'palette') {
+      const shape = SHAPES[row];
+      if (shape) return [shape, async () => UNIT[shape], SIZES[shape].map((v) => v / 2)];
+      const f = FEATURED[row - SHAPES.length];
+      return f ? [f.slug, () => featuredSolid(f.slug).then(() => stlGeo(IMPORT + f.slug))] : null;
+    }
+    return null;
+  }
+
+  // Shelf: the saved parts as a memory card's game data, small turning icons in rows that pop in one by one; the picked one rocks over a glow
+  // and names itself in the title; A brings it forward large and turning beside its Open and Delete, Delete asks first
+  type Icon = { key: string; holder: THREE.Group; mesh: THREE.Mesh; big: number; tall: number; born: number };
+  // every icon one pose: leaning back LEAN to show its depth, turned YAW to show its side
+  const LEAN = 0.35;
+  const YAW = 0.3;
+  let icons: Icon[] = [];
+  let card = 0; // shelf: 0 the icons, 1 the picked part's actions, 2 its delete asked
+  let act = 0; // card 1: Open, Delete
+  let yes = false; // card 2
+  let cols = 3; // icons across the shelf's run
+  let scroll = 0; // the shelf's first line in view, eased to aimScroll
+  let aimScroll = 0;
+  let inView = 3; // lines of icons in view
+  let cellPx = 100; // one icon line, in screen pixels
+  let tall = false; // portrait: the shelf runs sideways under the bed, else down beside it
+  let zoom = 1; // the bed's size: ZL ZR, the wheel or a pinch
+  const zoomBy = (f: number) => (zoom = clamp(zoom * f, 0.5, 2.5));
+  /** icon i's line along the shelf's run, and its place across it */
+  const lineOf = (i: number) => Math.floor(i / cols);
+  /** scroll just enough to keep the picked icon's line in view */
+  const follow = () => (aimScroll = clamp(clamp(aimScroll, lineOf(row) - inView + 1, lineOf(row)), 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0)));
+  /** is a screen point, in fractions 0 to 1, over the shelf rather than the bed */
+  const onShelf = (x: number, y: number) => mode === 'shelf' && !card && (tall ? y > 0.56 : x > 0.5);
+  /** the wheel or a drag over the shelf scrolls it, by pixels along its run */
+  const roll = (px: number) => (aimScroll = clamp(aimScroll + px / cellPx, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0)));
+  const shelfRoot = new THREE.Group();
+  shelfRoot.visible = false;
+  d.scene.add(shelfRoot);
+  /** an additive white radial sprite, alpha at its centre and at 0.3 of its radius */
+  const glowSprite = (core: number, mid: number) =>
+    new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: (() => {
+          const c = document.createElement('canvas');
+          c.width = c.height = 64;
+          const g = c.getContext('2d')!;
+          const r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+          r.addColorStop(0, `rgba(255,255,255,${core})`);
+          r.addColorStop(0.3, `rgba(255,255,255,${mid})`);
+          r.addColorStop(1, 'rgba(255,255,255,0)');
+          g.fillStyle = r;
+          g.fillRect(0, 0, 64, 64);
+          return new THREE.CanvasTexture(c);
+        })(),
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        transparent: true,
+      }),
+    );
+  // the picked part: a white dot in front of its lower part, and an underglow behind it that the part and its neighbours cover
+  const halo = glowSprite(0.6, 0.25);
+  halo.renderOrder = 1; // after the icons, depth-tested
+  const dot = glowSprite(1, 0.35);
+  for (const s of [halo, dot]) s.layers.set(1), shelfRoot.add(s);
+  /** builds the icons from the saved parts, row and card back on the first */
+  function fillShelf() {
+    for (const it of icons) shelfRoot.remove(it.holder);
+    icons = shelf().map(([key], i) => {
+      const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: theme.case.color, roughness: 0.45, transparent: true, opacity: 0 }));
+      mesh.layers.set(1);
+      const orient = new THREE.Group().add(mesh);
+      const tip = new THREE.Group().add(orient);
+      tip.rotation.x = -LEAN;
+      const holder = new THREE.Group().add(tip);
+      holder.visible = false;
+      shelfRoot.add(holder);
+      const it: Icon = { key, holder, mesh, big: 0, tall: 0, born: now + 0.2 + i * 0.08 };
+      stlGeo(key).then(
+        (g) => {
+          mesh.geometry = g;
+          mesh.position.copy(g.boundingBox!.getCenter(new THREE.Vector3()).negate());
+          const dims = g.boundingBox!.getSize(new THREE.Vector3()).toArray();
+          it.big = Math.max(...dims);
+          {
+            // laid flat: thinnest side toward the viewer, longest across, whatever way up the file was saved
+            const by = [0, 1, 2].sort((a, b) => dims[b] - dims[a]); // longest, middle, thinnest
+            const cols = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+            cols[by[0]].set(1, 0, 0);
+            cols[by[1]].set(0, 1, 0);
+            cols[by[2]].set(0, 0, 1);
+            const m = new THREE.Matrix4().makeBasis(cols[0], cols[1], cols[2]);
+            if (m.determinant() < 0) cols[by[2]].set(0, 0, -1), m.makeBasis(cols[0], cols[1], cols[2]);
+            orient.setRotationFromMatrix(m);
+            // drawn height once leaned back, before scale: the baseline and the dot measure from it
+            it.tall = dims[by[1]] * Math.cos(LEAN) + dims[by[2]] * Math.sin(LEAN);
+          }
+          holder.visible = true;
+        },
+        () => {},
+      );
+      return it;
+    });
+    row = clamp(row, 0, Math.max(icons.length - 1, 0));
+    card = 0;
+    follow();
+  }
+  const SPREAD = 0.5;
+  const biggest = () => Math.max(1e-6, ...icons.map((it) => it.big));
+  function shelfFrame(t: number, dt: number, h: number, pt: boolean) {
+    shelfRoot.visible = mode === 'shelf';
+    if (!shelfRoot.visible) return;
+    const w = h * d.camera.aspect;
+    // icon size and spacing measured off the console's browser (Reference/screens/ps2), in view heights: 0.2 apart, an icon 0.19 at its largest side.
+    // Landscape: 3 across in the right half, mirroring the bed, running down, 3 lines in view. Portrait: 2 rows under the bed, running sideways
+    tall = pt;
+    cols = pt ? 2 : 3;
+    const cell = pt ? Math.min(0.2 * h, w / 3.3) : Math.min(0.25 * h, (0.46 * w) / 3);
+    inView = pt ? Math.max(Math.floor(w / cell), 1) : 3;
+    cellPx = (cell / h) * innerHeight;
+    const icon = 0.95 * cell;
+    const k = 1 - Math.exp(-8 * dt);
+    aimScroll = clamp(aimScroll, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0));
+    scroll += (aimScroll - scroll) * k;
+    icons.forEach((it, i) => {
+      if (!it.big) return; // not loaded yet
+      const on = i === row;
+      const v = lineOf(i) - scroll;
+      const across = i % cols;
+      const fore = card > 0 && on;
+      const spot = pt
+        ? new THREE.Vector3((v - (inView - 1) / 2) * cell, -0.12 * h - across * cell * 1.05, -DIST)
+        : new THREE.Vector3(0.25 * w + (across - (cols - 1) / 2) * cell * 1.1, 0.24 * h - v * cell * 1.05, -DIST);
+      // the pop: overshoots, then settles, as the cards page's icons do
+      const p = clamp((t - it.born) / 0.3, 0, 1);
+      const grow = p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
+      // opened, it stands 0.3 view heights in the bed's place and the rest fade, or they would sit under the text
+      // parts keep their order of size against the shelf's biggest, by the square root so a small one still reads; SPREAD 1 is true scale, 0 all one size
+      const size = fore ? (0.3 * h) / it.big : (icon * (it.big / biggest()) ** SPREAD) / it.big;
+      // on a baseline: every part's bottom on its line's floor
+      if (!fore) spot.y += (it.tall * size - icon) / 2;
+      it.holder.position.lerp(fore ? pivot.position.clone() : d.camera.position.clone().add(spot), k);
+      it.holder.scale.setScalar(THREE.MathUtils.lerp(it.holder.scale.x || size, size, k) * (fore ? 1 : grow));
+      it.holder.rotation.set(0, fore ? t * 0.6 : YAW + (on && card === 0 ? 0.25 * Math.sin(t * 1.6) : 0), 0);
+      const m = it.mesh.material as THREE.MeshStandardMaterial;
+      const shown = card > 0 ? (on ? 1 : 0) : clamp(Math.min(v + 0.5, inView - 0.5 - v) * 2, 0, 1);
+      m.opacity += (shown - m.opacity) * k;
+    });
+    const lit = icons[row];
+    halo.visible = dot.visible = !!lit && card === 0 && lit.holder.visible;
+    if (halo.visible) {
+      // an underglow behind the picked part, rimming its outline
+      const seen = Math.max(lit.big * lit.holder.scale.x, 0.7 * icon); // the part's longest side as drawn, small parts lifted
+      halo.position.copy(lit.holder.position).add(new THREE.Vector3(0, -0.1 * seen, -0.6 * seen));
+      halo.scale.set(1.6 * seen, 1.1 * seen, 1);
+      // on the part's lower third, by its drawn height
+      dot.position.copy(lit.holder.position).add(new THREE.Vector3(0, -0.3 * lit.tall * lit.holder.scale.x, 0.3));
+      dot.scale.setScalar(0.8 * seen);
+      halo.material.opacity = dot.material.opacity = (0.85 + 0.15 * Math.sin(t * 2.1)) * (lit.mesh.material as THREE.MeshStandardMaterial).opacity;
+    }
+  }
+  /** a tap on the shelf, in view fractions -1 to 1: an icon picks, the picked one is A */
+  const tapRay = new THREE.Raycaster();
+  tapRay.layers.set(1);
+  function tap(x: number, y: number) {
+    if (mode !== 'shelf' || card) return;
+    tapRay.setFromCamera(new THREE.Vector2(x, y), d.camera);
+    const hit = tapRay.intersectObjects(icons.map((it) => it.mesh))[0];
+    const i = icons.findIndex((it) => it.mesh === hit?.object);
+    if (i < 0) return;
+    if (i === row) return press('a');
+    row = i;
+    follow();
+    sfx.tick();
+    d.paint();
+  }
+
   /** a piece's ghost: its shape, sized and placed; an stl piece's waits for its mesh */
   function ghostOf(i: number) {
     const p = bench.pieces[i];
@@ -388,6 +576,10 @@ export function playground(d: Deps) {
 
   function press(k: Key) {
     oops = false;
+    if ((k === 'zl' || k === 'zr') && (mode === 'browse' || mode === 'shelf')) {
+      zoomBy(k === 'zr' ? 1.15 : 1 / 1.15);
+      return sfx.tick();
+    }
     if (mode === 'held') {
       const h = held!, p = bench.pieces[h.i];
       if (k === 'a') {
@@ -441,22 +633,35 @@ export function playground(d: Deps) {
       const s = shelf()[row];
       if (k === 'b') {
         sfx.cancel();
-        mode = 'browse';
-      } else if (k === 'a' && s) {
+        if (card) card--;
+        else mode = 'browse';
+      } else if (k !== 'a' || !s) return;
+      else if (card === 0) {
+        sfx.confirm();
+        card = 1;
+        act = 0;
+      } else if (card === 1 && act === 0) {
         sfx.confirm();
         bench = { name: s[1].name, pieces: s[1].pieces.map(copy) };
         sel = 0;
         mode = 'browse';
         syncGhosts();
         solve();
-      } else if (k === 'x' && s) {
+      } else if (card === 1) {
+        sfx.confirm();
+        card = 2;
+        yes = false;
+      } else if (!yes) {
         sfx.cancel();
+        card = 1;
+      } else {
+        sfx.confirm();
         const my = loadMy();
         delete my[s[0]];
         saveMy(my);
         dropImport(s[0]).catch(() => {});
-        row = clamp(row, 0, shelf().length - 1);
-      } else return;
+        fillShelf();
+      }
     } else if (mode === 'light') {
       if (k !== 'b') return;
       sfx.cancel();
@@ -489,7 +694,7 @@ export function playground(d: Deps) {
         sfx.confirm();
         if (a === 'shapes') (mode = 'palette'), (row = 0);
         else if (a === 'import') file.click();
-        else if (a === 'shelf') (mode = 'shelf'), (row = 0);
+        else if (a === 'shelf') (mode = 'shelf'), (row = 0), fillShelf();
         else if (a === 'light') {
           const t = new Date();
           hour = Math.round((t.getHours() + t.getMinutes() / 60) * 2) / 2 % 24;
@@ -545,8 +750,24 @@ export function playground(d: Deps) {
     } else if (mode === 'name') {
       const y = clamp(key[1] + dy, 0, KEYS.length - 1);
       key = [clamp(key[0] + dx, 0, KEYS[y].length - 1), y];
-    } else if (mode === 'palette' || mode === 'shelf') {
-      const n = clamp(row + dy, 0, (mode === 'palette' ? SHAPES.length + FEATURED.length + 1 : shelf().length) - 1);
+    } else if (mode === 'shelf') {
+      if (card === 2) {
+        if (!dx && !dy) return;
+        yes = !yes;
+      } else if (card === 1) {
+        const n = clamp(act + dy, 0, 1);
+        if (n === act) return;
+        act = n;
+      } else {
+        // along the run steps a line, across it steps within one
+        const [along, across] = tall ? [dx, dy] : [dy, dx];
+        const n = row + across + along * cols;
+        if (n < 0 || n >= icons.length || (across && lineOf(n) !== lineOf(row))) return;
+        row = n;
+        follow();
+      }
+    } else if (mode === 'palette') {
+      const n = clamp(row + dy, 0, SHAPES.length + FEATURED.length);
       if (!dy || n === row) return;
       row = n;
     } else if (dy) {
@@ -586,7 +807,9 @@ export function playground(d: Deps) {
     return true;
   }
 
-  function drag(dx: number, dy: number) {
+  /** a drag or the right stick; at a screen point, in fractions 0 to 1, over the shelf it scrolls the shelf, else it turns the bed */
+  function drag(dx: number, dy: number, x = 0, y = 0) {
+    if (onShelf(x, y)) return roll(-(tall ? dx : dy));
     aim.yaw += dx * 0.01;
     aim.tilt = clamp(aim.tilt + dy * 0.01, 0.05, 1.45);
   }
@@ -602,7 +825,37 @@ export function playground(d: Deps) {
     const h = 2 * DIST * Math.tan(THREE.MathUtils.degToRad(d.camera.fov / 2));
     pivot.position.copy(d.camera.position).add(new THREE.Vector3(pt ? 0 : -0.2 * h * d.camera.aspect, pt ? 0.14 * h : 0, -DIST));
     pivot.rotation.set(orbit.tilt, orbit.yaw, 0);
-    pivot.scale.setScalar(pt ? 0.8 : 1);
+    // portrait's shelf takes the lower half, so the bed sits higher and smaller over it
+    const up = pt && mode === 'shelf' && !card;
+    pivot.position.y += up ? 0.08 * h : 0;
+    pivot.scale.setScalar((pt ? (up ? 0.6 : 0.8) : 1) * zoom);
+    const want = picked();
+    const id = want ? `${mode}/${want[0]}` : '';
+    if (id !== showing) {
+      showing = id;
+      stand.visible = false;
+      want?.[1]().then(
+        (g) => {
+          if (showing !== id) return;
+          show.geometry = g;
+          show.scale.fromArray(want[2] ?? [1, 1, 1]);
+          show.position.copy(g.boundingBox!.getCenter(new THREE.Vector3()).negate().multiply(show.scale));
+          stand.visible = true;
+          showAt = now;
+        },
+        () => {},
+      );
+    }
+    // the bed steps aside while a part is shown
+    world.visible = !showing && !(mode === 'shelf' && card);
+    shelfFrame(t, dt, h, pt);
+    if (stand.visible) {
+      const e = 1 - (1 - clamp((t - showAt) / 0.25, 0, 1)) ** 3;
+      stand.position.copy(pivot.position).add(new THREE.Vector3((1 - e) * 0.25 * h, 0, 0));
+      stand.rotation.set(0.35, t * 0.6, 0);
+      stand.scale.setScalar((0.45 * h) / show.geometry.boundingBox!.getSize(new THREE.Vector3()).multiply(show.scale).length());
+      (show.material as THREE.MeshStandardMaterial).opacity = e;
+    }
     // the part pops when a solve lands
     const pop = popAt >= 0 ? clamp((t - popAt) / 0.25, 0, 1) : 1;
     body.scale.setScalar(1 + 0.035 * Math.sin(Math.PI * pop));
@@ -655,8 +908,13 @@ export function playground(d: Deps) {
     if (mode === 'light') return [title(S.light), [li(d.ink('p', `${hhmm(hour)}  ${fromHour(hour).night ? S.moon : S.sun}`, 'read')), false]];
     if (mode === 'palette') return [title(S.shapes), ...list([...SHAPES.map((s) => S[s]), ...FEATURED.map((f) => f.name), S.importStl], row, (i) => (row = i))];
     if (mode === 'shelf') {
-      const s = shelf();
-      return [title(S.shelf), ...(s.length ? list(s.map(([, m]) => `${m.name}  v${m.version}`), row, (i) => (row = i)) : [[li(d.ink('p', S.shelfEmpty)), false] as [HTMLElement, boolean]])];
+      const m = shelf()[row]?.[1];
+      if (!m) return [title(S.shelf), [li(d.ink('p', S.shelfEmpty)), false]];
+      // the icons are the list; a screen reader hears the picked one's name
+      if (!card) return [[li(Object.assign(document.createElement('p'), { className: 'sr', textContent: m.name })), false]];
+      const head: [HTMLElement, boolean][] = [title(m.name), [li(d.ink('p', `v${m.version}`, 'read')), false]];
+      if (card === 1) return [...head, ...list([S.open, S.delete], act, (i) => (act = i))];
+      return [...head, [li(d.ink('p', S.sure)), false], ...list([S.yes, S.no], yes ? 0 : 1, (i) => (yes = i === 0))];
     }
     if (mode === 'name') {
       const keys = KEYS.map((r, y): [HTMLElement, boolean] => {
@@ -714,12 +972,12 @@ export function playground(d: Deps) {
       ];
     if (mode === 'light') return [['left', ''], ['up', ''], ['down', ''], ['right', hhmm(hour)], ['b', S.back]];
     if (mode === 'palette') return [['a', S.add], ['b', S.back]];
-    if (mode === 'shelf') return [['a', S.open], ['b', S.back], ...(shelf().length ? [['x', S.delete] as [Key, string]] : [])];
+    if (mode === 'shelf') return card ? [['a', S.enter], ['b', S.back]] : [...(icons.length ? [['a', S.enter] as [Key, string]] : []), ['b', S.back], ['zl', ''], ['zr', S.zoom]];
     if (mode === 'name') return [['a', S.enter], ['b', S.cancel], ['x', S.del], ['y', S.space]];
     const p = bench.pieces[sel];
     return p
       ? [['a', S.grab], ['b', S.back], ['x', S.remove], ['y', S.shapes], ['l', S.dup], ['r', S.mirror]]
-      : [['a', S.enter], ['b', S.back], ['y', S.shapes]];
+      : [['a', S.enter], ['b', S.back], ['y', S.shapes], ['zl', ''], ['zr', S.zoom]];
   }
 
   return {
@@ -732,17 +990,23 @@ export function playground(d: Deps) {
       solve();
     },
     exit() {
-      shown = pivot.visible = false;
+      shown = pivot.visible = stand.visible = shelfRoot.visible = false;
+      showing = '';
       if (mode === 'light') d.hour(null);
     },
     get shown() {
       return shown;
     },
-    title: (): [string, string] => [mode === 'name' ? S.savePart : S.play, oops ? S.notSolid : running || queue.length ? S.loading : bench.name],
+    title: (): [string, string] =>
+      mode === 'shelf' && card === 0 && icons[row] ? [shelf()[row]?.[1].name ?? S.shelf, S.shelf] : [mode === 'name' ? S.savePart : S.play, oops ? S.notSolid : running || queue.length ? S.loading : bench.name],
     press,
     move,
     type,
     drag,
+    tap,
+    zoomBy,
+    /** the wheel at a screen point, in fractions 0 to 1: over the shelf it scrolls, else it zooms the bed */
+    wheel: (dy: number, x: number, y: number) => (onShelf(x, y) ? roll(dy) : zoomBy(Math.exp(-dy * 0.001))),
     frame,
     rows,
     bar,
