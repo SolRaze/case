@@ -206,6 +206,8 @@ export function playground(d: Deps) {
   let inView = 3; // lines of icons in view
   let cellPx = 100; // one icon line, in screen pixels
   let tall = false; // portrait: the shelf runs sideways under the bed, else down beside it
+  const COL = 0.62; // landscape: the right column's left edge, in view widths; style.css places the list and bar on it
+  let shelfTop = 0.5; // landscape: the shelf's top, in view heights, eased: under the list, or the list's place once opened
   let zoom = 1.3; // the bed's size: ZL ZR, the wheel or a pinch; it opens zoomed in
   let rise = 0; // the bed's height on screen, in view heights: R3 then the right stick, shift or right drag, two fingers
   let stickRises = false; // R3 swaps the right stick between turning the bed and raising it
@@ -218,7 +220,7 @@ export function playground(d: Deps) {
   /** is a screen point, in fractions 0 to 1, over the shelf rather than the bed */
   /** the shelf stands beside the bench in landscape too, unpicked; portrait has no room under the bench's list */
   const shelfOn = () => mode === 'shelf' || (mode === 'browse' && !tall);
-  const onShelf = (x: number, y: number) => shelfOn() && !card && (tall ? y > 0.56 : x > 0.72);
+  const onShelf = (x: number, y: number) => shelfOn() && !card && (tall ? y > 0.56 : x > COL && y > shelfTop);
   /** the wheel or a drag over the shelf scrolls it, by pixels along its run */
   const roll = (px: number) => (aimScroll = clamp(aimScroll + px / cellPx, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0)));
   const shelfRoot = new THREE.Group();
@@ -299,12 +301,19 @@ export function playground(d: Deps) {
     const w = h * d.camera.aspect;
     // icon size and spacing measured off the console's browser (Reference/screens/ps2), in view heights: 0.2 apart, an icon 0.19 at its largest side.
     // Landscape: 2 across at the right edge, clear of the bench's list, running down, 3 lines in view. Portrait: 2 rows under the bed, 2 in view, running sideways
+    // Landscape: under the list in its column, rising into the list's place once opened; lines in view are what fits above the bar
     cols = 2;
-    const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.25 * h, (0.26 * w) / 2.2);
-    inView = pt ? 2 : 3;
+    const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.2 * h, ((0.96 - COL) * w) / 2.1);
+    const k = still.matches ? 1 : 1 - Math.exp(-8 * dt);
+    if (!pt) {
+      const list = document.getElementById('parts')!.getBoundingClientRect();
+      const floor = (document.querySelector('footer')?.getBoundingClientRect().top ?? innerHeight) / innerHeight - 0.02;
+      const want = mode === 'shelf' ? 0.18 : list.bottom / innerHeight + 0.04;
+      shelfTop += (want - shelfTop) * k;
+      inView = Math.max(1, Math.floor(((floor - want) * h) / (cell * 1.05)));
+    } else inView = 2;
     cellPx = (cell / h) * innerHeight;
     const icon = 0.95 * cell;
-    const k = still.matches ? 1 : 1 - Math.exp(-8 * dt);
     aimScroll = clamp(aimScroll, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0));
     scroll += (aimScroll - scroll) * k;
     icons.forEach((it, i) => {
@@ -315,7 +324,7 @@ export function playground(d: Deps) {
       const fore = card > 0 && on;
       const spot = pt
         ? new THREE.Vector3((v - (inView - 1) / 2) * cell, -0.12 * h - across * cell * 1.05, -DIST)
-        : new THREE.Vector3(0.35 * w + (across - (cols - 1) / 2) * cell * 1.1, 0.24 * h - v * cell * 1.05, -DIST);
+        : new THREE.Vector3((COL - 0.5) * w + cell / 2 + across * cell * 1.1, (0.5 - shelfTop) * h - cell / 2 - v * cell * 1.05, -DIST);
       // the pop: overshoots, then settles, as the cards page's icons do
       const p = clamp((t - it.born) / 0.3, 0, 1);
       const grow = still.matches ? p && 1 : p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
