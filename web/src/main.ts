@@ -1821,8 +1821,8 @@ function pad(now: number, dt: number) {
   if (view === 'play' && Math.hypot(rx, ry) > DEAD) play.drag(rx * dt * 300, ry * dt * 300);
   const on: Record<string, boolean> = { left: b(14) || x < -STICK, right: b(15) || x > STICK, up: b(12) || y < -STICK, down: b(13) || y > STICK };
   // the standard mapping is by position: a Nintendo pad's bottom button is B and its left is Y, so its face pairs swap
-  // third-party Switch pads carry their own vendor id (PowerA 20d6 also makes Xbox pads), so they match by name words
-  const swap = /nintendo|joy-?con|pro controller|057e|switch|nsw|spectra/i.test(p.id);
+  // only Nintendo's own pads: a third-party pad naming the Switch can already report by label, and swapping it crosses the letters
+  const swap = /nintendo|joy-?con|pro controller|057e/i.test(p.id);
   PAD.forEach((k, i) => (on[k] = b(swap && i < 4 ? i ^ 1 : i)));
   for (const k in on) {
     const next = held.get(k);
