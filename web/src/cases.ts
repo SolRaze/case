@@ -110,6 +110,12 @@ export const FEATURED = [
   { slug: 'ar-knuckle-twin', name: 'AR knuckle twin' }, // Joji_Griez, printables.com/model/431868, CC BY-NC
   { slug: 'spiky-knuckle', name: 'Spiky knuckle' }, // mattie, printables.com/model/1384614, CC BY-NC
   { slug: 'spiked-knuckle', name: 'Spiked knuckle' }, // Kavitate, printables.com/model/355631, public domain
+  { slug: 'spine-chain', name: 'Spine chain' }, // sol, CC BY; out/stand/fused/whole.stl decimated
+  { slug: 'vertebra-c3', name: 'C3 vertebra' }, // sol, CC BY; out/stand/fused/C3.stl decimated, same for C4-C7
+  { slug: 'vertebra-c4', name: 'C4 vertebra' }, // sol, CC BY
+  { slug: 'vertebra-c5', name: 'C5 vertebra' }, // sol, CC BY
+  { slug: 'vertebra-c6', name: 'C6 vertebra' }, // sol, CC BY
+  { slug: 'vertebra-c7', name: 'C7 vertebra' }, // sol, CC BY
 ];
 /** a featured part's mesh, centred like an import, kept in case.imports under IMPORT + slug; fetched once */
 export async function featuredSolid(slug: string): Promise<Solid> {
