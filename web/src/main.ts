@@ -1936,12 +1936,16 @@ canvas.addEventListener('pointermove', (e) => {
     shift([f[0] + x, f[1] + y, moving.at[2], (f[3] ?? 0) + z]);
     paint();
   } else if (view === 'play' && touches.size === 2 && touches.has(e.pointerId)) {
+    // two fingers pinch the zoom and, moving together, raise the bed
     const was = spread();
+    const mid = () => [...touches.values()].reduce((y, t) => y + t[1] / 2, 0);
+    const midWas = mid();
     touches.set(e.pointerId, [e.clientX, e.clientY]);
     if (was > 0) play.zoomBy(spread() / was);
+    play.drag(0, mid() - midWas, 0, 0, true);
   } else if (view === 'play') {
-    // the drag acts where it started: over the shelf it scrolls, over the bed it turns
-    play.drag(e.clientX - down.last, e.clientY - down.lastY, down.x / innerWidth, down.y / innerHeight);
+    // the drag acts where it started: over the shelf it scrolls, over the bed it turns, or with shift or the right button raises it
+    play.drag(e.clientX - down.last, e.clientY - down.lastY, down.x / innerWidth, down.y / innerHeight, e.shiftKey || (e.buttons & 2) > 0);
     down.last = e.clientX;
     down.lastY = e.clientY;
   } else if (view === 'models') {
@@ -1963,6 +1967,8 @@ canvas.addEventListener('pointermove', (e) => {
   }
 });
 const untouch = (e: PointerEvent) => touches.delete(e.pointerId);
+// the right button drags the playground's bed up and down, so its menu stays shut there
+canvas.addEventListener('contextmenu', (e) => view === 'play' && e.preventDefault());
 canvas.addEventListener('pointerup', untouch);
 canvas.addEventListener('pointercancel', untouch);
 canvas.addEventListener(

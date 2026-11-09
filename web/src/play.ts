@@ -192,7 +192,7 @@ export function playground(d: Deps) {
 
   // Shelf: the saved parts as a memory card's game data, small turning icons in rows that pop in one by one; the picked one rocks over a glow
   // and names itself in the title; A brings it forward large and turning beside its Open and Delete, Delete asks first
-  type Icon = { key: string; holder: THREE.Group; mesh: THREE.Mesh; big: number; tall: number; born: number };
+  type Icon = { key: string; holder: THREE.Group; mesh: THREE.Mesh; big: number; born: number; at: THREE.Vector3 };
   // every icon one pose: leaning back LEAN to show its depth, turned YAW to show its side
   const LEAN = 0.35;
   const YAW = 0.3;
@@ -207,6 +207,9 @@ export function playground(d: Deps) {
   let cellPx = 100; // one icon line, in screen pixels
   let tall = false; // portrait: the shelf runs sideways under the bed, else down beside it
   let zoom = 1.3; // the bed's size: ZL ZR, the wheel or a pinch; it opens zoomed in
+  let rise = 0; // the bed's height on screen, in view heights: R3 then the right stick, shift or right drag, two fingers
+  let stickRises = false; // R3 swaps the right stick between turning the bed and raising it
+  let fill = 1; // an empty bed draws bigger, eased
   const zoomBy = (f: number) => (zoom = clamp(zoom * f, 0.5, 3));
   /** icon i's line along the shelf's run, and its place across it */
   const lineOf = (i: number) => Math.floor(i / cols);
@@ -259,7 +262,7 @@ export function playground(d: Deps) {
       const holder = new THREE.Group().add(tip);
       holder.visible = false;
       shelfRoot.add(holder);
-      const it: Icon = { key, holder, mesh, big: 0, tall: 0, born: now + 0.2 + i * 0.08 };
+      const it: Icon = { key, holder, mesh, big: 0, born: now + 0.2 + i * 0.08, at: new THREE.Vector3() };
       stlGeo(key).then(
         (g) => {
           mesh.geometry = g;
@@ -276,8 +279,6 @@ export function playground(d: Deps) {
             const m = new THREE.Matrix4().makeBasis(cols[0], cols[1], cols[2]);
             if (m.determinant() < 0) cols[by[2]].set(0, 0, -1), m.makeBasis(cols[0], cols[1], cols[2]);
             orient.setRotationFromMatrix(m);
-            // drawn height once leaned back, before scale: the baseline and the dot measure from it
-            it.tall = dims[by[1]] * Math.cos(LEAN) + dims[by[2]] * Math.sin(LEAN);
           }
           holder.visible = true;
         },
@@ -321,9 +322,9 @@ export function playground(d: Deps) {
       // opened, it stands 0.3 view heights in the bed's place and the rest fade, or they would sit under the text
       // parts keep their order of size against the shelf's biggest, by the square root so a small one still reads; SPREAD 1 is true scale, 0 all one size
       const size = fore ? (0.3 * h) / it.big : (icon * (it.big / biggest()) ** SPREAD) / it.big;
-      // on a baseline: every part's bottom on its line's floor
-      if (!fore) spot.y += (it.tall * size - icon) / 2;
-      it.holder.position.lerp(fore ? pivot.position.clone() : d.camera.position.clone().add(spot), k);
+      // every part centred in its cell, so the cells read as a grid and the highlight sits the same on each
+      it.at.copy(d.camera.position).add(spot);
+      it.holder.position.lerp(fore ? pivot.position.clone() : it.at, k);
       it.holder.scale.setScalar(THREE.MathUtils.lerp(it.holder.scale.x || size, size, k) * (fore ? 1 : grow));
       it.holder.rotation.set(0, fore ? (still.matches ? YAW : t * 0.6) : YAW + (on && card === 0 && mode === 'shelf' && !still.matches ? 0.25 * Math.sin(t * 1.6) : 0), 0);
       const m = it.mesh.material as THREE.MeshStandardMaterial;
@@ -332,14 +333,19 @@ export function playground(d: Deps) {
     });
     const lit = icons[row];
     halo.visible = dot.visible = !!lit && mode === 'shelf' && card === 0 && lit.holder.visible;
+    if (!halo.visible) halo.userData.on = false;
     if (halo.visible) {
-      // an underglow behind the picked part, rimming its outline
-      const seen = Math.max(lit.big * lit.holder.scale.x, 0.7 * icon); // the part's longest side as drawn, small parts lifted
-      halo.position.copy(lit.holder.position).add(new THREE.Vector3(0, -0.1 * seen, -0.6 * seen));
-      halo.scale.set(1.6 * seen, 1.1 * seen, 1);
-      // on the part's lower third, by its drawn height
-      dot.position.copy(lit.holder.position).add(new THREE.Vector3(0, -0.3 * lit.tall * lit.holder.scale.x, 0.3));
-      dot.scale.setScalar(0.8 * seen);
+      // both belong to the cell, not the part: one size and place on every cell, sliding cell to cell as the pick moves
+      const was = halo.userData.on as boolean | undefined;
+      halo.userData.on = true;
+      // behind and in front along the line of sight, or an off-centre cell's light drifts sideways
+      const toEye = d.camera.position.clone().sub(lit.at).normalize();
+      const glow = lit.at.clone().addScaledVector(toEye, -0.6 * cell);
+      const floor = lit.at.clone().add(new THREE.Vector3(0, -0.4 * cell, 0)).addScaledVector(toEye, 0.3);
+      halo.position.lerp(glow, was ? k : 1);
+      dot.position.lerp(floor, was ? k : 1);
+      halo.scale.set(1.1 * cell, 0.85 * cell, 1);
+      dot.scale.setScalar(0.3 * cell);
       halo.material.opacity = dot.material.opacity = (0.85 + 0.15 * Math.sin(t * 2.1)) * (lit.mesh.material as THREE.MeshStandardMaterial).opacity;
     }
   }
@@ -830,8 +836,9 @@ export function playground(d: Deps) {
   }
 
   /** a drag or the right stick; at a screen point, in fractions 0 to 1, over the shelf it scrolls the shelf, else it turns the bed */
-  function drag(dx: number, dy: number, x = 0, y = 0) {
+  function drag(dx: number, dy: number, x = 0, y = 0, raise = false) {
     if (onShelf(x, y)) return roll(-(tall ? dx : dy));
+    if (raise) return void (rise = clamp(rise - dy / innerHeight, -0.35, 0.35));
     aim.yaw += dx * 0.01;
     aim.tilt = clamp(aim.tilt + dy * 0.01, 0.05, 1.45);
   }
@@ -849,8 +856,11 @@ export function playground(d: Deps) {
     pivot.rotation.set(orbit.tilt, orbit.yaw, 0);
     // portrait's shelf takes the lower half, so the bed sits higher and smaller over it
     const up = pt && mode === 'shelf' && !card;
-    pivot.position.y += up ? 0.08 * h : 0;
-    pivot.scale.setScalar((pt ? (up ? 0.5 : 0.65) : 1) * zoom);
+    pivot.position.y += (up ? 0.08 : 0) * h + rise * h;
+    // an empty bed has nothing on it to frame, so it draws bigger
+    // landscape's bed already spans its half, so it grows less
+    fill += ((bench.pieces.length || showing ? 1 : pt ? 1.3 : 1.1) - fill) * k;
+    pivot.scale.setScalar((pt ? (up ? 0.5 : 0.65) : 1) * zoom * fill);
     const want = picked();
     const id = want ? `${mode}/${want[0]}` : '';
     if (id !== showing) {
@@ -983,7 +993,7 @@ export function playground(d: Deps) {
     });
     const n = bench.pieces.length;
     return [
-      ...(n ? P : [[li(d.ink('p', S.emptyBench)), false] as [HTMLElement, boolean]]),
+      ...P,
       ...ACTS.map((a, i): [HTMLElement, boolean] => [li(button(actName[a], n + i === sel, pick(n + i === sel, () => (sel = n + i))), i ? 'act' : 'act first'), n + i === sel]),
     ];
   }
@@ -1025,13 +1035,18 @@ export function playground(d: Deps) {
       return shown;
     },
     title: (): [string, string] =>
-      mode === 'shelf' && card === 0 && icons[row] ? [shelf()[row]?.[1].name ?? S.shelf, S.shelf] : [mode === 'name' ? S.savePart : S.play, oops ? S.notSolid : running || queue.length ? S.loading : bench.name],
+      mode === 'shelf' && card === 0 && icons[row] ? [shelf()[row]?.[1].name ?? S.shelf, S.shelf] : [mode === 'name' ? S.savePart : S.play, oops ? S.notSolid : running || queue.length ? S.loading : bench.name || (bench.pieces.length ? '' : S.emptyBench)],
     press,
     move,
     type,
     drag,
     tap,
     zoomBy,
+    /** R3: the right stick turns the bed, or raises it */
+    stickSwap: () => ((stickRises = !stickRises), sfx.tick()),
+    get stickRises() {
+      return stickRises;
+    },
     /** the wheel at a screen point, in fractions 0 to 1: over the shelf it scrolls, else it zooms the bed */
     wheel: (dy: number, x: number, y: number) => (onShelf(x, y) ? roll(dy) : zoomBy(Math.exp(-dy * 0.001))),
     frame,
