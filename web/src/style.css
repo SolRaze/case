@@ -5,6 +5,7 @@ html { background: #000 linear-gradient(115deg, var(--field0, #c4c4c4), var(--fi
 html, body { height: 100%; overflow: hidden; font-family: var(--font); color: var(--ink); }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; touch-action: manipulation; }
 ul { list-style: none; }
+h1 { font-size: inherit; }
 
 /* the browser's lit grey, light top left to dark bottom right; an open phone dims it */
 #bg, #bg::after { position: fixed; top: 0; left: 0; right: 0; height: 100lvh; transition: opacity .5s; }
@@ -127,6 +128,7 @@ footer {
 footer button { display: flex; align-items: center; gap: .3em; min-height: 44px; }
 footer img { width: 1.5em; height: 1.5em; }
 footer div { display: flex; gap: .5em; }
+footer .aside { position: absolute; right: max(4vw, env(safe-area-inset-right)); bottom: calc(2.2vh + env(safe-area-inset-bottom)); }
 
 /* what shows where; hidden also leaves the Tab order and the screen reader, visibility flips once the fade is done */
 header, #name, #inspo, #detail, #parts, #info, footer, #loading, #up, #down { transition: opacity .35s, visibility .35s; }

@@ -6,7 +6,7 @@ import { buildLocked, buildPhone, edges, lockedEdge, framed, label, look, lookT,
 import { buildLogo, buildPlay, buildShirt } from './logo';
 import { fromHour, lit } from './sky';
 import { READY, order, styleName, year } from './catalog';
-import { built, exportStl, isSet, load, loadMy, loadTemplates, MY, partSolid, placing, saveTemplates, seat, seedFeatured, SINK, solid, type Template } from './cases';
+import { built, exportStl, FEATURED, isSet, load, loadMy, loadTemplates, MY, partSolid, placing, saveTemplates, seat, seedFeatured, SINK, solid, type Template } from './cases';
 import { STEPS, combine, opsKey, partList, type Move, type Moves, type Op, type Part } from './parts';
 import { inkLayer } from './ink';
 import * as sfx from './sound';
@@ -28,7 +28,7 @@ const clock = () => performance.now() / 1000;
 const start = decodeURIComponent(location.hash.slice(1));
 // the entry the page loaded on; a popstate to an entry with no state is a url typed or followed while open
 history.replaceState({ landing: true }, '');
-/** reduced motion: no idle spin or sway, a swipe still turns the phone */
+/** reduced motion: no idle spin, sway, pop, flip or easing; poses jump, a swipe still turns the phone */
 const still = matchMedia('(prefers-reduced-motion: reduce)');
 const idle = () => (still.matches ? 0 : theme.spin);
 const phones = order(specs as unknown as PhoneSpec[]);
@@ -240,7 +240,7 @@ const setParts = new Map<string, Part[]>();
 type Look = Pick<Template, 'style' | 'ops' | 'moves'>;
 const copyLook = (l: Look): Look => ({ style: l.style, ops: l.ops && { ...l.ops }, moves: l.moves && { ...l.moves } });
 let starts: { name: string; look: Look }[] = [];
-/** finished designs kept out of the start row: A on it steps through them, and the bar shows no key for it */
+/** finished designs kept out of the start row: A on it steps through them */
 let creations: typeof starts = [];
 let store = loadTemplates([]);
 
@@ -508,11 +508,12 @@ function frontTarget(i: number): Target {
   };
 }
 
-const damp = (a: number, b: number, k: number, dt: number) => a + (b - a) * (1 - Math.exp(-k * dt));
+const damp = (a: number, b: number, k: number, dt: number) => (still.matches ? b : a + (b - a) * (1 - Math.exp(-k * dt)));
 const unwind = (a: number, rest: number) => rest + (((a - rest) % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
 /** pop-in: 0 before it is born, overshooting a little to 1 over 0.3 s */
 const pop = (it: Item, now: number) => {
   const k = it.ready ? clamp((now - it.born) / 0.3, 0, 1) : 0;
+  if (still.matches) return k && 1;
   return k && 1 + 2.7 * (k - 1) ** 3 + 1.7 * (k - 1) ** 2;
 };
 
@@ -561,7 +562,7 @@ low.setAnimationLoop((t) => {
   if (m > 0) {
     const to = ring - page() * RING;
     turn = (turn + m) % m;
-    turn += ((((to - turn) % m) + m * 1.5) % m - m / 2) * (1 - Math.exp(-8 * dt));
+    turn += ((((to - turn) % m) + m * 1.5) % m - m / 2) * (still.matches ? 1 : 1 - Math.exp(-8 * dt));
   }
   for (const it of items.values()) {
     const j = list.indexOf(it);
@@ -570,11 +571,11 @@ low.setAnimationLoop((t) => {
 
   // the front icons hold their own pose; the entered one flips toward the camera and blows up
   let k = 0;
-  if (flip) {
+  if (flip && !still.matches) {
     const s = clamp((now - flip.t0) / 0.35, 0, 1);
     k = flip.dir > 0 ? s * s : (1 - s) ** 2;
     if (flip.dir < 0 && s >= 1) flip = null;
-  }
+  } else if (flip?.dir === -1) flip = null;
   front.forEach((it, i) => {
     pose(it, frontTarget(i), dt);
     const f = flip && flip.i === i ? k : 0;
@@ -602,7 +603,7 @@ low.setAnimationLoop((t) => {
   let s = 1;
   if (printAt >= 0) {
     const p = clamp((now - printAt) / 0.7, 0, 1);
-    s = 1 + 0.6 * (1 - (1 - p) ** 3);
+    if (!still.matches) s = 1 + 0.6 * (1 - (1 - p) ** 3);
     alpha *= 1 - p;
   }
   caseMesh.scale.setScalar(s);
@@ -620,7 +621,7 @@ low.setAnimationLoop((t) => {
     const g = view === 'boot' ? 1 : Math.min(pop(lit, now), 1);
     const h = lit.h * lit.scale;
     const toCam = camera.position.clone().sub(lit.pos);
-    const o = theme.dot * glowNight * (0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * g;
+    const o = theme.dot * glowNight * (still.matches ? 1 : 0.85 + 0.15 * Math.sin(now * 2.1)) * lit.opacity * g;
     if (view === 'boot') {
       dot.position.copy(lit.pos).add(toCam.clone().setLength(0.3));
       dot.scale.setScalar(h * 0.55);
@@ -689,7 +690,7 @@ const arrow = (d: string, base: 0 | 1) =>
 ($('down') as HTMLImageElement).src = arrow('M0 0H24L12 12Z', 0);
 const bars: Record<View, [Press, string][]> = {
   boot: [['a', S.enter], ['x', S.theme]],
-  models: [['a', S.enter], ['b', S.back], ['x', S.options]],
+  models: [['a', S.enter], ['b', S.back], ['x', S.info]],
   cases: [['a', S.enter], ['b', S.back], ['x', S.options]],
   detail: [],
   edit: [['a', S.save], ['b', S.back]],
@@ -703,8 +704,17 @@ function editBar(): [Press, string][] {
   if (adding) return [['a', agroup === null ? S.enter : S.add], ['b', S.back]];
   if (moving) return [['a', S.place], ['b', S.cancel]];
   const k = rowKind();
-  const x = { start: '', part: S.move, add: S.add, undo: S.undo, save: S.save }[k];
+  const x = { start: nextCreation() ? S.inspo : '', part: S.move, add: S.add, undo: S.undo, save: S.save }[k];
   return [...(x ? [['a', x] as [Press, string]] : []), ['b', S.back], ...(k === 'part' ? [['x', S.remove] as [Press, string]] : [])];
+}
+
+/** the keyboard keys behind a bar button, shown on hover where the key is not the button's own letter; keydown below binds them */
+const keysOf: Partial<Record<Press | Dir, string>> = { a: 'A, Enter', b: 'B, Esc', zl: 'Shift + ↓', zr: 'Shift + ↑', left: '←', right: '→', up: '↑', down: '↓' };
+/** an open list's bar: A names the picked row's act and is left off a row it cannot do; B closes the list, or leaves the page when the list is the page, as detail's is */
+function menuBar(): [Press, string][] {
+  const r = rows()[cmd];
+  const a = menu === 3 ? (yes ? S.yes : S.no) : menu === 5 ? S.enter : r?.[2] ? r[1] : '';
+  return [...(a ? [['a', a] as [Press, string]] : []), ['b', view === 'detail' && menu === 1 ? S.back : S.close]];
 }
 
 const text = (id: string, s: string) => ($(id).textContent = s);
@@ -744,10 +754,13 @@ function rows(): Row[] {
 }
 
 /** a part set's parts but the base, then the saved parts, each with its op in the draft and in parts.json */
-const setRows = () =>
-  draft && isSet(draft.style)
-    ? [...(setParts.get(draft.style) ?? []), ...myList()].filter((p) => p.op !== 'base').map((p) => ({ name: p.name, def: p.op, op: draft!.ops?.[p.name] ?? p.op }))
-    : [];
+const setRows = () => {
+  if (!draft || !isSet(draft.style)) return [];
+  const set = setParts.get(draft.style) ?? [];
+  // a featured part whose twin is in the set is that set part again
+  const mine = myList().filter((p) => !set.some((q) => q.name === FEATURED.find((f) => MY + f.slug === p.name)?.twin));
+  return [...set, ...mine].filter((p) => p.op !== 'base').map((p) => ({ name: p.name, def: p.op, op: draft!.ops?.[p.name] ?? p.op }));
+};
 /** the op Add part puts a part on: its parts.json op, a saved part joined */
 const addOp = (r: { def: Op }): Op => (r.def === 'off' ? 'union' : r.def);
 /** edit's part rows: the parts on the case, joined ones then cut ones, as the list groups them; Y lists the rest */
@@ -772,6 +785,11 @@ const addGroups = () => [...Object.keys(GROUPS), S.featured, S.myParts, S.other]
 const addRows = () => addable().filter((r) => groupOf(r.name) === agroup);
 /** edit's rows: the start, the parts, then what A can do: add a part, undo, save */
 type Kind = 'start' | 'part' | 'add' | 'undo' | 'save';
+/** the creation A on the start row steps to, undefined when there is none other than the draft */
+const nextCreation = () => {
+  const next = creations[(creations.findIndex((c) => sameLook(c.look, draft!)) + 1) % creations.length];
+  return next && !sameLook(next.look, draft!) ? next : undefined;
+};
 const tail = (): Kind[] => [...(addable().length ? ['add' as const] : []), ...(past.length ? ['undo' as const] : []), 'save'];
 const rowKind = (i = psel): Kind => (i === 0 ? 'start' : i <= partRows().length ? 'part' : (tail()[i - partRows().length - 1] ?? 'save'));
 const rowCount = () => 1 + partRows().length + tail().length;
@@ -1029,8 +1047,12 @@ function paint() {
     b.onclick = click;
     return li(b);
   };
-  const row = ([id, s, ok]: Row, i: number) =>
-    button(s, ok && i === cmd, () => (!ok ? sfx.cancel() : cmd === i ? press('a') : (sfx.tick(), (cmd = i), paint())), [ok ? '' : 'off', id === 'delete' ? 'del' : ''].filter(Boolean).join(' '));
+  const row = ([id, s, ok]: Row, i: number) => {
+    const l = button(s, ok && i === cmd, () => (!ok ? sfx.cancel() : cmd === i ? press('a') : (sfx.tick(), (cmd = i), paint())), [ok ? '' : 'off', id === 'delete' ? 'del' : ''].filter(Boolean).join(' '));
+    // still focusable, so a screen reader finds the row and hears why nothing happens
+    if (!ok) l.firstElementChild!.ariaDisabled = 'true';
+    return l;
+  };
   if (menu === 1) ul.replaceChildren(...rows().map(row));
   else if (menu === 2) ul.replaceChildren(li(ink$('p', S.print)), ...rows().map(row));
   else if (menu === 3) {
@@ -1112,7 +1134,7 @@ function paint() {
       act(null, S.reset, '', resetMove),
     );
   } else if (view === 'edit' && draft) {
-    const editRow = (i: number, name: string, value: string, cls = '') => {
+    const editRow = (i: number, name: string, value: string, cls = '', steps = true) => {
       const on = i === psel;
       const l = document.createElement('li');
       if (cls) l.className = cls;
@@ -1133,7 +1155,9 @@ function paint() {
         psel = i;
         move(d, 0);
       };
-      l.append(b(name, pick, 'name'), b('‹', step(-1), 'step'), b(value, pick, 'value'), b('›', step(1), 'step'));
+      // a row with one value keeps the arrows' room, so the values stay in one column
+      const arrow = (s: string, d: number) => (steps ? b(s, step(d), 'step') : Object.assign(ink$('p', s, 'step'), { style: 'visibility: hidden' }));
+      l.append(b(name, pick, 'name'), arrow('‹', -1), b(value, pick, 'value'), arrow('›', 1));
       return l;
     };
     // a part off its parts.json op or out of its own place shows in the title colour
@@ -1144,7 +1168,7 @@ function paint() {
     const names: Record<string, string> = { add: S.addPart, undo: S.undo, save: S.save };
     parts.replaceChildren(
       ...windowed([
-        [editRow(0, S.start, lookName(draft)), !psel],
+        [editRow(0, S.start, lookName(draft), '', starts.length > 1), !psel],
         ...P.flatMap((r, i, all): [HTMLElement, boolean][] => [
           ...(all[i - 1]?.op !== r.op ? [[li(ink$('p', heading[r.op], 'group')), false] as [HTMLElement, boolean]] : []),
           [editRow(i + 1, partName(r.name), opName[r.op], changed(r) ? 'moved' : ''), i + 1 === psel],
@@ -1170,12 +1194,13 @@ function paint() {
   void showPart();
 
   const bar = $('bar');
-  const keys: [Press | Dir, string][] =
-    menu === 4 ? [] : menu ? [['a', S.enter], ['b', S.back]] : view === 'edit' ? editBar() : view === 'play' ? play.bar() : view === 'cases' && gallery ? [['a', S.remix], ['b', S.back], ...(peek ? [] : [['x', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['a', S.enter], ['b', S.back]] : bars[view];
-  // marks with no word of their own stay on one line with the next, which names them
+  const keys: [Press | Dir, string, string?][] =
+    menu === 4 ? [] : menu ? menuBar() : view === 'edit' ? editBar() : view === 'play' ? play.bar() : view === 'cases' && gallery ? [['a', S.remix], ['b', S.back], ...(peek ? [] : [['x', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['a', S.enter], ['b', S.back]] : view === 'boot' && theme.front[fronts()[fsel]].icon === 'shirt' ? [['x', S.theme]] : bars[view];
+  // marks with no word of their own stay on one line with the next, which names them; a screen reader hears each as that word and its way
   const groups: HTMLElement[] = [];
   let group: HTMLElement | null = null;
-  keys.forEach(([k, s], i) => {
+  const way: Partial<Record<Press | Dir, string>> = { left: S.left, right: S.right, up: S.up, down: S.down, l: S.left, r: S.right, zl: '−', zr: '+' };
+  keys.forEach(([k, s, aria], i) => {
     const b = document.createElement('button');
     const img = document.createElement('img');
     img.className = 'px';
@@ -1183,9 +1208,14 @@ function paint() {
     img.alt = '';
     b.append(img);
     b.append(ink$('span', s));
-    if (!s) b.ariaLabel = `${keys.slice(i).find((x) => x[1])?.[1] ?? ''} ${k}`.trim();
+    const named = keys.slice(i).find((x) => x[1]);
+    const base = named?.[2] ?? named?.[1] ?? '';
+    if (!s || group || named?.[2]) b.ariaLabel = [`${base} ${way[k] ?? k}`, s && s !== base ? s : ''].filter(Boolean).join(', ');
     b.onclick = () => (DIR[k] ? move(...DIR[k]) : press(k as Press));
+    b.title = keysOf[k] ?? '';
     group ??= document.createElement('div');
+    // the front page's Theme is no step on the way in: it sits apart, at the bar's right
+    if (view === 'boot' && !menu && k === 'x') group.className = 'aside';
     group.append(b);
     if (s || i === keys.length - 1) {
       groups.push(group);
@@ -1444,6 +1474,10 @@ function command(k: Press) {
   sfx.confirm();
   // a look is read once at load: keep it, drop any ?theme=, reload
   if (menu === 5) {
+    if (r[0] === themeLook) {
+      menu = 0;
+      return paint();
+    }
     localStorage.setItem('case.theme', r[0]);
     location.replace(location.pathname);
     return;
@@ -1634,8 +1668,8 @@ function press(k: Press) {
     if (k === 'a') {
       const kind = rowKind();
       if (kind === 'start') {
-        const next = creations[(creations.findIndex((c) => sameLook(c.look, draft!)) + 1) % creations.length];
-        if (!next || sameLook(next.look, draft)) return sfx.cancel();
+        const next = nextCreation();
+        if (!next) return sfx.cancel();
         sfx.confirm();
         mark();
         draft = copyLook(next.look);
@@ -1814,15 +1848,17 @@ const REPEAT = new Set(['l', 'r', 'zl', 'zr']);
 const HOLD = 0.4, AGAIN = 0.08, STICK = 0.5, DEAD = 0.2;
 const held = new Map<string, number>();
 /**
- * the button index of A, B, X, Y. The standard mapping is by position: a Nintendo pad's bottom button is B and its left is Y,
+ * the button index of each of PAD: A, B, X, Y, L, R, ZL, ZR. The standard mapping is by position: a Nintendo pad's bottom button is B and its left is Y,
  * so its pairs swap; only Nintendo's own pads, a third-party one naming the Switch can already report by label.
- * A pad without the standard mapping sends its raw order; generic pads number the faces Y B A X, case.pad ("2,1,3,0") overrides.
+ * A pad without the standard mapping sends its raw order; generic pads number the faces Y B A X and the shoulders L R ZL ZR from 4.
+ * case.pad in localStorage overrides a raw pad: the faces ("2,1,3,0"), or all eight ("2,1,3,0,4,5,6,7").
  * Steam Input presents every pad as a standard one.
  */
-function face(p: Gamepad): number[] {
-  if (p.mapping === 'standard') return /nintendo|joy-?con|pro controller|057e/i.test(p.id) ? [1, 0, 3, 2] : [0, 1, 2, 3];
-  const own = localStorage.getItem('case.pad')?.split(',').map(Number);
-  return own?.length === 4 && own.every((n) => n >= 0) ? own : [2, 1, 3, 0];
+function buttons(p: Gamepad): number[] {
+  if (p.mapping === 'standard') return [...(/nintendo|joy-?con|pro controller|057e/i.test(p.id) ? [1, 0, 3, 2] : [0, 1, 2, 3]), 4, 5, 6, 7];
+  const raw = [2, 1, 3, 0, 4, 5, 6, 7];
+  const own = localStorage.getItem('case.pad')?.split(',').map(Number) ?? [];
+  return (own.length === 4 || own.length === 8) && own.every((n) => Number.isInteger(n) && n >= 0) ? [...own, ...raw.slice(own.length)] : raw;
 }
 /** a raw pad's d-pad as one hat axis: -1 up, stepping 2/7 clockwise round to 1 up-left, anything past 1 at rest; left right up down */
 function hat(v: number | undefined): [boolean, boolean, boolean, boolean] {
@@ -1839,7 +1875,8 @@ function pad(now: number, dt: number) {
   const standard = p.mapping === 'standard';
   const [hl, hr, hu, hd] = standard ? [false, false, false, false] : hat(p.axes[9]);
   const on: Record<string, boolean> = { left: b(14) || hl || x < -STICK, right: b(15) || hr || x > STICK, up: b(12) || hu || y < -STICK, down: b(13) || hd || y > STICK };
-  PAD.forEach((k, i) => (on[k] = b(i < 4 ? face(p)[i] : i)));
+  const at = buttons(p);
+  PAD.forEach((k, i) => (on[k] = b(at[i])));
   for (const k in on) {
     const next = held.get(k);
     if (!on[k]) held.delete(k);

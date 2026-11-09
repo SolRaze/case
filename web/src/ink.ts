@@ -2,7 +2,7 @@
  * The page's text at the 3D view's resolution. The DOM under `ui` keeps layout and hit areas
  * but is invisible; every frame each `.ink` element's words and each `img.px` are drawn here
  * at their laid-out boxes, faded by their own and their ancestors' opacity up to `ui`.
- * `.ink` elements hold text only; `.on`, or keyboard focus on it or its button, adds the glow.
+ * `.ink` elements hold text only; `.on` adds the glow, keyboard focus on it or its button underlines it in the glow colour.
  * Every `img.px` is a button disc, r 11 of 24; a set `ring` strokes its rim, so a black disc holds on a dark field.
  */
 export function inkLayer(canvas: HTMLCanvasElement, ui: HTMLElement, glow: string) {
@@ -71,11 +71,18 @@ export function inkLayer(canvas: HTMLCanvasElement, ui: HTMLElement, glow: strin
       g.shadowBlur = 0;
       for (const [w, x, y] of words) g.strokeText(w, x, y);
       g.fillStyle = s.color;
-      if (el.classList.contains('on') || el.closest(':focus-visible')) {
+      if (el.classList.contains('on')) {
         g.shadowColor = glow;
         g.shadowBlur = 6;
       }
       for (const [w, x, y] of words) g.fillText(w, x, y);
+      if (words.length && el.closest(':focus-visible')) {
+        const [, x0, y] = words[0];
+        const [w1, x1] = words[words.length - 1];
+        g.shadowBlur = 0;
+        g.fillStyle = glow;
+        g.fillRect(x0, y + box * 0.2, x1 + g.measureText(w1).width - x0, Math.max(2, box * 0.08));
+      }
     }
   }
 

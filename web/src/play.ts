@@ -23,6 +23,8 @@ type Deps = {
 const S = theme.strings;
 const C = theme.colors;
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
+/** reduced motion: the shelf's parts jump into place, no pop, sway or spin */
+const still = matchMedia('(prefers-reduced-motion: reduce)');
 const MM = 0.01; // main.ts's scene unit is 100 mm
 const DIST = 7; // the bed's distance from the camera
 // mm, solder's build volume: printer.cfg stepper_x and stepper_y position_max 235, stepper_z 200
@@ -93,6 +95,10 @@ export function playground(d: Deps) {
   let hour = 9; // light: the hour pinned on the field
   let sel = 0; // browse: the pieces, then the actions
   let row = 0; // palette and shelf
+  let deep = false; // the palette's Featured list is open
+  /** the palette's rows: the shapes, Featured, which opens the featured parts, and Import STL; with Featured open, its parts */
+  const palRows = (): ({ shape: Shape } | { f: (typeof FEATURED)[number] } | 'featured' | 'import')[] =>
+    deep ? FEATURED.map((f) => ({ f })) : [...SHAPES.map((shape) => ({ shape })), 'featured', 'import'];
   let key = [0, 0]; // name: the keyboard's column and row
   let typed = '';
   let oops = false; // the last import was no closed solid; the title says so until the next key
@@ -172,10 +178,11 @@ export function playground(d: Deps) {
   /** the picked row's part: an id, how to get its mesh, and a shape's size as it lands on the bed */
   function picked(): [string, () => Promise<THREE.BufferGeometry>, number[]?] | null {
     if (mode === 'palette') {
-      const shape = SHAPES[row];
-      if (shape) return [shape, async () => UNIT[shape], SIZES[shape].map((v) => v / 2)];
-      const f = FEATURED[row - SHAPES.length];
-      return f ? [f.slug, () => featuredSolid(f.slug).then(() => stlGeo(IMPORT + f.slug))] : null;
+      const r = palRows()[row];
+      if (typeof r !== 'object') return null;
+      if ('shape' in r) return [r.shape, async () => UNIT[r.shape], SIZES[r.shape].map((v) => v / 2)];
+      const f = r.f;
+      return [f.slug, () => featuredSolid(f.slug).then(() => stlGeo(IMPORT + f.slug))];
     }
     return null;
   }
@@ -291,7 +298,7 @@ export function playground(d: Deps) {
     inView = pt ? Math.max(Math.floor(w / cell), 1) : 3;
     cellPx = (cell / h) * innerHeight;
     const icon = 0.95 * cell;
-    const k = 1 - Math.exp(-8 * dt);
+    const k = still.matches ? 1 : 1 - Math.exp(-8 * dt);
     aimScroll = clamp(aimScroll, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0));
     scroll += (aimScroll - scroll) * k;
     icons.forEach((it, i) => {
@@ -305,7 +312,7 @@ export function playground(d: Deps) {
         : new THREE.Vector3(0.25 * w + (across - (cols - 1) / 2) * cell * 1.1, 0.24 * h - v * cell * 1.05, -DIST);
       // the pop: overshoots, then settles, as the cards page's icons do
       const p = clamp((t - it.born) / 0.3, 0, 1);
-      const grow = p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
+      const grow = still.matches ? p && 1 : p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
       // opened, it stands 0.3 view heights in the bed's place and the rest fade, or they would sit under the text
       // parts keep their order of size against the shelf's biggest, by the square root so a small one still reads; SPREAD 1 is true scale, 0 all one size
       const size = fore ? (0.3 * h) / it.big : (icon * (it.big / biggest()) ** SPREAD) / it.big;
@@ -313,7 +320,7 @@ export function playground(d: Deps) {
       if (!fore) spot.y += (it.tall * size - icon) / 2;
       it.holder.position.lerp(fore ? pivot.position.clone() : d.camera.position.clone().add(spot), k);
       it.holder.scale.setScalar(THREE.MathUtils.lerp(it.holder.scale.x || size, size, k) * (fore ? 1 : grow));
-      it.holder.rotation.set(0, fore ? t * 0.6 : YAW + (on && card === 0 ? 0.25 * Math.sin(t * 1.6) : 0), 0);
+      it.holder.rotation.set(0, fore ? (still.matches ? YAW : t * 0.6) : YAW + (on && card === 0 && !still.matches ? 0.25 * Math.sin(t * 1.6) : 0), 0);
       const m = it.mesh.material as THREE.MeshStandardMaterial;
       const shown = card > 0 ? (on ? 1 : 0) : clamp(Math.min(v + 0.5, inView - 0.5 - v) * 2, 0, 1);
       m.opacity += (shown - m.opacity) * k;
@@ -611,23 +618,31 @@ export function playground(d: Deps) {
       } else if (!nudge(0, 0, k === 'zr' ? 1 : -1)) return sfx.cancel();
       else sfx.tick();
     } else if (mode === 'palette') {
-      if (k === 'a') {
+      const r = palRows()[row];
+      if (k === 'a' && r === 'featured') {
         sfx.confirm();
-        const f = FEATURED[row - SHAPES.length];
-        if (row < SHAPES.length) add(fresh(SHAPES[row]));
-        else if (f) {
+        deep = true;
+        row = 0;
+      } else if (k === 'a' && r === 'import') {
+        sfx.confirm();
+        mode = 'browse';
+        file.click();
+      } else if (k === 'a' && typeof r === 'object') {
+        sfx.confirm();
+        if ('shape' in r) add(fresh(r.shape));
+        else {
+          const f = r.f;
           mode = 'browse';
           featuredSolid(f.slug).then(
             (s) => (add(featuredPiece(f.slug, s)), d.paint()),
             () => ((oops = true), sfx.cancel(), d.paint()),
           );
-        } else {
-          mode = 'browse';
-          file.click();
         }
       } else if (k === 'b') {
         sfx.cancel();
-        mode = 'browse';
+        // the featured list goes back to its row in the palette, the palette to the bench
+        if (deep) (deep = false), (row = SHAPES.length);
+        else mode = 'browse';
       } else return;
     } else if (mode === 'shelf') {
       const s = shelf()[row];
@@ -685,6 +700,7 @@ export function playground(d: Deps) {
         sfx.confirm();
         mode = 'palette';
         row = 0;
+        deep = false;
       } else if (k === 'a' && p) {
         sfx.confirm();
         grab(sel, copy(p));
@@ -692,7 +708,7 @@ export function playground(d: Deps) {
         const a = actOf(sel)!;
         if (a !== 'import' && a !== 'shapes' && a !== 'shelf' && a !== 'light' && !bench.pieces.length) return sfx.cancel();
         sfx.confirm();
-        if (a === 'shapes') (mode = 'palette'), (row = 0);
+        if (a === 'shapes') (mode = 'palette'), (row = 0), (deep = false);
         else if (a === 'import') file.click();
         else if (a === 'shelf') (mode = 'shelf'), (row = 0), fillShelf();
         else if (a === 'light') {
@@ -767,7 +783,7 @@ export function playground(d: Deps) {
         follow();
       }
     } else if (mode === 'palette') {
-      const n = clamp(row + dy, 0, SHAPES.length + FEATURED.length);
+      const n = clamp(row + dy, 0, palRows().length - 1);
       if (!dy || n === row) return;
       row = n;
     } else if (dy) {
@@ -817,7 +833,7 @@ export function playground(d: Deps) {
   function frame(dt: number, t: number) {
     now = t;
     if (!shown) return;
-    const k = 1 - Math.exp(-8 * dt);
+    const k = still.matches ? 1 : 1 - Math.exp(-8 * dt);
     orbit.yaw += (aim.yaw - orbit.yaw) * k;
     orbit.tilt += (aim.tilt - orbit.tilt) * k;
     // landscape keeps the bed left of the list, as edit keeps its phone
@@ -906,7 +922,11 @@ export function playground(d: Deps) {
     const list = (names: string[], at: number, set: (i: number) => void) =>
       names.map((s, i): [HTMLElement, boolean] => [li(button(s, i === at, pick(i === at, () => set(i)))), i === at]);
     if (mode === 'light') return [title(S.light), [li(d.ink('p', `${hhmm(hour)}  ${fromHour(hour).night ? S.moon : S.sun}`, 'read')), false]];
-    if (mode === 'palette') return [title(S.shapes), ...list([...SHAPES.map((s) => S[s]), ...FEATURED.map((f) => f.name), S.importStl], row, (i) => (row = i))];
+    if (mode === 'palette')
+      return [
+        title(deep ? S.featured : S.shapes),
+        ...list(palRows().map((r) => (r === 'featured' ? `${S.featured}  ${FEATURED.length}` : r === 'import' ? S.importStl : 'shape' in r ? S[r.shape] : r.f.name)), row, (i) => (row = i)),
+      ];
     if (mode === 'shelf') {
       const m = shelf()[row]?.[1];
       if (!m) return [title(S.shelf), [li(d.ink('p', S.shelfEmpty)), false]];
@@ -962,18 +982,18 @@ export function playground(d: Deps) {
     ];
   }
 
-  // every key the mode takes has a button: the bar is the touch and mouse way to each
-  function bar(): [Key | Dir, string][] {
+  // every key the mode takes has a button: the bar is the touch and mouse way to each; a third word names a group of marks for a screen reader in place of its label
+  function bar(): [Key | Dir, string, string?][] {
     if (mode === 'held')
       return [
         ['left', ''], ['up', ''], ['down', ''], ['right', S[TOOLS[held!.tool]]],
         ['a', S.drop], ['b', S.cancel], ['y', S.tool], ['x', `${S.union}/${S.difference}`],
         ['l', ''], ['r', S.spin], ['zl', ''], ['zr', TOOLS[held!.tool] === 'size' ? S.size : S.lift],
       ];
-    if (mode === 'light') return [['left', ''], ['up', ''], ['down', ''], ['right', hhmm(hour)], ['b', S.back]];
-    if (mode === 'palette') return [['a', S.add], ['b', S.back]];
-    if (mode === 'shelf') return card ? [['a', S.enter], ['b', S.back]] : [...(icons.length ? [['a', S.enter] as [Key, string]] : []), ['b', S.back], ['zl', ''], ['zr', S.zoom]];
-    if (mode === 'name') return [['a', S.enter], ['b', S.cancel], ['x', S.del], ['y', S.space]];
+    if (mode === 'light') return [['left', ''], ['up', ''], ['down', ''], ['right', hhmm(hour), S.light], ['b', S.back]];
+    if (mode === 'palette') return [['a', typeof palRows()[row] === 'object' ? S.add : S.open], ['b', S.back]];
+    if (mode === 'shelf') return card ? [['a', card === 1 ? (act ? S.delete : S.open) : yes ? S.yes : S.no], ['b', S.close]] : [...(icons.length ? [['a', S.enter] as [Key, string]] : []), ['b', S.back], ['zl', ''], ['zr', S.zoom]];
+    if (mode === 'name') return [['a', S.type], ['b', S.cancel], ['x', S.del], ['y', S.space]];
     const p = bench.pieces[sel];
     return p
       ? [['a', S.grab], ['b', S.back], ['x', S.remove], ['y', S.shapes], ['l', S.dup], ['r', S.mirror]]
