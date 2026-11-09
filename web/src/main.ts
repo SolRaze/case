@@ -1887,6 +1887,8 @@ function pad(now: number, dt: number) {
     if (!on[k]) held.delete(k);
     else if (next === undefined || ((k in DIR || REPEAT.has(k)) && now >= next)) {
       held.set(k, now + (next === undefined ? HOLD : AGAIN));
+      // a pad press resumes the sound where the browser counts it as a gesture
+      sfx.unlock();
       if (k in DIR) move(...DIR[k]);
       else press(k as Press);
     }
@@ -1899,8 +1901,9 @@ addEventListener('beforeunload', (e) => {
 });
 
 // audio may only start inside a gesture
-addEventListener('pointerdown', sfx.unlock, { capture: true, once: true });
-addEventListener('keydown', sfx.unlock, { capture: true, once: true });
+// every gesture resumes it: a browser that suspends it on focus loss (Steam's overlay) only lets a gesture start it again
+addEventListener('pointerdown', sfx.unlock, { capture: true });
+addEventListener('keydown', sfx.unlock, { capture: true });
 
 // touch: tap picks, a second tap on the picked icon is A; vertical drag scrolls the grid,
 // on the cases and detail pages a touch holds the phone and a drag turns and tips it, let go mid-swipe and it flings on
