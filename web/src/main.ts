@@ -319,7 +319,8 @@ function dropItem(t: Template) {
   items.delete(t);
 }
 
-built(card.id).then(async (list) => {
+/** the styles, starts and creations, loaded */
+const loaded = built(card.id).then(async (list) => {
   for (const s of list.filter(isSet)) setParts.set(s, (await partList(card.id, s)).list);
   styles = list;
   // a part set starts bare, its shell with every part off; a style as built. A set with its parts.json ops is a creation
@@ -691,7 +692,7 @@ const arrow = (d: string, base: 0 | 1) =>
 const bars: Record<View, [Press, string][]> = {
   boot: [['a', S.enter], ['x', S.theme]],
   models: [['a', S.enter], ['b', S.back], ['x', S.info]],
-  cases: [['a', S.enter], ['b', S.back], ['x', S.options]],
+  cases: [['a', S.wear], ['b', S.back], ['x', S.options]],
   detail: [],
   edit: [['a', S.save], ['b', S.back]],
   info: [['b', S.back]],
@@ -746,8 +747,8 @@ function rows(): Row[] {
   if (menu === 1 && view === 'detail')
     return store.worn >= 0
       ? [['copy', S.copy, true], ['delete', S.delete, true]]
-      : [['new', S.new, starts.length > 0], ['delete', S.delete, false]];
-  if (menu === 1) return [['edit', S.edit, has], ['copy', S.copy, has], ['print', S.print, has], ['delete', S.delete, has]];
+      : [['new', S.new, starts.length > 0]];
+  if (menu === 1) return [['edit', S.edit, has], ['copy', S.copy, has], ['print', theme.order ? S.print : S.exportStl, has], ['delete', S.delete, has]];
   if (menu === 2) return [['export', S.export, true], ['order', S.order, !!theme.order]];
   if (menu === 5) return looks.map((l) => [l, S[l], true]);
   return [];
@@ -1062,7 +1063,7 @@ function paint() {
       button(S.yes, yes, () => (yes ? press('a') : (sfx.tick(), (yes = true), paint()))),
       button(S.no, !yes, () => (!yes ? press('a') : (sfx.tick(), (yes = false), paint()))),
     );
-  } else if (menu === 4) ul.replaceChildren(li(ink$('p', S.print)), li(ink$('p', S.printing)), li(ink$('p', S.keep)));
+  } else if (menu === 4) ul.replaceChildren(...(theme.order ? [S.print, S.printing] : [S.exportStl, S.loading]).map((t) => li(ink$('p', t))), li(ink$('p', S.keep)));
   else if (menu === 5) ul.replaceChildren(li(ink$('p', S.theme)), ...rows().map(row));
   else ul.replaceChildren();
 
@@ -1195,7 +1196,9 @@ function paint() {
 
   const bar = $('bar');
   const keys: [Press | Dir, string, string?][] =
-    menu === 4 ? [] : menu ? menuBar() : view === 'edit' ? editBar() : view === 'play' ? play.bar() : view === 'cases' && gallery ? [['a', S.remix], ['b', S.back], ...(peek ? [] : [['x', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['a', S.enter], ['b', S.back]] : view === 'boot' && theme.front[fronts()[fsel]].icon === 'shirt' ? [['x', S.theme]] : bars[view];
+    menu === 4 ? [] : menu ? menuBar() : view === 'edit' ? editBar() : view === 'play' ? play.bar() : view === 'cases' && gallery ? [['a', S.remix], ['b', S.back], ...(peek ? [] : [['x', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['a', S.enter], ['b', S.back]] : view === 'boot' && theme.front[fronts()[fsel]].icon === 'shirt' ? [['x', S.theme]]
+    : view === 'models' && models[msel] !== fit ? [['b', S.back], ['x', S.info]]
+    : view === 'cases' && !gallery && tpl() === store.worn ? [['b', S.back], ['x', S.options]] : bars[view];
   // marks with no word of their own stay on one line with the next, which names them; a screen reader hears each as that word and its way
   const groups: HTMLElement[] = [];
   let group: HTMLElement | null = null;
@@ -1429,7 +1432,8 @@ function arrive(r: string) {
       return paint();
     }
     if (view === 'models' && (page === 'detail' || page === 'showcase' || under === 'cases')) press('a');
-    if (page === 'showcase' && inspoOpen()) press('y');
+    // the showcase's designs may still be loading on a cold start
+    if (page === 'showcase') loaded.then(() => inspoOpen() && press('y'));
   }, 400);
 }
 
@@ -1561,6 +1565,7 @@ function press(k: Press) {
     } else if (k === 'a') {
       // A puts the picked design on the phone; on the bare phone it opens the model's detail, where New is
       const i = tpl();
+      if (i >= 0 && i === store.worn) return sfx.cancel();
       sfx.confirm();
       store.worn = i;
       saveTemplates(store);
