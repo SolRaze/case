@@ -8,7 +8,7 @@ import * as sfx from './sound';
 import { fromHour } from './sky';
 import { rough, type Finish } from './phone';
 
-export type Key = 'a' | 'b' | 'y' | 'x' | 'l' | 'r' | 'zl' | 'zr' | 'plus';
+export type Key = 'a' | 'b' | 'y' | 'x' | 'l' | 'r' | 'zl' | 'zr' | 'plus' | 'r3';
 /** the d-pad, drawn in the bar where it steps the held piece */
 export type Dir = 'left' | 'right' | 'up' | 'down';
 type Deps = {
@@ -170,19 +170,40 @@ export function playground(d: Deps) {
   // Shelf: the shapes, the featured parts and the saved ones as a memory card's game data, small icons in a grid that pop in one by one, shown all or one kind (L R);
   // the picked one rocks over a glow and names itself in the title; A puts it on the bench, X on a saved part brings it forward large beside its Open and Delete, Delete asks first
   type Cat = 'all' | 'shapes' | 'featured' | 'mine';
-  const CATS: Cat[] = ['all', 'shapes', 'featured', 'mine'];
   let cat: Cat = 'all';
   type Entry = { key: string; name: string; shape?: Shape; my?: MyPart };
-  /** the shelf's parts in the shown kind; all is every kind in turn */
-  function entries(): Entry[] {
+  /** times each shelf part went onto the bench, by entry key */
+  const USED = 'case.used';
+  const used = (): Record<string, number> => JSON.parse(localStorage.getItem(USED) ?? '{}');
+  const use = (key: string) => localStorage.setItem(USED, JSON.stringify({ ...used(), [key]: (used()[key] ?? 0) + 1 }));
+  /** every kind's parts, most used first; mine newest first among equals (saved parts keep insertion order, a re-save keeps its place) */
+  function kinds(): Record<Exclude<Cat, 'all'>, Entry[]> {
+    const n = used();
     const my = Object.entries(loadMy()).map(([key, m]): Entry => ({ key, name: m.name, my: m }));
-    const by: Record<Exclude<Cat, 'all'>, Entry[]> = {
-      shapes: SHAPES.map((shape) => ({ key: shape, name: S[shape], shape })),
-      featured: my.filter((e) => e.my!.featured),
-      mine: my.filter((e) => !e.my!.featured),
+    const most = (es: Entry[]) => es.sort((a, b) => (n[b.key] ?? 0) - (n[a.key] ?? 0));
+    return {
+      shapes: most(SHAPES.map((shape) => ({ key: shape, name: S[shape], shape }))),
+      featured: most(my.filter((e) => e.my!.featured)),
+      mine: most(my.filter((e) => !e.my!.featured).reverse()),
     };
-    return cat === 'all' ? [...by.shapes, ...by.featured, ...by.mine] : by[cat];
   }
+  /** the kinds row: all, then the kinds by their parts' total use */
+  function cats(): Cat[] {
+    const n = used();
+    const by = kinds();
+    const total = (c: Exclude<Cat, 'all'>) => by[c].reduce((t, e) => t + (n[e.key] ?? 0), 0);
+    return ['all', ...(['shapes', 'featured', 'mine'] as const).slice().sort((a, b) => total(b) - total(a))];
+  }
+  /** the shelf's parts in the shown kind; all is every part, most used first, ties in kind order */
+  function entries(): Entry[] {
+    const by = kinds();
+    if (cat !== 'all') return by[cat];
+    const n = used();
+    return cats().slice(1).flatMap((c) => by[c as Exclude<Cat, 'all'>]).sort((a, b) => (n[b.key] ?? 0) - (n[a.key] ?? 0));
+  }
+  /** A on the shelf waits for its release: let go soon it is the usual add, held HOLD_A seconds it sets the part down at the bed's centre */
+  let aDown: { i: number; t: number } | null = null;
+  const HOLD_A = 0.45;
   let stock: Entry[] = []; // the shelf's parts as shown, one per icon
   type Icon = { key: string; holder: THREE.Group; mesh: THREE.Mesh; big: number; born: number; at: THREE.Vector3 };
   // every icon one pose: leaning back LEAN to show its depth, turned YAW to show its side
@@ -198,11 +219,11 @@ export function playground(d: Deps) {
   let inView = 3; // lines of icons in view
   let cellPx = 100; // one icon line, in screen pixels
   let tall = false; // portrait: the shelf runs sideways under the bed, else down beside it
-  const COL = 0.62; // landscape: the right column's left edge, in view widths; style.css places the list and bar on it
+  const COL = 0.55; // landscape: the right column's left edge, in view widths; style.css places the list and bar on it
   let shelfTop = 0.5; // landscape: the shelf's top, in view heights, eased under the list and its kinds row
   /** a shelf icon dragged by mouse or finger, at a screen point in view fractions -1 to 1; out once it has left the shelf for the bed */
   let carry: { i: number; x: number; y: number; out: boolean } | null = null;
-  let zoom = 1.3; // the bed's size: ZL ZR, the wheel or a pinch; it opens zoomed in
+  let zoom = 1.1; // the bed's size: ZL ZR, the wheel or a pinch
   let rise = 0; // the bed's height on screen, in view heights: R3 then the right stick, shift or right drag, two fingers
   let stickRises = false; // R3 swaps the right stick between turning the bed and raising it
   let fill = 1; // an empty bed draws bigger, eased
@@ -241,10 +262,12 @@ export function playground(d: Deps) {
         transparent: true,
       }),
     );
-  // the picked part: a white dot in front of its lower part, and an underglow behind it that the part and its neighbours cover
+  // the picked part: a white dot over its centre, drawn over the part, and an underglow behind it that the part and its neighbours cover
   const halo = glowSprite(0.6, 0.25);
   halo.renderOrder = 1; // after the icons, depth-tested
   const dot = glowSprite(1, 0.35);
+  dot.renderOrder = 2;
+  dot.material.depthTest = false;
   for (const s of [halo, dot]) s.layers.set(1), shelfRoot.add(s);
   /** builds the icons from the saved parts, row and card back on the first */
   /** a shape as it lands on the bed, for its icon */
@@ -257,6 +280,7 @@ export function playground(d: Deps) {
     for (const it of icons) shelfRoot.remove(it.holder);
     stock = entries();
     icons = stock.map(({ key, shape }, i) => {
+      const face = FEATURED.find((f) => MY + f.slug === key)?.face;
       const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: d.finish.body, roughness: rough(d.finish, 0.35), metalness: 0.05, transparent: true, opacity: 0 }));
       mesh.layers.set(1);
       const orient = new THREE.Group().add(mesh);
@@ -273,8 +297,9 @@ export function playground(d: Deps) {
           const dims = g.boundingBox!.getSize(new THREE.Vector3()).toArray();
           it.big = Math.max(...dims);
           {
-            // laid flat: thinnest side toward the viewer, longest across, whatever way up the file was saved
+            // laid flat: thinnest side toward the viewer, longest across, whatever way up the file was saved; a featured face overrides the thinnest
             const by = [0, 1, 2].sort((a, b) => dims[b] - dims[a]); // longest, middle, thinnest
+            if (face !== undefined) by.splice(by.indexOf(face), 1), by.push(face);
             const cols = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
             cols[by[0]].set(1, 0, 0);
             cols[by[1]].set(0, 1, 0);
@@ -302,9 +327,9 @@ export function playground(d: Deps) {
     const w = h * d.camera.aspect;
     // icon size and spacing measured off the console's browser (Reference/screens/ps2), in view heights: 0.2 apart, an icon 0.19 at its largest side.
     // Landscape: 2 across at the right edge, clear of the bench's list, running down, 3 lines in view. Portrait: 2 rows under the bed, 2 in view, running sideways
-    // Landscape: under the list in its column, rising as the list shortens; lines in view are what fits above the bar
-    cols = 2;
-    const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.2 * h, ((0.96 - COL) * w) / 2.1);
+    // Landscape: under the list in its column, rising as the list shortens, as many across as the column holds; lines in view are what fits above the bar
+    const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.15 * h, ((0.97 - COL) * w) / 3.3);
+    cols = pt ? 2 : Math.max(3, Math.floor(((0.97 - COL) * w) / (cell * 1.1)));
     const k = still.matches ? 1 : 1 - Math.exp(-8 * dt);
     if (!pt) {
       const rows = document.getElementById('parts')!.getBoundingClientRect();
@@ -325,7 +350,7 @@ export function playground(d: Deps) {
       const fore = card > 0 && on;
       const spot = pt
         ? new THREE.Vector3((v - (inView - 1) / 2) * cell, -0.07 * h - across * cell * 1.05, -DIST)
-        : new THREE.Vector3((COL - 0.5) * w + cell / 2 + across * cell * 1.1, (0.5 - shelfTop) * h - cell / 2 - v * cell * 1.05, -DIST);
+        : new THREE.Vector3((COL - 0.5) * w + (across + 0.5) * (((0.97 - COL) * w) / cols), (0.5 - shelfTop) * h - cell / 2 - v * cell * 1.05, -DIST);
       // the pop: overshoots, then settles, as the cards page's icons do
       const p = clamp((t - it.born) / 0.3, 0, 1);
       const grow = still.matches ? p && 1 : p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
@@ -353,11 +378,10 @@ export function playground(d: Deps) {
       // behind and in front along the line of sight, or an off-centre cell's light drifts sideways
       const toEye = d.camera.position.clone().sub(lit.at).normalize();
       const glow = lit.at.clone().addScaledVector(toEye, -0.6 * cell);
-      const floor = lit.at.clone().add(new THREE.Vector3(0, -0.4 * cell, 0)).addScaledVector(toEye, 0.3);
       halo.position.lerp(glow, was ? k : 1);
-      dot.position.lerp(floor, was ? k : 1);
+      dot.position.lerp(lit.at, was ? k : 1);
       halo.scale.set(1.1 * cell, 0.85 * cell, 1);
-      dot.scale.setScalar(0.3 * cell);
+      dot.scale.setScalar(0.25 * cell);
       halo.material.opacity = dot.material.opacity = (0.85 + 0.15 * Math.sin(t * 2.1)) * (lit.mesh.material as THREE.MeshStandardMaterial).opacity;
     }
   }
@@ -374,7 +398,7 @@ export function playground(d: Deps) {
     const i = iconAt(x, y);
     if (i < 0) return;
     if (mode !== 'shelf') mode = 'shelf';
-    else if (i === row) return press('a');
+    else if (i === row) return stock[i] && place(stock[i]);
     row = i;
     follow();
     sfx.tick();
@@ -418,6 +442,7 @@ export function playground(d: Deps) {
   /** a shelf part onto the bench: a shape or a one-piece part in hand to move, a part of several pieces set down whole with its first picked; at, a bed point in mm, sets it down there */
   function place(e: Entry, at?: [number, number]) {
     sfx.confirm();
+    use(e.key);
     const ps = e.shape ? [fresh(e.shape)] : e.my!.pieces.map(copy);
     if (at) for (const p of ps) (p.pos[0] += at[0]), (p.pos[1] += at[1]);
     if (ps.length === 1 && !at) return add(ps[0]);
@@ -744,12 +769,13 @@ export function playground(d: Deps) {
       } else if (!card && (k === 'l' || k === 'r')) {
         // the shown kind steps round
         sfx.tick();
-        cat = CATS[(CATS.indexOf(cat) + (k === 'r' ? 1 : CATS.length - 1)) % CATS.length];
+        const cs = cats();
+        cat = cs[(cs.indexOf(cat) + (k === 'r' ? 1 : cs.length - 1)) % cs.length];
         row = 0;
         aimScroll = 0;
         fillShelf();
       } else if (!s) return;
-      else if (!card && k === 'a') place(s);
+      else if (!card && k === 'a') aDown = { i: row, t: now };
       else if (!card && k === 'x') {
         if (!s.my) return sfx.cancel();
         sfx.confirm();
@@ -925,17 +951,22 @@ export function playground(d: Deps) {
     // landscape keeps the bed left of the list, as edit keeps its phone
     const pt = d.camera.aspect < 1;
     const h = 2 * DIST * Math.tan(THREE.MathUtils.degToRad(d.camera.fov / 2));
-    pivot.position.copy(d.camera.position).add(new THREE.Vector3(pt ? 0 : -0.2 * h * d.camera.aspect, pt ? 0.14 * h : 0, -DIST));
+    pivot.position.copy(d.camera.position).add(new THREE.Vector3(pt ? 0 : -0.24 * h * d.camera.aspect, pt ? 0.14 * h : 0, -DIST));
     pivot.rotation.set(orbit.tilt, orbit.yaw, 0);
     // portrait's shelf takes the lower half, so the bed sits higher and smaller over it
     const up = pt && mode === 'shelf' && !card;
     pivot.position.y += (up ? 0.08 : 0) * h + rise * h;
     // an empty bed has nothing on it to frame, so it draws bigger
     // landscape's bed already spans its half, so it grows less; portrait's shelf needs the room
-    fill += ((bench.pieces.length || up ? 1 : pt ? 1.3 : 1.1) - fill) * k;
+    fill += ((bench.pieces.length || up ? 1 : pt ? 1.3 : 1) - fill) * k;
     pivot.scale.setScalar((pt ? (up ? 0.5 : 0.65) : 1) * zoom * fill);
     // the bed steps aside while a saved part is brought forward
     world.visible = !(mode === 'shelf' && card);
+    if (aDown && t - aDown.t > HOLD_A) {
+      const s = stock[aDown.i];
+      aDown = null;
+      if (s && mode === 'shelf' && !card) place(s, [0, 0]), d.paint();
+    }
     shelfFrame(t, dt, h, pt);
     // the part pops when a solve lands
     const pop = popAt >= 0 ? clamp((t - popAt) / 0.25, 0, 1) : 1;
@@ -999,7 +1030,7 @@ export function playground(d: Deps) {
     // the shelf's kinds, the shown one marked; a tap shows another
     const tabs = document.createElement('div');
     tabs.append(
-      ...CATS.map((c) => {
+      ...cats().map((c) => {
         const b = button(S[c], c === cat, () => c !== cat && (sfx.tick(), (cat = c), (row = 0), (aimScroll = 0), fillShelf(), d.paint()), 'kind');
         b.setAttribute('aria-pressed', `${c === cat}`);
         return b;
@@ -1082,8 +1113,14 @@ export function playground(d: Deps) {
     if (mode === 'name') return [['a', S.type], ['b', S.cancel], ['x', S.del], ['y', S.space]];
     const p = bench.pieces[sel];
     return p
-      ? [['a', S.grab], ['b', S.back], ['x', S.remove], ['y', S.shelf], ['l', S.dup], ['r', S.mirror], ['plus', S.menu]]
-      : [['b', S.back], ['y', S.shelf], ['plus', S.menu]];
+      ? [['a', S.grab], ['b', S.back], ['x', S.remove], ['y', S.shelf], ['l', S.dup], ['r', S.mirror], ['plus', S.menu], ['r3', stickRises ? S.raise : S.turn]]
+      : [['b', S.back], ['y', S.shelf], ['plus', S.menu], ['r3', stickRises ? S.raise : S.turn]];
+  }
+  /** A let go: a short press on the shelf adds as usual */
+  function release() {
+    const a = aDown;
+    aDown = null;
+    if (a && mode === 'shelf' && !card && stock[a.i]) place(stock[a.i]), d.paint();
   }
 
   return {
@@ -1108,6 +1145,7 @@ export function playground(d: Deps) {
     title: (): [string, string] =>
       mode === 'shelf' && card === 0 && stock[row] ? [stock[row].name, S.shelf] : [mode === 'name' ? S.savePart : S.play, oops ? S.notSolid : running || queue.length ? S.loading : bench.name || (bench.pieces.length ? '' : S.emptyBench)],
     press,
+    release,
     move,
     type,
     drag,

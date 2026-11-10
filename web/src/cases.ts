@@ -102,16 +102,17 @@ export function seat({ pos, idx }: Solid, min: number[], max: number[]): Solid {
   return { pos: out, idx };
 }
 
-/** parts shipped in public/featured as <slug>.stl, lying flat with z their thin axis: the playground's palette adds them, and each is seeded once as a saved part; twin names a set part of the same shape, which edit lists in its place */
-export const FEATURED: { slug: string; name: string; twin?: string }[] = [
+/** parts shipped in public/featured as <slug>.stl, lying flat with z their thin axis: the playground's palette adds them, and each is seeded once as a saved part; twin names a set part of the same shape, which edit lists in its place;
+ * face is the file axis the shelf icon shows toward the viewer, for a part with no thin side (0 x, 1 y, 2 z) */
+export const FEATURED: { slug: string; name: string; twin?: string; face?: number }[] = [
   { slug: 'mcknuckle', name: 'McKnuckle' }, // MehTechArt, printables.com/model/1327313, CC BY-NC-SA
   { slug: 'knuckle-duster', name: 'Knuckle duster' }, // Picanto, printables.com/model/298271, CC BY
   { slug: 'ar-knuckle', name: 'AR knuckle' }, // Joji_Griez, printables.com/model/431868, CC BY-NC
   { slug: 'ar-knuckle-twin', name: 'AR knuckle twin' }, // Joji_Griez, printables.com/model/431868, CC BY-NC
   { slug: 'spiky-knuckle', name: 'Spiky knuckle' }, // mattie, printables.com/model/1384614, CC BY-NC
   { slug: 'spiked-knuckle', name: 'Spiked knuckle' }, // Kavitate, printables.com/model/355631, public domain
-  { slug: 'spine-chain', name: 'Spine chain' }, // sol, CC BY; out/stand/fused/whole.stl decimated
-  { slug: 'vertebra-c3', name: 'C3 vertebra', twin: 'C3' }, // sol, CC BY; out/stand/fused/C3.stl decimated, same for C4-C7
+  { slug: 'spine-chain', name: 'Spine chain', face: 0 }, // sol, CC BY; out/stand/fused/whole.stl decimated
+  { slug: 'vertebra-c3', name: 'C3 vertebra', twin: 'C3', face: 0 }, // sol, CC BY; out/stand/fused/C3.stl decimated, same for C4-C7
   { slug: 'vertebra-c4', name: 'C4 vertebra', twin: 'C4' }, // sol, CC BY
   { slug: 'vertebra-c5', name: 'C5 vertebra', twin: 'C5' }, // sol, CC BY
   { slug: 'vertebra-c6', name: 'C6 vertebra', twin: 'C6' }, // sol, CC BY

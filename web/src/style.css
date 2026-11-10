@@ -94,8 +94,8 @@ body:not([data-view=detail]) #detail > p { display: none; }
   /* edit's buttons sit under its list, the phone has the left */
   :is([data-view=edit], [data-view=play]) footer { left: 56%; justify-content: flex-start; padding-left: 0; }
   /* play: one right column, its list on top and the shelf under it (play.ts COL reads this left edge) */
-  [data-view=play] #parts { left: 62%; top: 18%; }
-  [data-view=play] footer { left: 62%; }
+  [data-view=play] #parts { left: 55%; top: 18%; }
+  [data-view=play] footer { left: 55%; }
 }
 
 /* X on a model: main.ts infoTarget centres the phone over the label column, level with the name;

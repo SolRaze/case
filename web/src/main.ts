@@ -674,6 +674,8 @@ const glyph = {
   zr: disc('<path stroke-width="2" d="M4 7H10L4 17H10M13.5 17V7H17.3A2.7 2.7 0 0 1 17.3 12.4H13.5M17 12.4 20 17"/>', theme.buttons.y),
   // + or Start: the playground's menu
   plus: disc('<path d="M12 6.5V17.5M6.5 12H17.5"/>', theme.buttons.y),
+  // R3, the right stick pressed in: what the right stick does in the playground
+  r3: disc(`<circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.6" fill="${theme.buttons.y}"/>`, theme.buttons.y),
   // the d-pad, drawn as chevrons
   left: disc('<path d="M14.5 7 9.5 12 14.5 17"/>', theme.buttons.y),
   right: disc('<path d="M9.5 7 14.5 12 9.5 17"/>', theme.buttons.y),
@@ -1216,7 +1218,8 @@ function paint() {
     const named = keys.slice(i).find((x) => x[1]);
     const base = named?.[2] ?? named?.[1] ?? '';
     if (!s || group || named?.[2]) b.ariaLabel = [`${base} ${way[k] ?? k}`, s && s !== base ? s : ''].filter(Boolean).join(', ');
-    b.onclick = () => (DIR[k] ? move(...DIR[k]) : press(k as Press));
+    // a click has no hold, so the playground's A is let go at once
+    b.onclick = () => (DIR[k] ? move(...DIR[k]) : (press(k as Press), view === 'play' && k === 'a' && play.release()));
     b.title = keysOf[k] ?? '';
     group ??= document.createElement('div');
     // the front page's Theme is no step on the way in: it sits apart, at the bar's right
@@ -1851,6 +1854,10 @@ addEventListener('keydown', (e) => {
     map[k]();
   }
 });
+// the playground's shelf tells a tap of A from a hold, so it hears A let go
+addEventListener('keyup', (e) => {
+  if (view === 'play' && ['enter', 'a', ' '].includes(e.key.toLowerCase())) play.release();
+});
 // a controller works the page as the keys do: the standard mapping's face buttons, shoulders and triggers press, the d-pad and the left stick move,
 // the right stick turns the playground's bed. A held direction, shoulder or trigger repeats after HOLD, then every AGAIN; held is each one's next repeat time
 const PAD: Press[] = ['a', 'b', 'x', 'y', 'l', 'r', 'zl', 'zr'];
@@ -1891,7 +1898,7 @@ function pad(now: number, dt: number) {
   const [x = 0, y = 0, rx = 0, ry = 0] = p.axes;
   if (view === 'play' && Math.hypot(rx, ry) > DEAD) play.drag(rx * dt * 300, ry * dt * 300, 0, 0, play.stickRises);
   // R3, the right stick's click, and + or Start are 11 and 9 on the standard mapping and on the raw pads seen so far
-  if (b(11) && !held.has('r3') && view === 'play') play.stickSwap();
+  if (b(11) && !held.has('r3') && view === 'play') play.stickSwap(), paint();
   if (b(11)) held.set('r3', now);
   else held.delete('r3');
   if (b(9) && !held.has('plus')) press('plus');
@@ -1904,8 +1911,10 @@ function pad(now: number, dt: number) {
   PAD.forEach((k, i) => (on[k] = b(at[i])));
   for (const k in on) {
     const next = held.get(k);
-    if (!on[k]) held.delete(k);
-    else if (next === undefined || ((k in DIR || REPEAT.has(k)) && now >= next)) {
+    if (!on[k]) {
+      if (k === 'a' && held.has(k) && view === 'play') play.release();
+      held.delete(k);
+    } else if (next === undefined || ((k in DIR || REPEAT.has(k)) && now >= next)) {
       held.set(k, now + (next === undefined ? HOLD : AGAIN));
       // a pad press resumes the sound where the browser counts it as a gesture
       sfx.unlock();
