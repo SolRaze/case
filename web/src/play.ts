@@ -26,8 +26,9 @@ type Deps = {
 const S = theme.strings;
 const C = theme.colors;
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
-/** reduced motion: the shelf's parts jump into place, no pop, sway or spin */
+/** reduced motion: the shelf's parts ease FAST times quicker, no overshoot, sway or spin */
 const still = matchMedia('(prefers-reduced-motion: reduce)');
+const FAST = 3;
 const MM = 0.01; // main.ts's scene unit is 100 mm
 const DIST = 7; // the bed's distance from the camera
 // mm, the bed drawn and the most a piece may move or grow; the height stays solder's stepper_z 200
@@ -330,7 +331,7 @@ export function playground(d: Deps) {
     // Landscape: under the list in its column, rising as the list shortens, as many across as the column holds; lines in view are what fits above the bar
     const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.15 * h, ((0.97 - COL) * w) / 3.3);
     cols = pt ? 2 : Math.max(3, Math.floor(((0.97 - COL) * w) / (cell * 1.1)));
-    const k = still.matches ? 1 : 1 - Math.exp(-8 * dt);
+    const k = 1 - Math.exp(-8 * (still.matches ? FAST : 1) * dt);
     if (!pt) {
       const rows = document.getElementById('parts')!.getBoundingClientRect();
       const floor = (document.querySelector('footer')?.getBoundingClientRect().top ?? innerHeight) / innerHeight - 0.02;
@@ -353,7 +354,7 @@ export function playground(d: Deps) {
         : new THREE.Vector3((COL - 0.5) * w + (across + 0.5) * (((0.97 - COL) * w) / cols), (0.5 - shelfTop) * h - cell / 2 - v * cell * 1.05, -DIST);
       // the pop: overshoots, then settles, as the cards page's icons do
       const p = clamp((t - it.born) / 0.3, 0, 1);
-      const grow = still.matches ? p && 1 : p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
+      const grow = still.matches ? 1 - (1 - p) ** 3 : p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
       // opened, it stands 0.3 view heights in the bed's place and the rest fade, or they would sit under the text
       // parts keep their order of size against the shelf's biggest, by the square root so a small one still reads; SPREAD 1 is true scale, 0 all one size
       const size = fore ? (0.3 * h) / it.big : (icon * (it.big / biggest()) ** SPREAD) / it.big;
@@ -945,7 +946,7 @@ export function playground(d: Deps) {
   function frame(dt: number, t: number) {
     now = t;
     if (!shown) return;
-    const k = still.matches ? 1 : 1 - Math.exp(-8 * dt);
+    const k = 1 - Math.exp(-8 * (still.matches ? FAST : 1) * dt);
     orbit.yaw += (aim.yaw - orbit.yaw) * k;
     orbit.tilt += (aim.tilt - orbit.tilt) * k;
     // landscape keeps the bed left of the list, as edit keeps its phone

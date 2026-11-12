@@ -28,8 +28,10 @@ const clock = () => performance.now() / 1000;
 const start = decodeURIComponent(location.hash.slice(1));
 // the entry the page loaded on; a popstate to an entry with no state is a url typed or followed while open
 history.replaceState({ landing: true }, '');
-/** reduced motion: no idle spin, sway, pop, flip or easing; poses jump, a swipe still turns the phone */
+/** reduced motion: no idle spin, sway, overshoot, flip or tilt; poses ease FAST times quicker, a swipe still turns the phone */
 const still = matchMedia('(prefers-reduced-motion: reduce)');
+const FAST = 3;
+const ease = (k: number, dt: number) => 1 - Math.exp(-k * (still.matches ? FAST : 1) * dt);
 const idle = () => (still.matches ? 0 : theme.spin);
 const phones = order(specs as unknown as PhoneSpec[]);
 const spec = (id: string) => phones.find((p) => p.id === id)!;
@@ -509,12 +511,12 @@ function frontTarget(i: number): Target {
   };
 }
 
-const damp = (a: number, b: number, k: number, dt: number) => (still.matches ? b : a + (b - a) * (1 - Math.exp(-k * dt)));
+const damp = (a: number, b: number, k: number, dt: number) => a + (b - a) * ease(k, dt);
 const unwind = (a: number, rest: number) => rest + (((a - rest) % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
-/** pop-in: 0 before it is born, overshooting a little to 1 over 0.3 s */
+/** pop-in: 0 before it is born, overshooting a little to 1 over 0.3 s; reduced motion eases out, no overshoot */
 const pop = (it: Item, now: number) => {
   const k = it.ready ? clamp((now - it.born) / 0.3, 0, 1) : 0;
-  if (still.matches) return k && 1;
+  if (still.matches) return 1 - (1 - k) ** 3;
   return k && 1 + 2.7 * (k - 1) ** 3 + 1.7 * (k - 1) ** 2;
 };
 
@@ -563,7 +565,7 @@ low.setAnimationLoop((t) => {
   if (m > 0) {
     const to = ring - page() * RING;
     turn = (turn + m) % m;
-    turn += ((((to - turn) % m) + m * 1.5) % m - m / 2) * (still.matches ? 1 : 1 - Math.exp(-8 * dt));
+    turn += ((((to - turn) % m) + m * 1.5) % m - m / 2) * ease(8, dt);
   }
   for (const it of items.values()) {
     const j = list.indexOf(it);
