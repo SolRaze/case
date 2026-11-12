@@ -219,7 +219,8 @@ export function playground(d: Deps) {
   let inView = 3; // lines of icons in view
   let cellPx = 100; // one icon line, in screen pixels
   let tall = false; // portrait: the shelf runs sideways under the bed, else down beside it
-  const COL = 0.55; // landscape: the right column's left edge, in view widths; style.css places the list and bar on it
+  const COL = 0.55; // landscape: the right column's left edge, in view widths; style.css places the list on it
+  const EDGE = 0.96; // landscape: the column's right edge, the header's and bar's 4vw margin
   let shelfTop = 0.5; // landscape: the shelf's top, in view heights, eased under the list and its kinds row
   /** a shelf icon dragged by mouse or finger, at a screen point in view fractions -1 to 1; out once it has left the shelf for the bed */
   let carry: { i: number; x: number; y: number; out: boolean } | null = null;
@@ -326,10 +327,10 @@ export function playground(d: Deps) {
     if (!shelfRoot.visible) return;
     const w = h * d.camera.aspect;
     // icon size and spacing measured off the console's browser (Reference/screens/ps2), in view heights: 0.2 apart, an icon 0.19 at its largest side.
-    // Landscape: 2 across at the right edge, clear of the bench's list, running down, 3 lines in view. Portrait: 2 rows under the bed, 2 in view, running sideways
+    // Portrait: 2 rows under the bed, 2 in view, running sideways
     // Landscape: under the list in its column, rising as the list shortens, as many across as the column holds; lines in view are what fits above the bar
-    const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.15 * h, ((0.97 - COL) * w) / 3.3);
-    cols = pt ? 2 : Math.max(3, Math.floor(((0.97 - COL) * w) / (cell * 1.1)));
+    const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.15 * h, ((EDGE - COL) * w) / 3.3);
+    cols = pt ? 2 : Math.max(3, Math.floor(((EDGE - COL) * w) / (cell * 1.1)));
     const k = 1 - Math.exp(-8 * (still.matches ? FAST : 1) * dt);
     if (!pt) {
       const rows = document.getElementById('parts')!.getBoundingClientRect();
@@ -350,7 +351,7 @@ export function playground(d: Deps) {
       const fore = card > 0 && on;
       const spot = pt
         ? new THREE.Vector3((v - (inView - 1) / 2) * cell, -0.07 * h - across * cell * 1.05, -DIST)
-        : new THREE.Vector3((COL - 0.5) * w + (across + 0.5) * (((0.97 - COL) * w) / cols), (0.5 - shelfTop) * h - cell / 2 - v * cell * 1.05, -DIST);
+        : new THREE.Vector3((COL - 0.5) * w + cell / 2 + across * (((EDGE - COL) * w - cell) / (cols - 1)), (0.5 - shelfTop) * h - cell / 2 - v * cell * 1.05, -DIST);
       // the pop: overshoots, then settles, as the cards page's icons do
       const p = clamp((t - it.born) / 0.3, 0, 1);
       const grow = still.matches ? 1 - (1 - p) ** 3 : p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;

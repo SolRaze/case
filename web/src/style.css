@@ -95,7 +95,8 @@ body:not([data-view=detail]) #detail > p { display: none; }
   :is([data-view=edit], [data-view=play]) footer { left: 56%; justify-content: flex-start; padding-left: 0; }
   /* play: one right column, its list on top and the shelf under it (play.ts COL reads this left edge) */
   [data-view=play] #parts { left: 55%; top: 18%; }
-  [data-view=play] footer { left: 55%; }
+  /* its bar runs one line leftward from the column's right edge, under the bed where the column is too narrow */
+  [data-view=play] footer { left: 0; justify-content: flex-end; padding-left: 4vw; }
 }
 
 /* X on a model: main.ts infoTarget centres the phone over the label column, level with the name;
