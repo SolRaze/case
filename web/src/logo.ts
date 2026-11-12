@@ -53,10 +53,23 @@ function shirt() {
  */
 export const buildLogo = (h: number, depth: number, finish: Finish, seg: number) => slab(outline(), h, depth, finish, seg);
 
-/** the apparel icon, a slab like the apple */
-export const buildShirt = (h: number, depth: number, finish: Finish, seg: number) => slab(shirt(), h, depth, finish, seg);
+/** shadow tint on the shirt, the LOUD logo's lime */
+const SHADE = '#b4f000';
 
-function slab(shapes: THREE.Shape[], h: number, depth: number, finish: Finish, seg: number) {
+/** the apparel icon, a slab like the apple, all of it in the LOUD logo's glossy blue whatever the finish */
+export function buildShirt(h: number, depth: number, finish: Finish, seg: number) {
+  const gloss = new THREE.MeshPhysicalMaterial({ color: '#0a3cff', roughness: 0.15, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05, transparent: true, flatShading: seg <= 8 });
+  // the shaded side turns the logo's lime: the less light reaches a spot against its own blue, the more of it
+  gloss.onBeforeCompile = (s) => {
+    s.uniforms.shade = { value: new THREE.Color(SHADE) };
+    s.fragmentShader = s.fragmentShader
+      .replace('void main() {', 'uniform vec3 shade;\nvoid main() {')
+      .replace('#include <opaque_fragment>', 'float lit = dot(outgoingLight, vec3(0.2126, 0.7152, 0.0722)) / max(dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722)), 1e-3);\noutgoingLight = mix(outgoingLight, shade * 0.6, (1.0 - smoothstep(0.15, 0.7, lit)) * 0.8);\n#include <opaque_fragment>');
+  };
+  return slab(shirt(), h, depth, finish, seg, [gloss, gloss]);
+}
+
+function slab(shapes: THREE.Shape[], h: number, depth: number, finish: Finish, seg: number, mats?: [THREE.Material, THREE.Material]) {
   const k = h / 118;
   const bevel = 0.8 / k;
   const geo = new THREE.ExtrudeGeometry(shapes, {
@@ -72,8 +85,7 @@ function slab(shapes: THREE.Shape[], h: number, depth: number, finish: Finish, s
   geo.center();
   const m = (color: string, o: Partial<THREE.MeshStandardMaterialParameters>) =>
     new THREE.MeshStandardMaterial({ color, transparent: true, flatShading: seg <= 8, ...o });
-  const face = m(finish.body, { roughness: rough(finish, 0.35), metalness: 0.05 });
-  const side = m(finish.frame, { roughness: rough(finish, 0.3), metalness: 0.8 });
+  const [face, side] = mats ?? [m(finish.body, { roughness: rough(finish, 0.35), metalness: 0.05 }), m(finish.frame, { roughness: rough(finish, 0.3), metalness: 0.8 })];
   const object = new THREE.Group();
   object.add(new THREE.Mesh(geo, [face, side]));
   return { object, materials: [face, side] };

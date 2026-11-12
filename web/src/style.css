@@ -1,14 +1,15 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 /* Safari colours its toolbars with the root background colour;
    html and #bg both span 100lvh from the top so the two gradients line up with no seam or repeat */
-html { background: #000 linear-gradient(115deg, var(--field0, #c4c4c4), var(--field1, #8c8c8c) 40%, var(--field2, #5a5a5a) 70%, var(--field3, #363636)) 0 0 / 100% 100lvh no-repeat; }
+html { background: #000 linear-gradient(115deg, var(--field0, #c4c4c4), var(--field1, #8c8c8c) 20%, var(--field2, #5a5a5a) 35%, var(--field3, #363636) 50%, var(--field2, #5a5a5a) 65%, var(--field1, #8c8c8c) 80%, var(--field0, #c4c4c4)) 0 0 / 100% 100lvh no-repeat; }
 html, body { height: 100%; overflow: hidden; font-family: var(--font); color: var(--ink); }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; touch-action: manipulation; }
 ul { list-style: none; }
 
 /* the browser's lit grey, light top left to dark bottom right; an open phone dims it */
 #bg, #bg::after { position: fixed; top: 0; left: 0; right: 0; height: 100lvh; transition: opacity .5s; }
-#bg { background: linear-gradient(115deg, var(--field0), var(--field1) 40%, var(--field2) 70%, var(--field3)); }
+/* mirrored: field0 at both ends, field3 at the centre */
+#bg { background: linear-gradient(115deg, var(--field0), var(--field1) 20%, var(--field2) 35%, var(--field3) 50%, var(--field2) 65%, var(--field1) 80%, var(--field0)); }
 #bg::after {
   content: ''; opacity: 0;
   background: radial-gradient(100% 80% at 30% 30%, var(--detail0), var(--detail1));
@@ -24,7 +25,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
 /* the real text: laid out and clickable but unseen, ink.ts draws it into #ink */
 #ui { position: fixed; inset: 0; opacity: 0; pointer-events: none; }
 #ui button { pointer-events: auto; }
-.ink { font-weight: 500; letter-spacing: .02em; white-space: pre-wrap; }
+.ink { font-weight: 400; letter-spacing: .02em; white-space: pre-wrap; }
 
 /* top left the page and what it holds, top right the selected icon, two lines each like the console */
 header, #name, #inspo {
@@ -135,7 +136,7 @@ body:not([data-menu]) #detail, [data-view=info] #name, [data-view=detail] #name,
 body:not([data-inspo]) #inspo { opacity: 0; visibility: hidden; }
 body:not([data-menu]) #detail button, body:not([data-inspo]) #inspo { pointer-events: none; }
 /* the flip into a page: the hud goes first */
-[data-busy] :is(header, #name, #inspo, #detail, #parts, footer) { opacity: 0; transition: opacity .12s, visibility .12s; }
+[data-busy] :is(header, #name, #inspo, #detail, #parts, footer, #apparel) { opacity: 0; transition: opacity .12s, visibility .12s; }
 
 #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; }
 
@@ -148,3 +149,31 @@ body:not([data-menu]) #detail button, body:not([data-inspo]) #inspo { pointer-ev
   clip-path: inset(50%);
 }
 [data-view=boot] #detail > p { display: none; }
+
+
+/* apparel: the tees side by side, the picked one lit; an open tee is its photo on the left, its words on the right */
+#apparel { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; transition: opacity .35s, visibility .35s; }
+body:not([data-view=apparel]) #apparel { opacity: 0; visibility: hidden; }
+#apparel :is(button, img) { pointer-events: auto; }
+/* the tees are drawn in the scene; this list is their twin for Tab and screen readers */
+#tees { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); list-style: none; margin: 0; padding: 0; }
+#tee { display: none; margin: 0; }
+[data-tee] #tees { display: none; }
+[data-tee] #tee { display: grid; grid-template-columns: auto minmax(0, 32ch); gap: 5vw; align-items: center; }
+#tee-photo { display: block; height: 68vh; max-width: 50vw; object-fit: contain; border-radius: 6px; cursor: pointer; }
+#tee figcaption { color: var(--ink); }
+#tee p { margin: 0 0 .6em; }
+#tee-name { font-size: clamp(24px, 4.4vh, 52px); font-weight: 400; line-height: 1.1; }
+#tee-kind { color: var(--dim); }
+#tee-note { font-size: .9em; line-height: 1.45; }
+#tee-buy { display: inline-block; margin-top: .6em; padding: .55em 1.1em; border-radius: 999px; background: var(--pick); color: #000; font-weight: 600; text-decoration: none; }
+#tee-buy:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+#tee-dots { display: flex; gap: .5em; list-style: none; margin: 1.2em 0 0; padding: 0; }
+#tee-dots li { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); opacity: .35; }
+#tee-dots [aria-current] { background: var(--pick); opacity: 1; }
+@media (orientation: portrait) {
+  [data-tee] #tee { grid-template-columns: 1fr; justify-items: center; gap: 2.5vh; padding: 0 6vw; text-align: center; }
+  #tee-photo { height: auto; width: 82vw; max-height: 56vh; max-width: none; }
+  #tee-dots { justify-content: center; }
+  [data-view=apparel] #name { top: calc(9vh + env(safe-area-inset-top)); }
+}

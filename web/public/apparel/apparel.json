@@ -1,0 +1,51 @@
+[
+  {
+    "id": "nihilist-penguin",
+    "name": "The Nihilist Penguin",
+    "kind": "240 GSM oversized tee",
+    "icon": "icon.webp",
+    "quote": "Designed for those indomitable hearts fueled by rage and passion who refuse to accept the majority's path.",
+    "images": [
+      "front.webp",
+      "back.webp",
+      "worn.webp"
+    ],
+    "posts": [
+      {
+        "url": "https://www.instagram.com/p/DUxJn3hERen/",
+        "date": "2026-02-14",
+        "caption": "The Penguin Oversized!! Let's goooo",
+        "images": [
+          "poster.webp",
+          "front.webp",
+          "back.webp"
+        ]
+      },
+      {
+        "url": "https://www.instagram.com/p/DU7Lu9ZCEr4/",
+        "date": "2026-02-18",
+        "caption": "High energy, high decibels. Fit of the week. only on @theloud.project",
+        "images": [
+          "worn.webp"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "made-in-abyss",
+    "name": "Made in Abyss",
+    "kind": "240 GSM acid wash tee, 100% cotton",
+    "icon": "icon.webp",
+    "print": "The Turbinid Dragon",
+    "images": [
+      "poster.webp",
+      "front.webp",
+      "back.webp",
+      "worn-front.webp",
+      "worn-back.webp",
+      "detail.webp",
+      "order.webp"
+    ],
+    "source": "figma UuQNxoFWRAGXe77L9hueEM, Made in Abyss tee / Carousel, photo 1-7"
+  }
+]

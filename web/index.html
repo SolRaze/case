@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>case</title>
-  <link rel="icon" href="icon.svg">
-  <link rel="apple-touch-icon" href="icon-180.png">
+  <title>THE LOUD PROJECT</title>
+  <link rel="icon" href="loud.png">
+  <link rel="apple-touch-icon" href="loud-180.png">
   <link rel="stylesheet" href="/src/style.css">
 </head>
 <body data-view="boot">
@@ -13,9 +13,16 @@
   <canvas id="view" aria-hidden="true"></canvas>
   <canvas id="hi" aria-hidden="true"></canvas>
   <canvas id="ink" aria-hidden="true"></canvas>
+  <section id="apparel">
+    <ul id="tees"></ul>
+    <figure id="tee">
+      <img id="tee-photo" alt="">
+      <figcaption><p id="tee-name"></p><p id="tee-kind"></p><p id="tee-note"></p><a id="tee-buy" target="_blank" rel="noopener"></a><ol id="tee-dots"></ol></figcaption>
+    </figure>
+  </section>
   <div id="ui">
     <header>
-      <img class="px" src="icon.svg" alt="">
+      <img class="px" src="loud.png" alt="">
       <div><p class="ink" id="brand"></p><p class="ink" id="sub"></p></div>
     </header>
     <div id="name" aria-live="polite"><p class="ink" id="n1"></p><p class="ink" id="n2"></p></div>

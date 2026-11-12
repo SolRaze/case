@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-import '@fontsource/arimo/latin-700.css';
-import theme, { look as themeLook, looks } from './theme';
+import '@fontsource/inter/latin-400.css';
+import theme from './theme';
 import specs from '../phones.json';
 import { buildLocked, buildPhone, edges, lockedEdge, framed, label, look, lookT, sheetLook, type PhoneSpec } from './phone';
 import { buildLogo, buildPlay, buildShirt } from './logo';
 import { fromHour, lit } from './sky';
 import { READY, order, styleName, year } from './catalog';
-import { built, exportStl, isSet, load, loadMy, loadTemplates, MY, partSolid, placing, saveTemplates, seat, seedFeatured, SINK, solid, type Template } from './cases';
+import { exportStl, isSet, load, loadMy, loadTemplates, MY, partSolid, placing, saveTemplates, seat, SINK, solid, type Template } from './cases';
 import { STEPS, combine, opsKey, partList, type Move, type Moves, type Op, type Part } from './parts';
 import { inkLayer } from './ink';
 import * as sfx from './sound';
@@ -319,25 +319,8 @@ function dropItem(t: Template) {
   items.delete(t);
 }
 
-built(card.id).then(async (list) => {
-  for (const s of list.filter(isSet)) setParts.set(s, (await partList(card.id, s)).list);
-  styles = list;
-  // a part set starts bare, its shell with every part off; a style as built. A set with its parts.json ops is a creation
-  const sets = list.filter(isSet);
-  starts = [
-    ...sets.map((s) => ({
-      name: sets.length > 1 ? `${S.base} ${styleName(s)}` : S.base,
-      look: { style: s, ops: Object.fromEntries(setParts.get(s)!.filter((p) => p.op !== 'base').map((p): [string, Op] => [p.name, 'off'])) },
-    })),
-    ...list.filter((s) => !isSet(s)).map((s) => ({ name: styleName(s), look: { style: s } })),
-  ];
-  creations = sets.map((s) => ({ name: styleName(s), look: { style: s } }));
-  store = loadTemplates(list);
-  wear(store.list[store.worn]);
-  paint();
-});
 
-type View = 'boot' | 'models' | 'cases' | 'detail' | 'edit' | 'info' | 'play';
+type View = 'boot' | 'models' | 'cases' | 'detail' | 'edit' | 'info' | 'play' | 'apparel';
 let view: View = 'boot';
 let from: 'boot' | 'models' = 'boot'; // where B on the cases page goes
 let msel = 0; // models grid
@@ -404,7 +387,7 @@ function designName(t: Template) {
 }
 /** the front page's icons, as theme.front indices: the phones with a design, the apple and the playground */
 const fronts = () => theme.front.flatMap((f, i) => (isGlyph(f.icon) || (f.icon === card.id && edited().length) ? [i] : []));
-const opens = (i: number) => (theme.front[i].icon === 'logo' ? 'models' : theme.front[i].icon === 'play' ? 'play' : 'cases');
+const opens = (i: number) => (theme.front[i].icon === 'logo' ? 'models' : theme.front[i].icon === 'play' ? 'play' : theme.front[i].icon === 'shirt' ? 'apparel' : 'cases');
 const portrait = () => camera.aspect < 1;
 
 const rowOf = (i: number) => Math.floor(i / COLS);
@@ -563,6 +546,7 @@ low.setAnimationLoop((t) => {
     turn = (turn + m) % m;
     turn += ((((to - turn) % m) + m * 1.5) % m - m / 2) * (1 - Math.exp(-8 * dt));
   }
+  teeItems.forEach((it, i) => pose(it, teeTarget(i), dt, view === 'apparel' ? pop(it, now) : 1));
   for (const it of items.values()) {
     const j = list.indexOf(it);
     pose(it, j < 0 ? gone(0) : ringTarget(it, j), dt, view === 'cases' ? pop(it, now) : 1);
@@ -615,7 +599,7 @@ low.setAnimationLoop((t) => {
   // front page: a centre dot in front of the icon and an underglow behind it on the same spot
   // phone selection grid and the cases ring: one glow on the icon's lower part, depth-tested so a row in front covers it
   // both jump, never glide
-  const lit = view === 'boot' ? front[fronts()[fsel]] : view === 'models' ? models[msel] : view === 'cases' && !menu ? list[ring] : null;
+  const lit = view === 'boot' ? front[fronts()[fsel]] : view === 'models' ? models[msel] : view === 'apparel' && photo < 0 ? teeItems[tsel] : view === 'cases' && !menu ? list[ring] : null;
   if (lit && !flip && !busy) {
     const g = view === 'boot' ? 1 : Math.min(pop(lit, now), 1);
     const h = lit.h * lit.scale;
@@ -644,21 +628,22 @@ low.setAnimationLoop((t) => {
   if (view !== 'play') camera.position.set(damp(camera.position.x, c.x, 8, dt), damp(camera.position.y, c.y, 8, dt), damp(camera.position.z, c.z, 8, dt));
   camera.layers.set(0);
   low.render(scene, camera);
-  if (caseMesh.visible || play.shown || hiDrawn) {
+  const teesUp = teeItems.some((it) => it.holder.visible);
+  if (caseMesh.visible || play.shown || teesUp || hiDrawn) {
     camera.layers.set(1);
     hi.render(scene, camera);
     camera.layers.set(0);
-    hiDrawn = caseMesh.visible || play.shown;
+    hiDrawn = caseMesh.visible || play.shown || teesUp;
   }
   ink.draw();
 });
 
 // text and buttons
-/** a button: its letter drawn in strokes, in its theme grey, inside a black disc */
+/** a button: its letter drawn in strokes, in its theme colour, inside a disc, black unless the theme names one */
 const disc = (mark: string, color: string) =>
   'data:image/svg+xml,' +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#000" stroke="${theme.sheet?.edge ?? 'none'}" stroke-width="1"/>` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="${(theme.buttons as { disc?: string }).disc ?? '#000'}" stroke="${theme.sheet?.edge ?? 'none'}" stroke-width="1"/>` +
       `<g fill="none" stroke="${color}" stroke-width="2.6">${mark}</g></svg>`,
   );
 const glyph = {
@@ -688,14 +673,99 @@ const arrow = (d: string, base: 0 | 1) =>
 ($('up') as HTMLImageElement).src = arrow('M12 0 24 12H0Z', 1);
 ($('down') as HTMLImageElement).src = arrow('M0 0H24L12 12Z', 0);
 const bars: Record<View, [Press, string][]> = {
-  boot: [['a', S.enter], ['x', S.theme]],
+  boot: [['a', S.enter]],
   models: [['a', S.enter], ['b', S.back], ['x', S.options]],
   cases: [['a', S.enter], ['b', S.back], ['x', S.options]],
   detail: [],
   edit: [['a', S.save], ['b', S.back]],
   info: [['b', S.back]],
   play: [],
+  apparel: [],
 };
+
+/** the apparel pages, from public/apparel/apparel.json: the tees side by side, then one tee's photos */
+type Tee = { id: string; name: string; kind: string; icon: string; print?: string; quote?: string; images: string[] };
+let tees: Tee[] = [];
+let tsel = 0;
+let photo = -1; // the open tee's photo; -1 on the list
+const teeSrc = (t: Tee, f: string) => `apparel/${t.id}/${f}`;
+/** each tee's cutout as a flat card in the scene, drawn on the sharp canvas; posed like the models row */
+let teeItems: Item[] = [];
+const TEE_H = tallest / MM; // mm, as tall as the tallest phone, so the row's sizes carry over
+function buildTees() {
+  const load = new THREE.TextureLoader();
+  teeItems = tees.map((t) => {
+    const mat = new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+    mesh.layers.set(1);
+    mesh.scale.set(TEE_H, TEE_H, 1);
+    load.load(teeSrc(t, t.icon), (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      mat.map = tex;
+      mat.needsUpdate = true;
+      mesh.scale.x = (TEE_H * tex.image.width) / tex.image.height;
+    });
+    // item() sets its object's scale to mm, so the card is sized inside a group
+    return item(new THREE.Group().add(mesh), [mat], TEE_H);
+  });
+}
+/** the tees row: like the models row, the picked tee big in the middle, its neighbours stepped back and turned in */
+function teeTarget(i: number): Target {
+  if (view !== 'apparel' || photo >= 0) return gone(i);
+  const o = i - tsel + drag;
+  const a = Math.abs(o);
+  return {
+    pos: ahead(o * (portrait() ? 0.55 : 0.3), 0.02, D + Math.min(a, 2) * 1.2),
+    scale: fill(portrait() ? 0.36 : 0.5, D, tallest),
+    opacity: clamp(2.5 - a, 0, 1),
+    spin: false,
+    tilt: 0,
+    yaw: -clamp(o, -1, 1) * 0.5,
+    sway: sway(i === tsel && !drag),
+  };
+}
+fetch('apparel/apparel.json')
+  .then((r) => r.json())
+  .then((t: Tee[]) => {
+    tees = t;
+    buildTees();
+    $('tees').replaceChildren(
+      ...t.map((tee, i) => {
+        const li = document.createElement('li');
+        const b = document.createElement('button');
+        const img = document.createElement('img');
+        img.src = teeSrc(tee, tee.icon);
+        img.alt = '';
+        b.ariaLabel = tee.name;
+        b.append(img);
+        b.onclick = () => (i === tsel ? press('a') : move(i - tsel, 0));
+        li.append(b);
+        return li;
+      }),
+    );
+    if (view === 'apparel') paint();
+  });
+$('tee-photo').onclick = (e) => move(e.offsetX < (e.target as HTMLElement).clientWidth / 2 ? -1 : 1, 0);
+// the tee page's order link: an Instagram DM, theme.order
+Object.assign($('tee-buy'), { href: theme.order, textContent: S.buy });
+
+function paintApparel() {
+  [...$('tees').querySelectorAll('button')].forEach((b, i) => (i === tsel ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current')));
+  const t = tees[tsel];
+  if (photo < 0 || !t) return;
+  ($('tee-photo') as HTMLImageElement).src = teeSrc(t, t.images[photo]);
+  new Image().src = teeSrc(t, t.images[(photo + 1) % t.images.length]);
+  $('tee-name').textContent = t.name;
+  $('tee-kind').textContent = t.kind;
+  $('tee-note').textContent = t.quote ?? t.print ?? '';
+  $('tee-dots').replaceChildren(
+    ...t.images.map((_, i) => {
+      const li = document.createElement('li');
+      if (i === photo) li.ariaCurrent = 'true';
+      return li;
+    }),
+  );
+}
 
 /** edit's bar: what A does on the picked row, B, and X on a part; a move's other controls are rows beside the phone */
 function editBar(): [Press, string][] {
@@ -727,9 +797,8 @@ const ink$ = (tag: string, s: string, cls = '') => {
   return e;
 };
 const play = playground({ scene, camera, paint, leave, ink: ink$, hour: (h) => ((pin = h), relight()) });
-seedFeatured().then(paint, () => {});
 
-type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order' | (typeof looks)[number], label: string, ok: boolean];
+type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order', label: string, ok: boolean];
 /** the command list's rows and whether each can be picked; detail works on the worn design, cases on the picked one */
 function rows(): Row[] {
   const has = shown().length > 0;
@@ -739,7 +808,6 @@ function rows(): Row[] {
       : [['new', S.new, starts.length > 0], ['delete', S.delete, false]];
   if (menu === 1) return [['edit', S.edit, has], ['copy', S.copy, has], ['print', S.print, has], ['delete', S.delete, has]];
   if (menu === 2) return [['export', S.export, true], ['order', S.order, !!theme.order]];
-  if (menu === 5) return looks.map((l) => [l, S[l], true]);
   return [];
 }
 
@@ -995,6 +1063,10 @@ function paint() {
     n1 = leaving ? S.discardAsk : editing >= 0 ? designName(store.list[editing]) : S.new;
     n2 = solving ? S.loading : label(card.id);
   } else if (view === 'play') [n1, n2] = play.title();
+  else if (view === 'apparel' && photo < 0 && tees[tsel]) [n1, n2] = [tees[tsel].name, tees[tsel].kind];
+  if (view === 'apparel' && photo >= 0) document.body.dataset.tee = '';
+  else delete document.body.dataset.tee;
+  if (view === 'apparel') paintApparel();
   text('n1', n1);
   text('n2', n2);
 
@@ -1041,7 +1113,6 @@ function paint() {
       button(S.no, !yes, () => (!yes ? press('a') : (sfx.tick(), (yes = false), paint()))),
     );
   } else if (menu === 4) ul.replaceChildren(li(ink$('p', S.print)), li(ink$('p', S.printing)), li(ink$('p', S.keep)));
-  else if (menu === 5) ul.replaceChildren(li(ink$('p', S.theme)), ...rows().map(row));
   else ul.replaceChildren();
 
   // edit's rows: the start, each part, then add, undo and save; a tap picks a row, a tap on the picked row is A, ‹ › step it as ← → do
@@ -1171,7 +1242,7 @@ function paint() {
 
   const bar = $('bar');
   const keys: [Press | Dir, string][] =
-    menu === 4 ? [] : menu ? [['a', S.enter], ['b', S.back]] : view === 'edit' ? editBar() : view === 'play' ? play.bar() : view === 'cases' && gallery ? [['a', S.remix], ['b', S.back], ...(peek ? [] : [['x', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['a', S.enter], ['b', S.back]] : bars[view];
+    menu === 4 ? [] : menu ? [['a', S.enter], ['b', S.back]] : view === 'edit' ? editBar() : view === 'play' ? play.bar() : view === 'apparel' ? (photo < 0 ? [['a', S.enter], ['b', S.back]] : [['left', ''], ['right', S.view], ['x', S.order], ['b', S.back]]) : view === 'cases' && gallery ? [['a', S.remix], ['b', S.back], ...(peek ? [] : [['x', S.preview] as [Press, string]])] : view === 'cases' && !list.length ? [['a', S.enter], ['b', S.back]] : bars[view];
   // marks with no word of their own stay on one line with the next, which names them
   const groups: HTMLElement[] = [];
   let group: HTMLElement | null = null;
@@ -1236,6 +1307,15 @@ function enterFront() {
       camera.position.copy(camAt());
       fit.pos.copy(openTarget(fit).pos);
       openCases(0.35);
+    } else if (opens(i) === 'apparel') {
+      view = 'apparel';
+      photo = -1;
+      camera.position.copy(camAt());
+      const now = clock();
+      teeItems.forEach((it, j) => {
+        it.pos.copy(teeTarget(j).pos);
+        it.born = now + 0.35 + j * STAGGER;
+      });
     } else if (opens(i) === 'play') {
       view = 'play';
       camera.position.copy(camAt());
@@ -1352,6 +1432,7 @@ let unguarding = false;
 function route() {
   if (view === 'models' || view === 'info') return `${view}/${phones[msel].id}`;
   if (view === 'cases') return `${gallery ? 'showcase' : 'cases'}/${ring + 1}`;
+  if (view === 'apparel' && photo >= 0 && tees[tsel]) return `apparel/${tees[tsel].id}`;
   return view === 'boot' ? '' : view;
 }
 function syncUrl() {
@@ -1381,7 +1462,7 @@ addEventListener('popstate', () => {
 /** a link's page: in through its front page icon as a press would, then on to the page under it */
 function arrive(r: string) {
   const [page, arg = ''] = r.split('/');
-  const under = ['models', 'info', 'detail', 'showcase'].includes(page) ? 'models' : page === 'cases' || page === 'edit' ? 'cases' : page === 'play' ? 'play' : null;
+  const under = ['models', 'info', 'detail', 'showcase'].includes(page) ? 'models' : page === 'cases' || page === 'edit' ? 'cases' : page === 'play' ? 'play' : page === 'apparel' ? 'apparel' : null;
   if (!under) return;
   // with no designs the phone is off the front page, its cases are reached from the models
   let i = fronts().findIndex((f) => opens(f) === under);
@@ -1394,6 +1475,12 @@ function arrive(r: string) {
   if (page === 'detail' || page === 'showcase' || (under === 'cases' && opens(fronts()[i]) === 'models')) msel = models.indexOf(fit);
   enterFront();
   setTimeout(() => {
+    const tee = tees.findIndex((t) => t.id === arg);
+    if (page === 'apparel' && tee >= 0) {
+      tsel = tee;
+      photo = 0;
+      return paint();
+    }
     if (page === 'info') {
       view = 'info';
       return paint();
@@ -1409,8 +1496,8 @@ function command(k: Press) {
   if (k === 'b') {
     sfx.cancel();
     // back one level, the cursor on the row that opened it
-    cmd = menu === 1 || menu === 5 ? 0 : opener;
-    menu = menu === 1 || menu === 5 ? 0 : 1;
+    cmd = menu === 1 ? 0 : opener;
+    menu = menu === 1 ? 0 : 1;
     if (view === 'detail' && !menu) {
       view = 'models';
     }
@@ -1442,12 +1529,6 @@ function command(k: Press) {
   const r = rows()[cmd];
   if (!r?.[2]) return sfx.cancel();
   sfx.confirm();
-  // a look is read once at load: keep it, drop any ?theme=, reload
-  if (menu === 5) {
-    localStorage.setItem('case.theme', r[0]);
-    location.replace(location.pathname);
-    return;
-  }
   const i = view === 'detail' ? store.worn : tpl();
   const t = store.list[i];
   if (r[0] === 'new') startEdit(starts[0].look, -1);
@@ -1467,15 +1548,23 @@ function command(k: Press) {
 function press(k: Press) {
   if (busy || flip) return;
   if (view === 'play') return play.press(k);
+  if (view === 'apparel') {
+    if (k === 'b' && photo < 0) return leave();
+    if (k === 'b') {
+      sfx.cancel();
+      photo = -1;
+    } else if (k === 'a' && photo < 0 && tees.length) {
+      sfx.confirm();
+      photo = 0;
+    } else if (k === 'x' && photo >= 0) {
+      sfx.confirm();
+      return void open(theme.order, '_blank', 'noopener');
+    } else return;
+    return paint();
+  }
   if (view === 'boot') {
     if (menu) return command(k);
-    if (k === 'x') {
-      sfx.confirm();
-      menu = 5;
-      cmd = looks.indexOf(themeLook as (typeof looks)[number]);
-      return paint();
-    }
-    if (k === 'a') return theme.front[fronts()[fsel]].icon === 'shirt' ? sfx.cancel() : enterFront();
+    if (k === 'a') return enterFront();
     return;
   }
   if (view === 'models') {
@@ -1689,7 +1778,17 @@ function press(k: Press) {
 function move(dx: number, dy: number) {
   if (busy || flip) return;
   if (view === 'play') return play.move(dx, dy);
-  if (view === 'boot' && !menu) {
+  if (view === 'apparel') {
+    if (!dx || !tees.length) return;
+    if (photo < 0) {
+      const n = clamp(tsel + dx, 0, tees.length - 1);
+      if (n === tsel) return;
+      tsel = n;
+    } else {
+      const n = tees[tsel].images.length;
+      photo = (photo + dx + n) % n;
+    }
+  } else if (view === 'boot' && !menu) {
     const n = clamp(fsel + dx, 0, fronts().length - 1);
     if (n === fsel) return;
     fsel = n;
@@ -1899,9 +1998,10 @@ canvas.addEventListener('pointermove', (e) => {
     play.drag(e.clientX - down.last, e.clientY - down.lastY, down.x / innerWidth, down.y / innerHeight);
     down.last = e.clientX;
     down.lastY = e.clientY;
-  } else if (view === 'models') {
+  } else if (view === 'models' || (view === 'apparel' && photo < 0)) {
     // the row follows the finger, never past its ends
-    drag = clamp((e.clientX - down.x) / (STEP() * innerWidth), msel - models.length + 1, msel);
+    const [sel, n, step] = view === 'models' ? [msel, models.length, STEP()] : [tsel, tees.length, portrait() ? 0.55 : 0.3];
+    drag = clamp((e.clientX - down.x) / (step * innerWidth), sel - n + 1, sel);
   } else if (view === 'edit') {
     orbit.yaw = clamp(orbit.yaw + (e.clientX - down.last) * TURN, -3, 3);
     orbit.tilt = clamp(orbit.tilt + (e.clientY - down.lastY) * TURN, -0.7, 0.7);
@@ -1946,10 +2046,13 @@ canvas.addEventListener('pointerup', (e) => {
   const dx = e.clientX - d.x;
   if (drag) {
     // a swipe lands on the nearest phone, a quick flick at least one along
-    const n = clamp(Math.round(msel - drag - (e.timeStamp - d.t < 250 ? Math.sign(drag) * 0.4 : 0)), 0, models.length - 1);
+    const tee = view === 'apparel';
+    const sel = tee ? tsel : msel;
+    const n = clamp(Math.round(sel - drag - (e.timeStamp - d.t < 250 ? Math.sign(drag) * 0.4 : 0)), 0, (tee ? tees.length : models.length) - 1);
     drag = 0;
-    if (n !== msel) {
-      msel = n;
+    if (n !== sel) {
+      if (tee) tsel = n;
+      else msel = n;
       sfx.tick();
       paint();
     }
@@ -1957,7 +2060,7 @@ canvas.addEventListener('pointerup', (e) => {
   }
   if (Math.hypot(dx, e.clientY - d.y) > 8) return;
   if (view === 'play') return play.tap((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
-  const list = view === 'boot' ? fronts().map((i) => front[i]) : view === 'models' ? models : view === 'cases' && !menu ? shown() : [];
+  const list = view === 'boot' ? fronts().map((i) => front[i]) : view === 'models' ? models : view === 'apparel' && photo < 0 ? teeItems : view === 'cases' && !menu ? shown() : [];
   if (!list.length) return;
   ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
   const hit = ray.intersectObjects(list.filter((it) => it.holder.visible).map((it) => it.holder), true)[0];
@@ -1966,9 +2069,10 @@ canvas.addEventListener('pointerup', (e) => {
   while (o.parent && o.parent !== scene) o = o.parent;
   const i = list.findIndex((it) => it.holder === o);
   if (i < 0) return;
-  const cur = view === 'boot' ? fsel : view === 'models' ? msel : ring;
+  const cur = view === 'boot' ? fsel : view === 'models' ? msel : view === 'apparel' ? tsel : ring;
   if (i === cur) return press('a');
   if (view === 'boot') fsel = i;
+  else if (view === 'apparel') tsel = i;
   else if (view === 'cases') {
     ring = i;
     tryOn();
