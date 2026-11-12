@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
-import theme from './theme';
+import theme, { still } from './theme';
 import { dropImport, exportStl, FEATURED, IMPORT, keepImport, loadMy, MY, partSolid, pieceMatrix, saveMy, type MyPart, type Piece, type Shape } from './cases';
 import * as sfx from './sound';
 import { fromHour } from './sky';
@@ -26,8 +26,7 @@ type Deps = {
 const S = theme.strings;
 const C = theme.colors;
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
-/** reduced motion: the shelf's parts ease FAST times quicker, no overshoot, sway or spin */
-const still = matchMedia('(prefers-reduced-motion: reduce)');
+/** reduced motion, theme.ts: the shelf's parts ease FAST times quicker, no overshoot, sway or spin */
 const FAST = 3;
 const MM = 0.01; // main.ts's scene unit is 100 mm
 const DIST = 7; // the bed's distance from the camera

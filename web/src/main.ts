@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import '@fontsource/arimo/latin-700.css';
-import theme, { look as themeLook, looks } from './theme';
+import theme, { look as themeLook, looks, still, toggleStill } from './theme';
 import specs from '../phones.json';
 import { buildLocked, buildPhone, edges, lockedEdge, framed, label, look, lookT, sheetLook, type PhoneSpec } from './phone';
 import { buildLogo, buildPlay, buildShirt } from './logo';
@@ -28,8 +28,7 @@ const clock = () => performance.now() / 1000;
 const start = decodeURIComponent(location.hash.slice(1));
 // the entry the page loaded on; a popstate to an entry with no state is a url typed or followed while open
 history.replaceState({ landing: true }, '');
-/** reduced motion: no idle spin, sway, overshoot, flip or tilt; poses ease FAST times quicker, a swipe still turns the phone */
-const still = matchMedia('(prefers-reduced-motion: reduce)');
+/** reduced motion, theme.ts: no idle spin, sway, overshoot, flip or tilt; poses ease FAST times quicker, a swipe still turns the phone */
 const FAST = 3;
 const ease = (k: number, dt: number) => 1 - Math.exp(-k * (still.matches ? FAST : 1) * dt);
 const idle = () => (still.matches ? 0 : theme.spin);
@@ -746,7 +745,7 @@ const ink$ = (tag: string, s: string, cls = '') => {
 const play = playground({ scene, camera, paint, leave, ink: ink$, hour: (h) => ((pin = h), relight()), finish });
 seedFeatured().then(paint, () => {});
 
-type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order' | (typeof looks)[number], label: string, ok: boolean];
+type Row = [id: 'new' | 'edit' | 'copy' | 'print' | 'delete' | 'export' | 'order' | 'motion' | (typeof looks)[number], label: string, ok: boolean];
 /** the command list's rows and whether each can be picked; detail works on the worn design, cases on the picked one */
 function rows(): Row[] {
   const has = shown().length > 0;
@@ -756,7 +755,7 @@ function rows(): Row[] {
       : [['new', S.new, starts.length > 0]];
   if (menu === 1) return [['edit', S.edit, has], ['copy', S.copy, has], ['print', theme.order ? S.print : S.exportStl, has], ['delete', S.delete, has]];
   if (menu === 2) return [['export', S.export, true], ['order', S.order, !!theme.order]];
-  if (menu === 5) return looks.map((l) => [l, S[l], true]);
+  if (menu === 5) return [...looks.map((l): Row => [l, S[l], true]), ['motion', `${S.motion} ${still.matches ? S.reduced : S.full}`, true]];
   return [];
 }
 
@@ -1485,6 +1484,10 @@ function command(k: Press) {
   sfx.confirm();
   // a look is read once at load: keep it, drop any ?theme=, reload
   if (menu === 5) {
+    if (r[0] === 'motion') {
+      toggleStill();
+      return paint();
+    }
     if (r[0] === themeLook) {
       menu = 0;
       return paint();
@@ -1831,6 +1834,7 @@ addEventListener('keydown', (e) => {
     l: () => press('l'),
     r: () => press('r'),
     m: sfx.toggleMute,
+    q: () => (toggleStill(), sfx.tick(), paint()),
     '+': () => press('plus'),
     '=': () => press('plus'),
     '-': resetMove,

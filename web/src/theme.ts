@@ -13,3 +13,9 @@ const themes: Record<string, Theme> = { sky: memcard, gradient: { ...memcard, sk
 const pick = new URLSearchParams(location.search).get('theme') ?? localStorage.getItem('case.theme') ?? '';
 export const look = pick === 'memcard' || !themes[pick] ? 'sky' : pick;
 export default themes[look];
+/** reduced motion, off unless picked in the Theme menu or with Q: case.still in localStorage. The OS setting is not read */
+export const still = { matches: localStorage.getItem('case.still') === '1' };
+export function toggleStill() {
+  still.matches = !still.matches;
+  still.matches ? localStorage.setItem('case.still', '1') : localStorage.removeItem('case.still');
+}
