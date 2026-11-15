@@ -957,10 +957,10 @@ export function playground(d: Deps) {
     const k = 1 - Math.exp(-8 * (still.matches ? FAST : 1) * dt);
     orbit.yaw += (aim.yaw - orbit.yaw) * k;
     orbit.tilt += (aim.tilt - orbit.tilt) * k;
-    // landscape keeps the bed left of the list, as edit keeps its phone
+    // landscape keeps the bed left of the list, as edit keeps its phone, a little high so its front corner clears the bar
     const pt = d.camera.aspect < 1;
     const h = 2 * DIST * Math.tan(THREE.MathUtils.degToRad(d.camera.fov / 2));
-    pivot.position.copy(d.camera.position).add(new THREE.Vector3(pt ? 0 : -0.24 * h * d.camera.aspect, pt ? 0.14 * h : 0, -DIST));
+    pivot.position.copy(d.camera.position).add(new THREE.Vector3(pt ? 0 : -0.24 * h * d.camera.aspect, pt ? 0.14 * h : 0.04 * h, -DIST));
     pivot.rotation.set(orbit.tilt, orbit.yaw, 0);
     // portrait's shelf takes the lower half, so the bed sits higher and smaller over it
     const up = pt && mode === 'shelf' && !card;
