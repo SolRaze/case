@@ -320,7 +320,11 @@ export function playground(d: Deps) {
     follow();
   }
   const SPREAD = 0.5;
-  const biggest = () => Math.max(1e-6, ...icons.map((it) => it.big));
+  /** the size icons scale against: the second-largest part, so one long outlier (the spine chain) stands no bigger than the next and the rest keep their room */
+  const biggest = () => {
+    const b = icons.map((it) => it.big).sort((x, y) => y - x);
+    return Math.max(1e-6, b[1] ?? b[0] ?? 0);
+  };
   function shelfFrame(t: number, dt: number, h: number, pt: boolean) {
     tall = pt;
     shelfRoot.visible = shelfOn();
@@ -343,6 +347,7 @@ export function playground(d: Deps) {
     const icon = 0.95 * cell;
     aimScroll = clamp(aimScroll, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0));
     scroll += (aimScroll - scroll) * k;
+    const ref = biggest();
     icons.forEach((it, i) => {
       if (!it.big) return; // not loaded yet
       const on = i === row;
@@ -357,7 +362,7 @@ export function playground(d: Deps) {
       const grow = still.matches ? 1 - (1 - p) ** 3 : p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
       // opened, it stands 0.3 view heights in the bed's place and the rest fade, or they would sit under the text
       // parts keep their order of size against the shelf's biggest, by the square root so a small one still reads; SPREAD 1 is true scale, 0 all one size
-      const size = fore ? (0.3 * h) / it.big : (icon * (it.big / biggest()) ** SPREAD) / it.big;
+      const size = fore ? (0.3 * h) / it.big : (icon * Math.min(1, it.big / ref) ** SPREAD) / it.big;
       // every part centred in its cell, so the cells read as a grid and the highlight sits the same on each
       it.at.copy(d.camera.position).add(spot);
       // a carried icon rides under the pointer
