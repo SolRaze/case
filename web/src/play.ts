@@ -218,6 +218,7 @@ export function playground(d: Deps) {
   let aimScroll = 0;
   let inView = 3; // lines of icons in view
   let cellPx = 100; // one icon line, in screen pixels
+  let pitch = 1; // landscape: one icon line, in scene units
   let tall = false; // portrait: the shelf runs sideways under the bed, else down beside it
   const COL = 0.55; // landscape: the right column's left edge, in view widths; style.css places the list on it
   const EDGE = 0.96; // landscape: the column's right edge, the header's and bar's 4vw margin
@@ -342,8 +343,10 @@ export function playground(d: Deps) {
       const want = rows.bottom / innerHeight + 0.03;
       shelfTop += (want - shelfTop) * k;
       inView = Math.max(1, Math.floor(((floor - want) * h) / (cell * 1.05)));
-    } else inView = 2;
-    cellPx = (cell / h) * innerHeight;
+      // the lines in view share out the room down to the bar, so no part-line gap is left above it
+      pitch = Math.max(cell * 1.05, ((floor - want) * h) / inView);
+    } else (inView = 2), (pitch = cell);
+    cellPx = (pitch / h) * innerHeight;
     const icon = 0.95 * cell;
     aimScroll = clamp(aimScroll, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0));
     scroll += (aimScroll - scroll) * k;
@@ -356,7 +359,7 @@ export function playground(d: Deps) {
       const fore = card > 0 && on;
       const spot = pt
         ? new THREE.Vector3((v - (inView - 1) / 2) * cell, -0.07 * h - across * cell * 1.05, -DIST)
-        : new THREE.Vector3((COL - 0.5) * w + cell / 2 + across * (((EDGE - COL) * w - cell) / (cols - 1)), (0.5 - shelfTop) * h - cell / 2 - v * cell * 1.05, -DIST);
+        : new THREE.Vector3((COL - 0.5) * w + cell / 2 + across * (((EDGE - COL) * w - cell) / (cols - 1)), (0.5 - shelfTop) * h - pitch / 2 - v * pitch, -DIST);
       // the pop: overshoots, then settles, as the cards page's icons do
       const p = clamp((t - it.born) / 0.3, 0, 1);
       const grow = still.matches ? 1 - (1 - p) ** 3 : p && 1 + 2.7 * (p - 1) ** 3 + 1.7 * (p - 1) ** 2;
