@@ -343,8 +343,8 @@ export function playground(d: Deps) {
       const want = rows.bottom / innerHeight + 0.03;
       shelfTop += (want - shelfTop) * k;
       inView = Math.max(1, Math.floor(((floor - want) * h) / (cell * 1.05)));
-      // the lines in view share out the room down to the bar, so no part-line gap is left above it
-      pitch = Math.max(cell * 1.05, ((floor - want) * h) / inView);
+      // the lines in view share out the room down to the bar, up to a quarter cell apart
+      pitch = clamp(((floor - want) * h) / inView, cell * 1.05, cell * 1.25);
     } else (inView = 2), (pitch = cell);
     cellPx = (pitch / h) * innerHeight;
     const icon = 0.95 * cell;
