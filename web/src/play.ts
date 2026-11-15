@@ -220,6 +220,8 @@ export function playground(d: Deps) {
   let cellPx = 100; // one icon line, in screen pixels
   let pitch = 1; // landscape: one icon line, in scene units
   let tall = false; // portrait: the shelf runs sideways under the bed, else down beside it
+  let strip = false; // portrait browse: the shelf as a small strip of 2 rows over the list, shown while the list leaves it room
+  let stripTop = 0.56; // portrait: the shelf's top, in view heights
   const COL = 0.55; // landscape: the right column's left edge, in view widths; style.css places the list on it
   const EDGE = 0.96; // landscape: the column's right edge, the header's and bar's 4vw margin
   let shelfTop = 0.5; // landscape: the shelf's top, in view heights, eased under the list and its kinds row
@@ -236,8 +238,8 @@ export function playground(d: Deps) {
   const follow = () => (aimScroll = clamp(clamp(aimScroll, lineOf(row) - inView + 1, lineOf(row)), 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0)));
   /** is a screen point, in fractions 0 to 1, over the shelf rather than the bed */
   /** the shelf stands under the bench's list in landscape, unpicked too; portrait has no room under the list, so it shows only picked */
-  const shelfOn = () => mode === 'shelf' || (mode === 'browse' && !tall);
-  const onShelf = (x: number, y: number) => shelfOn() && !card && (tall ? y > 0.56 : x > COL && y > shelfTop);
+  const shelfOn = () => mode === 'shelf' || (mode === 'browse' && (!tall || strip));
+  const onShelf = (x: number, y: number) => shelfOn() && !card && (tall ? y > (mode === 'browse' ? stripTop : 0.56) : x > COL && y > shelfTop);
   /** the wheel or a drag over the shelf scrolls it, by pixels along its run */
   const roll = (px: number) => (aimScroll = clamp(aimScroll + px / cellPx, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0)));
   const shelfRoot = new THREE.Group();
@@ -328,13 +330,16 @@ export function playground(d: Deps) {
   };
   function shelfFrame(t: number, dt: number, h: number, pt: boolean) {
     tall = pt;
+    const w = h * d.camera.aspect;
+    const small = Math.min(0.09 * h, w / 5.5);
+    if (pt && mode === 'browse') stripTop = document.getElementById('parts')!.getBoundingClientRect().top / innerHeight - 0.02 - (2 * small * 1.05) / h;
+    strip = pt && mode === 'browse' && stripTop > 0.5;
     shelfRoot.visible = shelfOn();
     if (!shelfRoot.visible) return;
-    const w = h * d.camera.aspect;
     // icon size and spacing measured off the console's browser (Reference/screens/ps2), in view heights: 0.2 apart, an icon 0.19 at its largest side.
-    // Portrait: 2 rows under the bed, 2 in view, running sideways
+    // Portrait: 2 rows under the bed running sideways, 2 lines in view in shelf mode; in browse a strip of small icons over the list
     // Landscape: under the list in its column, rising as the list shortens, as many across as the column holds; lines in view are what fits above the bar
-    const cell = pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.15 * h, ((EDGE - COL) * w) / 3.3);
+    const cell = strip ? small : pt ? Math.min(0.17 * h, w / 2.3) : Math.min(0.15 * h, ((EDGE - COL) * w) / 3.3);
     cols = pt ? 2 : Math.max(3, Math.floor(((EDGE - COL) * w) / (cell * 1.1)));
     const k = 1 - Math.exp(-8 * (still.matches ? FAST : 1) * dt);
     if (!pt) {
@@ -345,7 +350,7 @@ export function playground(d: Deps) {
       inView = Math.max(1, Math.floor(((floor - want) * h) / (cell * 1.05)));
       // the lines in view share out the room down to the bar, up to a quarter cell apart
       pitch = clamp(((floor - want) * h) / inView, cell * 1.05, cell * 1.25);
-    } else (inView = 2), (pitch = cell);
+    } else (inView = strip ? Math.floor((0.92 * w) / cell) : 2), (pitch = cell);
     cellPx = (pitch / h) * innerHeight;
     const icon = 0.95 * cell;
     aimScroll = clamp(aimScroll, 0, Math.max(lineOf(icons.length - 1) - inView + 1, 0));
@@ -358,7 +363,7 @@ export function playground(d: Deps) {
       const across = i % cols;
       const fore = card > 0 && on;
       const spot = pt
-        ? new THREE.Vector3((v - (inView - 1) / 2) * cell, -0.07 * h - across * cell * 1.05, -DIST)
+        ? new THREE.Vector3((v - (inView - 1) / 2) * cell, (strip ? (0.5 - stripTop) * h - cell / 2 : -0.07 * h) - across * cell * 1.05, -DIST)
         : new THREE.Vector3((COL - 0.5) * w + cell / 2 + across * (((EDGE - COL) * w - cell) / (cols - 1)), (0.5 - shelfTop) * h - pitch / 2 - v * pitch, -DIST);
       // the pop: overshoots, then settles, as the cards page's icons do
       const p = clamp((t - it.born) / 0.3, 0, 1);
@@ -963,7 +968,7 @@ export function playground(d: Deps) {
     pivot.position.copy(d.camera.position).add(new THREE.Vector3(pt ? 0 : -0.24 * h * d.camera.aspect, pt ? 0.14 * h : 0.04 * h, -DIST));
     pivot.rotation.set(orbit.tilt, orbit.yaw, 0);
     // portrait's shelf takes the lower half, so the bed sits higher and smaller over it
-    const up = pt && mode === 'shelf' && !card;
+    const up = pt && (mode === 'shelf' || strip) && !card;
     pivot.position.y += (up ? 0.08 : 0) * h + rise * h;
     // an empty bed has nothing on it to frame, so it draws bigger
     // landscape's bed already spans its half, so it grows less; portrait's shelf needs the room
