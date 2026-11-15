@@ -72,7 +72,8 @@ body:not([data-view=detail]) #detail > p { display: none; }
 #parts button.on { color: var(--pick); }
 #parts .name { min-width: 7.5em; text-align: left; }
 #parts .value { min-width: 6.5em; justify-content: center; }
-#parts .step { padding: 0 .9em; }
+/* the ink font draws ‹ › at half a letter's height, so they take a bigger size */
+#parts .step { padding: 0 .4em; font-size: 2.2em; line-height: 1; }
 #parts button.step:not(.on) { opacity: .7; }
 #parts img { width: 1.15em; height: 1.15em; margin: 0 .35em 0 0; }
 #parts .step img { margin: 0 .2em; }
