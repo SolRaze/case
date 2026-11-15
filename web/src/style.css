@@ -160,3 +160,9 @@ body:not([data-menu]) #detail button, body:not([data-inspo]) #inspo { pointer-ev
   clip-path: inset(50%);
 }
 [data-view=boot] #detail > p { display: none; }
+/* boot's Theme menu sits bottom right, on the bar's 4vw margin */
+[data-view=boot] #detail {
+  left: auto; top: auto; right: max(4vw, env(safe-area-inset-right)); bottom: calc(9vh + env(safe-area-inset-bottom));
+  padding: 0; text-align: right;
+}
+[data-view=boot] #commands { align-items: flex-end; }
