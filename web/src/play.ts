@@ -323,10 +323,11 @@ export function playground(d: Deps) {
     follow();
   }
   const SPREAD = 0.5;
-  /** the size icons scale against: the second-largest part, so one long outlier (the spine chain) stands no bigger than the next and the rest keep their room */
+  /** the size icons scale against: the second-largest part, so one long outlier (the spine chain) stands no bigger than the next and the rest keep their room;
+   *  the largest while parts are still loading, or the first few in would each fill a cell */
   const biggest = () => {
     const b = icons.map((it) => it.big).sort((x, y) => y - x);
-    return Math.max(1e-6, b[1] ?? b[0] ?? 0);
+    return Math.max(1e-6, (icons.every((it) => it.big) ? b[1] : undefined) ?? b[0] ?? 0);
   };
   function shelfFrame(t: number, dt: number, h: number, pt: boolean) {
     tall = pt;
